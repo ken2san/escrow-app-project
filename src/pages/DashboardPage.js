@@ -1,0 +1,222 @@
+import React, { useState, useEffect } from 'react';
+import ProjectCard from '../components/dashboard/ProjectCard';
+import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
+import TabButton from '../components/common/TabButton';
+
+const DashboardPage = ({ 
+  projects, 
+  searchTerm, 
+  setSearchTerm, 
+  currentViewMode, 
+  loggedInUser, 
+  t, 
+  handleProjectClick,
+  selectedProjectId,
+  ...props 
+}) => {
+  const [activeDashboardTab, setActiveDashboardTab] = useState(
+    currentViewMode === 'contractor' ? 'recommended' : 'my_tasks'
+  );
+
+  useEffect(() => {
+    setActiveDashboardTab(
+      currentViewMode === 'contractor' ? 'recommended' : 'my_tasks'
+    );
+  }, [currentViewMode]);
+
+  const projectsToDisplay = (() => {
+    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    if (currentViewMode === 'client') {
+      const clientProjects = projects.filter(p => p.clientId === loggedInUser.id);
+      if (!normalizedSearchTerm) return clientProjects;
+      return clientProjects.filter(
+        (project) =>
+          project.name?.toLowerCase().includes(normalizedSearchTerm) ||
+          project.contractorName?.toLowerCase().includes(normalizedSearchTerm) ||
+          project.description?.toLowerCase().includes(normalizedSearchTerm)
+      );
+    } else {
+      const allProjects = projects;
+      const filterBySearch = (list) => {
+        if (!normalizedSearchTerm) return list;
+        return list.filter(
+          (p) =>
+            (p.name && p.name.toLowerCase().includes(normalizedSearchTerm)) ||
+            (p.description && p.description.toLowerCase().includes(normalizedSearchTerm)) ||
+            (p.clientName && p.clientName.toLowerCase().includes(normalizedSearchTerm))
+        );
+      };
+
+      let aiRecommendedProjects = filterBySearch(
+        allProjects
+          .filter(
+            (p) =>
+              p.aiRecommendationScore &&
+              p.aiRecommendationScore > 0.7 &&
+              p.status === '募集中' &&
+              p.clientId !== loggedInUser.id
+          )
+          .sort((a, b) => b.aiRecommendationScore - a.aiRecommendationScore)
+      );
+
+      let openForProposals = filterBySearch(
+        allProjects.filter(
+          (p) =>
+            p.status === '募集中' &&
+            p.clientId !== loggedInUser.id &&
+            !p.proposals?.some(
+              (prop) =>
+                prop.contractorId === loggedInUser.id &&
+                prop.status !== 'archived'
+            )
+        )
+      );
+
+      let myPendingProposals = filterBySearch(
+        allProjects.filter(
+          (p) =>
+            p.status === '募集中' &&
+            p.proposals?.some(
+              (prop) =>
+                prop.contractorId === loggedInUser.id &&
+                prop.status === 'pending_review'
+            )
+        )
+      );
+
+      let activeContracts = filterBySearch(
+        allProjects.filter(
+          (p) =>
+            p.contractorId === loggedInUser.id &&
+            (p.status === t.statusInProgress ||
+              p.status === t.statusWorkReady ||
+              p.status === t.agreementPending ||
+              p.status === t.statusInDispute)
+        )
+      ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+      let completedContracts = filterBySearch(
+        allProjects.filter(
+          (p) => p.contractorId === loggedInUser.id && p.status === '完了'
+        )
+      );
+
+      return {
+        aiRecommendedProjects,
+        openForProposals,
+        myPendingProposals,
+        activeContracts,
+        completedContracts,
+      };
+    }
+  })();
+  
+  // 修正: この関数はリストが空でなければタイトルとカードを表示するだけにする
+  const renderProjectList = (list, title, isRecommended = false) => {
+    if (!list || list.length === 0) {
+      return null;
+    }
+  
+    return (
+      <>
+        {title && (
+          <h3 className="text-xl font-semibold text-gray-700 mb-4 mt-6 first:mt-0 col-span-full flex items-center">
+            {isRecommended && <Zap size={20} className="mr-2 text-yellow-500" />}
+            {title}
+          </h3>
+        )}
+        {list.map((project) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            onSelect={handleProjectClick}
+            isSelected={selectedProjectId === project.id}
+            currentUser={loggedInUser}
+            t={t}
+            currentViewMode={currentViewMode}
+            isRecommendedCard={isRecommended}
+            {...props}
+          />
+        ))}
+      </>
+    );
+  };
+
+  // 修正: 「案件なし」メッセージを表示するためのコンポーネント
+  const NoProjectsMessage = () => (
+    <div className="text-center py-10 col-span-full">
+      <Briefcase size={40} className="mx-auto text-gray-400 mb-4" />
+      <p className="text-gray-500">{t.noProjectsFound}</p>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="relative w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder={t.searchPlaceholder}
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80 shadow-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        </div>
+        <div className="flex items-center space-x-2">
+          <button className="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm shadow-sm">
+            <Filter size={16} className="mr-2" />
+            {t.filter}
+          </button>
+          {currentViewMode === 'client' && (
+            <button
+              onClick={() => props.setActivePage('newProject')}
+              className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
+            >
+              <PlusCircle size={16} className="mr-2" />
+              {t.registerNewProject}
+            </button>
+          )}
+        </div>
+      </div>
+       {currentViewMode === 'contractor' ? (
+        <>
+          <div className="flex border-b border-gray-300 mb-6">
+            <TabButton title={t.tabRecommended} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
+            <TabButton title={t.tabMyTasks} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
+            <TabButton title={t.tabCompletedHistory} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />
+          </div>
+          <div className={`grid grid-cols-1 ${currentViewMode === 'contractor' ? 'md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3'} gap-6 items-start`}>
+            {activeDashboardTab === 'recommended' && (
+              (projectsToDisplay.aiRecommendedProjects.length === 0 && projectsToDisplay.openForProposals.length === 0)
+              ? <NoProjectsMessage />
+              : <>
+                  {renderProjectList(projectsToDisplay.aiRecommendedProjects, t.aiRecommendedProjectsTitle, true)}
+                  {renderProjectList(projectsToDisplay.openForProposals, t.contractorOpenForProposals)}
+                </>
+            )}
+            {activeDashboardTab === 'my_tasks' && (
+              (projectsToDisplay.activeContracts.length === 0 && projectsToDisplay.myPendingProposals.length === 0)
+              ? <NoProjectsMessage />
+              : <>
+                  {renderProjectList(projectsToDisplay.activeContracts, t.contractorActiveProjects)}
+                  {renderProjectList(projectsToDisplay.myPendingProposals, t.contractorMyPendingProposals)}
+                </>
+            )}
+            {activeDashboardTab === 'completed_history' && (
+              (projectsToDisplay.completedContracts.length === 0)
+              ? <NoProjectsMessage />
+              : renderProjectList(projectsToDisplay.completedContracts, t.contractorCompletedProjects)
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+          {projectsToDisplay.length === 0 ? <NoProjectsMessage /> : renderProjectList(projectsToDisplay, null)}
+        </div>
+      )}
+    </>
+  );
+};
+
+export default DashboardPage;

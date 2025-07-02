@@ -1,0 +1,531 @@
+export const loggedInUserDataGlobal = {
+  id: 'user555',
+  name: '田中 さとし',
+};
+
+// --- ダミーデータ ---
+export const initialProjects = [
+  {
+    id: 'job101',
+    name: '新サービス紹介LPデザイン',
+    clientName: '株式会社スタートアップ支援',
+    clientId: 'client101',
+    contractorName: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 65,
+    totalAmount: 80000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-07-15',
+    completionDate: null,
+    description:
+      '7月にリリース予定の新サービスの魅力を伝えるランディングページのデザインをお願いします。ターゲットは20代後半～30代の男女。ワイヤーフレームはこちらで用意します。イラスト制作も可能であれば尚可。',
+    deliverables: 'LPデザインデータ一式（Figma）',
+    deliverableDetails:
+      'Figma形式での納品。主要画面（トップ、サービス紹介、料金、会社概要、問い合わせ）のデザイン。スマートフォン表示にも対応。',
+    acceptanceCriteria: 'デザインカンプ通りの実装、主要ブラウザでの表示確認',
+    acceptanceCriteriaDetails:
+      '納品後5営業日以内に検収。修正は2回までとし、大幅な変更は別途協議。',
+    scopeOfWork_included:
+      'LPデザイン制作、レスポンシブデザイン対応、画像素材選定（フリー素材）',
+    scopeOfWork_excluded:
+      'サーバー設定、ドメイン取得、有料画像素材の購入、テキストライティング',
+    additionalWorkTerms:
+      '大幅なデザイン変更やページ追加が発生する場合は、別途お見積もりとなります。',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-01 10:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job101-m1',
+        name: 'デザインカンプ初稿提出',
+        amount: 40000,
+        status: 'pending',
+        dueDate: '2025-06-20',
+        description: 'PC・スマホ両対応のデザインカンプを提出。',
+      },
+      {
+        id: 'job101-m2',
+        name: '最終デザインデータ納品',
+        amount: 40000,
+        status: 'pending',
+        dueDate: '2025-07-10',
+        description: '修正対応後、デザインデータ一式を納品。',
+      },
+    ],
+    requiredSkills: [
+      'ウェブデザイン',
+      'LP制作',
+      'Figma',
+      'レスポンシブデザイン',
+    ],
+    clientRating: { averageScore: 4.5, totalReviews: 12 },
+    imageUrl:
+      'https://placehold.co/600x400/7C3AED/FFFFFF?text=LP%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.9,
+    aiRecommendationReason:
+      'あなたのスキル「Figma」「ウェブデザイン」に強く合致しています！',
+    proposals: [
+      {
+        id: 'prop_user555_for_job101',
+        projectId: 'job101',
+        contractorId: loggedInUserDataGlobal.id,
+        contractorName: loggedInUserDataGlobal.name,
+        contractorReputation: {
+          averageScore: 4.8,
+          totalReviews: 15,
+          identityVerified: true,
+          skillsCertified: ['ウェブデザイン'],
+        },
+        contractorResellingRisk: 5,
+        proposalText:
+          'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
+        proposedAmount: 78000,
+        estimatedDeliveryTime: '2週間',
+        submissionDate: '2025-06-06',
+        status: 'pending_review',
+      },
+    ],
+  },
+  {
+    id: 'job103',
+    name: 'PR記事作成依頼（月5本）',
+    clientName: '田中 さとし',
+    clientId: 'user555',
+    contractorName: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 20,
+    totalAmount: 50000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-06-30',
+    description:
+      '弊社サービスの認知度向上のため、指定キーワードに基づいたPR記事を月5本作成・納品していただけるライター様を募集します。1記事あたり2000字程度。SEOライティング経験者歓迎。継続依頼の可能性あり。',
+    deliverables: 'PR記事5本（Word形式）、各記事のキーワードリスト',
+    deliverableDetails:
+      '各記事2000字以上。指定キーワードを適切に含み、読者の検索意図に合致する内容であること。コピーコンテンツでないこと。',
+    acceptanceCriteria: '指定キーワードでの検索順位目標達成、誤字脱字なし',
+    acceptanceCriteriaDetails:
+      '納品後3営業日以内に検収。修正は各記事1回まで。文法・表現の誤りがないこと。',
+    scopeOfWork_included: '記事執筆、キーワードリサーチ、SEO観点での構成案作成',
+    scopeOfWork_excluded: '画像選定、CMSへの入稿作業、SNSでの拡散',
+    additionalWorkTerms: '追加記事は1本あたり10,000円（税別）とします。',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-02 12:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job103-m1',
+        name: '初回記事5本納品',
+        amount: 50000,
+        status: 'pending',
+        dueDate: '2025-06-30',
+        description: '指定キーワードに基づく記事5本',
+      },
+    ],
+    requiredSkills: ['SEOライティング', 'コンテンツ作成', 'キーワードリサーチ'],
+    clientRating: { averageScore: null, totalReviews: 0 },
+    imageUrl:
+      'https://placehold.co/600x400/DB2777/FFFFFF?text=PR%E8%A8%98%E4%BA%8B%E4%BD%9C%E6%88%90',
+    allowSubcontracting: true,
+    aiRecommendationScore: 0.75,
+    aiRecommendationReason:
+      'あなたの「コンテンツ作成」スキルと過去の類似案件実績に合致しています。',
+    proposals: [
+      {
+        id: 'prop001',
+        projectId: 'job103',
+        contractorId: 'user888',
+        contractorName: '鈴木 一郎',
+        contractorReputation: {
+          averageScore: 4.9,
+          totalReviews: 25,
+          identityVerified: true,
+          skillsCertified: ['SEO Master'],
+        },
+        contractorResellingRisk: 15,
+        proposalText:
+          'SEOライティング歴5年の鈴木と申します。貴社サービスに貢献できる質の高い記事を迅速に作成いたします。過去実績はポートフォリオをご覧ください。月5本、2000字/記事でご提案の予算内で対応可能です。納期も柔軟に対応できます。',
+        proposedAmount: 50000,
+        estimatedDeliveryTime: '各記事3営業日以内',
+        submissionDate: '2025-06-03',
+        status: 'pending_review',
+      },
+      {
+        id: 'prop002',
+        projectId: 'job103',
+        contractorId: 'user999',
+        contractorName: '高橋 文子',
+        contractorReputation: {
+          averageScore: 4.7,
+          totalReviews: 18,
+          identityVerified: false,
+          skillsCertified: [],
+        },
+        contractorResellingRisk: 5,
+        proposalText:
+          'ライターの高橋です。特にIT・テクノロジー分野のPR記事を得意としております。キーワードリサーチから構成案作成、執筆まで一貫して対応可能です。ご提示の条件でぜひお受けしたく存じます。',
+        proposedAmount: 48000,
+        estimatedDeliveryTime: '月5本を月末までに納品',
+        submissionDate: '2025-06-04',
+        status: 'pending_review',
+      },
+    ],
+  },
+  {
+    id: 1,
+    name: '企業ロゴリニューアルプロジェクト',
+    clientName: '山田ベーカリー',
+    clientId: 'user123',
+    contractorName: loggedInUserDataGlobal.name,
+    contractorId: loggedInUserDataGlobal.id,
+    contractorResellingRisk: 5,
+    clientResellingRisk: 0,
+    totalAmount: 180000,
+    fundsDeposited: 180000,
+    fundsReleased: 180000,
+    status: '完了',
+    description:
+      '創業50年を迎える老舗ベーカリー「山田ベーカリー」のブランドイメージを一新するためのロゴマーク、タグライン、および基本的なブランドガイドラインの制作。',
+    deliverables: 'ロゴデータ（AI, PNG, JPG）、ブランドガイドライン（PDF）',
+    deliverableDetails:
+      'ロゴマーク（カラー、モノクロ、反転）、タグライン、基本デザインシステム（カラースキーム、指定フォント）、使用禁止例などを記載したブランドガイドライン。',
+    acceptanceCriteria: '最終承認されたデザイン案通りの納品',
+    acceptanceCriteriaDetails:
+      '依頼者による最終確認後、承認をもって検収完了とする。',
+    scopeOfWork_included:
+      'ロゴデザイン3案提案、選定案のブラッシュアップ、ブランドガイドライン作成（10ページ程度）',
+    scopeOfWork_excluded:
+      'ロゴを使用した販促物デザイン（名刺、チラシ等）、ウェブサイトへのロゴ組み込み',
+    additionalWorkTerms:
+      '販促物デザインは別途お見積もり。ガイドラインの大幅なページ数増加は追加費用発生の可能性あり。',
+    agreementDocLink: 'yamada_bakery_agreement_v1.pdf',
+    changeOrders: [
+      {
+        id: 'co1-1',
+        date: '2024-07-20',
+        description: 'エコバッグ用デザインパターンの追加',
+        agreed: true,
+        additionalCost: 20000,
+      },
+    ],
+    communicationLogCount: 42,
+    lastUpdate: '2024-08-19 11:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'm1-1',
+        name: 'ヒアリングと方向性提案',
+        amount: 30000,
+        status: 'paid',
+        dueDate: '2024-07-05',
+        paidDate: '2024-07-06',
+        description: '詳細ヒアリング。3つのデザイン方向性を提案。',
+        submittedFiles: [
+          { name: 'direction_proposal.pdf', date: '2024-07-04' },
+        ],
+        feedbackHistory: [
+          {
+            type: 'approval',
+            date: '2024-07-05',
+            comment: 'B案でお願いします。',
+          },
+        ],
+      },
+      {
+        id: 'm1-2',
+        name: 'ロゴデザイン案（3種）提出と選定',
+        amount: 70000,
+        status: 'paid',
+        dueDate: '2024-07-25',
+        paidDate: '2024-07-28',
+        description: 'ロゴデザイン案3種作成。展開例も提示。',
+        submittedFiles: [{ name: 'logo_drafts.zip', date: '2024-07-24' }],
+        feedbackHistory: [
+          {
+            type: 'feedback',
+            date: '2024-07-25',
+            comment: '案2が良いがフォント調整希望。',
+          },
+          { type: 'submission', date: '2024-07-26', comment: '修正案提出。' },
+          {
+            type: 'approval',
+            date: '2024-07-27',
+            comment: 'フォントBで決定。',
+          },
+        ],
+      },
+      {
+        id: 'm1-3',
+        name: '最終納品',
+        amount: 60000,
+        status: 'paid',
+        dueDate: '2024-08-18',
+        paidDate: '2024-08-18',
+        description: 'ロゴデータ、ブランドガイドライン、各種デザイン案データ。',
+        submittedFiles: [{ name: 'FINAL_ASSETS.zip', date: '2024-08-17' }],
+        feedbackHistory: [
+          {
+            type: 'approval',
+            date: '2024-08-18',
+            comment: '完璧です。ありがとうございました。',
+          },
+        ],
+      },
+    ],
+    contractorRating: {
+      averageScore: 5,
+      totalReviews: 1,
+      reviews: [
+        {
+          reviewId: 'r1-yamada',
+          projectId: 1,
+          clientId: 'user123',
+          clientName: '山田ベーカリー',
+          rating: 5,
+          comment: '素晴らしいロゴをありがとうございました。',
+          contractorResponse: 'ありがとうございます！',
+          date: '2024-08-19',
+          disputeContext: null,
+          isFlagged: false,
+        },
+      ],
+    },
+    needsClientRating: false,
+    imageUrl:
+      'https://placehold.co/600x400/10B981/FFFFFF?text=%E3%83%AD%E3%82%B4%E3%83%AA%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%A2%E3%83%AB',
+    allowSubcontracting: false,
+  },
+  {
+    id: 4,
+    name: 'アプリUI改善提案',
+    clientName: 'スタートアップY',
+    clientId: 'clientY',
+    contractorName: '田中 さとし',
+    contractorId: 'user555',
+    contractorResellingRisk: 0, // Logged in user is contractor
+    clientResellingRisk: 0,
+    totalAmount: 120000,
+    fundsDeposited: 120000,
+    fundsReleased: 0,
+    status: '作業中',
+    dueDate: '2025-07-05',
+    description:
+      '既存モバイルアプリのUI改善提案とモック作成。週1回の定例ミーティング必須。',
+    deliverables: 'UI改善提案資料（PDF）、主要画面モックアップ（Figma）',
+    deliverableDetails:
+      '現状分析レポート、UI改善案（3パターン）、主要5画面のインタラクティブモックアップ。',
+    acceptanceCriteria: '提案内容がユーザビリティテストで高評価を得ること',
+    acceptanceCriteriaDetails:
+      'ユーザビリティテストは依頼者側で実施。テスト結果に基づき、致命的な問題がないことを確認。',
+    scopeOfWork_included:
+      '現状分析、ユーザーインタビュー（3名まで）、競合調査、改善提案、ワイヤーフレーム作成、モックアップ作成',
+    scopeOfWork_excluded:
+      '実装、A/Bテストの実施、ユーザーインタビュー対象者のリクルーティング',
+    additionalWorkTerms:
+      '追加画面のモック作成は1画面あたり20,000円。ユーザビリティテストの設計・実施サポートは別途お見積もり。',
+    agreementDocLink: 'agreement_project4.pdf',
+    changeOrders: [],
+    communicationLogCount: 12,
+    lastUpdate: '2025-05-30 11:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'm4-1',
+        name: '現状分析と課題整理',
+        amount: 30000,
+        status: 'approved',
+        dueDate: '2025-06-10',
+        description: 'ユーザーインタビューと競合分析。',
+        submittedFiles: [
+          { name: 'analysis_report_v1.pdf', date: '2025-06-09' },
+        ],
+        feedbackHistory: [
+          {
+            type: 'approval',
+            date: '2025-06-10',
+            comment: '分析内容、課題認識ともに的確です。次へ進んでください。',
+          },
+        ],
+      },
+      {
+        id: 'm4-2',
+        name: '改善提案とワイヤーフレーム作成',
+        amount: 40000,
+        status: 'in_progress',
+        dueDate: '2025-06-25',
+        description:
+          '具体的な改善UI案（3パターン）と主要画面のワイヤーフレームを作成。',
+        submittedFiles: [],
+        feedbackHistory: [],
+      },
+      {
+        id: 'm4-3',
+        name: '最終モックアップ納品',
+        amount: 50000,
+        status: 'pending',
+        dueDate: '2025-07-05',
+        description: 'インタラクティブなモックアップを作成し納品。',
+        submittedFiles: [],
+        feedbackHistory: [],
+      },
+    ],
+    imageUrl:
+      'https://placehold.co/600x400/3B82F6/FFFFFF?text=UI%E6%94%B9%E5%96%84%E6%8F%90%E6%A1%88',
+    allowSubcontracting: true,
+  },
+  {
+    id: 'job_dispute_01',
+    name: 'ウェブサイトリニューアル（協議中サンプル）',
+    clientName: '株式会社ABCテック',
+    clientId: 'clientABC',
+    contractorName: '田中 さとし',
+    contractorId: 'user555', // Logged in user is contractor
+    contractorResellingRisk: 80,
+    clientResellingRisk: 50,
+    totalAmount: 150000,
+    fundsDeposited: 100000,
+    fundsReleased: 20000,
+    status: '協議中',
+    dueDate: '2025-05-01',
+    completionDate: null,
+    description:
+      '既存コーポレートサイトのフルリニューアル。デザインとコーディングを含む。現在、仕様変更の範囲について依頼者と意見の相違が発生し、協議中です。',
+    deliverables:
+      'ウェブサイト一式（HTML, CSS, JS, 画像素材）、デザインカンプ（Photoshop）',
+    deliverableDetails: '全10ページ構成。お問い合わせフォーム機能を含む。',
+    acceptanceCriteria: '全ページのデザインと機能が仕様書通りであること',
+    acceptanceCriteriaDetails: 'テスト環境での動作確認後、依頼者による承認。',
+    scopeOfWork_included:
+      'デザイン制作（トップページ＋下層9ページ）、HTML/CSS/JSコーディング、レスポンシブ対応、基本的なSEO設定',
+    scopeOfWork_excluded:
+      'サーバー移管作業、公開後の保守運用、コンテンツ作成（テキスト・画像素材は依頼者支給）',
+    additionalWorkTerms:
+      '仕様変更や追加ページ作成は、都度協議の上、追加費用を決定する。',
+    agreementDocLink: 'agreement_dispute_01.pdf',
+    changeOrders: [
+      {
+        id: 'co_d1',
+        date: '2025-04-15',
+        description: '追加ページ作成依頼（未合意）',
+      },
+    ],
+    communicationLogCount: 35,
+    lastUpdate: '2025-06-01 15:00',
+    hasDispute: true,
+    disputeDetails:
+      '仕様変更の範囲と追加費用について合意に至らず、作業が中断しています。',
+    milestones: [
+      {
+        id: 'job_d01-m1',
+        name: 'デザインカンプ承認',
+        amount: 50000,
+        status: 'approved',
+        dueDate: '2025-04-10',
+        description: 'トップページと主要下層ページのデザイン承認済み。',
+      },
+      {
+        id: 'job_d01-m2',
+        name: 'コーディング中間提出',
+        amount: 50000,
+        status: 'submitted',
+        dueDate: '2025-04-25',
+        description: '主要機能実装済み。追加仕様について協議中。',
+      },
+      {
+        id: 'job_d01-m3',
+        name: '最終納品と検収',
+        amount: 50000,
+        status: 'pending',
+        dueDate: '2025-05-10',
+        description: '全機能実装後、最終確認。',
+      },
+    ],
+    requiredSkills: ['HTML', 'CSS', 'JavaScript', 'PHP'],
+    clientRating: { averageScore: 4.0, totalReviews: 3 },
+    allowSubcontracting: false,
+  },
+  {
+    id: 'job105',
+    name: '簡単なデータ入力作業',
+    clientName: '株式会社データサービス',
+    clientId: 'clientXYZ',
+    contractorName: null,
+    contractorId: null,
+    totalAmount: 20000,
+    status: '募集中',
+    dueDate: '2025-07-20',
+    description:
+      '指定されたフォーマットへのデータ入力作業です。正確性が求められます。週に10時間程度の作業を想定しています。',
+    requiredSkills: ['データ入力', 'Excel', '注意力'],
+    clientRating: { averageScore: 4.0, totalReviews: 3 },
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.2, // Low score
+    proposals: [], // Added for clarity
+    milestones: [
+      {
+        id: 'job105-m1',
+        name: 'データ入力完了',
+        amount: 20000,
+        status: 'pending',
+        dueDate: '2025-07-20',
+        description: '全データ入力完了',
+      },
+    ],
+  },
+  {
+    id: 'job106', // New project for AI recommendation
+    name: 'ECサイト新機能開発',
+    clientName: '株式会社EコマースX',
+    clientId: 'clientECX',
+    contractorName: null,
+    contractorId: null,
+    totalAmount: 300000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-08-30',
+    description: '既存ECサイトに決済機能とユーザーレビュー機能を追加開発。React, Node.jsの経験必須。',
+    requiredSkills: ['React', 'Node.js', 'API連携'],
+    clientRating: { averageScore: 4.7, totalReviews: 8 },
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.85, // High score
+    aiRecommendationReason: 'あなたのスキル「React」「Node.js」に強く合致しています！',
+    proposals: [], // No proposals from user555 yet
+    milestones: [
+      {
+        id: 'job106-m1',
+        name: '要件定義と設計',
+        amount: 100000,
+        status: 'pending',
+        dueDate: '2025-07-15',
+        description: '新機能の要件定義とシステム設計を完了。',
+      },
+      {
+        id: 'job106-m2',
+        name: '開発とテスト',
+        amount: 150000,
+        status: 'pending',
+        dueDate: '2025-08-15',
+        description: '決済機能とレビュー機能のフロントエンド・バックエンド開発および単体テスト。',
+      },
+      {
+        id: 'job106-m3',
+        name: '最終納品と結合テスト',
+        amount: 50000,
+        status: 'pending',
+        dueDate: '2025-08-30',
+        description: '全機能の結合テスト完了後、本番環境へのデプロイ支援と最終納品。',
+      },
+    ],
+  },
+];

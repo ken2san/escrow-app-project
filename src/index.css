@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Make sure to process this file with Tailwind CSS using a build tool like PostCSS */
