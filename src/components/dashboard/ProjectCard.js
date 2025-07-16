@@ -532,7 +532,7 @@ const ProjectCard = ({
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-indigo-700 hover:text-indigo-800">
-              {project.name}
+              {getField(project, 'name')}
             </h3>
             <span
               className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center ${getStatusPillStyle(
@@ -548,13 +548,13 @@ const ProjectCard = ({
           </div>
           <div className="text-xs text-gray-500 mb-1">
             <span>
-              {t.client}: {project.clientName}
+              {t.client}: {getField(project, 'clientName')}
             </span>
             {project.contractorName && (
               <>
                 {' | '}
                 <span>
-                  {t.contractor}: {project.contractorName}
+                  {t.contractor}: {getField(project, 'contractorName')}
                 </span>
               </>
             )}
