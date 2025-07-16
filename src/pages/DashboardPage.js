@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
 
-const DashboardPage = ({ 
-  projects, 
-  searchTerm, 
-  setSearchTerm, 
-  currentViewMode, 
-  loggedInUser, 
-  t, 
+const DashboardPage = ({
+  projects,
+  searchTerm,
+  setSearchTerm,
+  currentViewMode,
+  loggedInUser,
+  t,
   handleProjectClick,
   selectedProjectId,
-  ...props 
+  ...props
 }) => {
   const [activeDashboardTab, setActiveDashboardTab] = useState(
     currentViewMode === 'contractor' ? 'recommended' : 'my_tasks'
   );
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setActiveDashboardTab(
@@ -110,13 +113,13 @@ const DashboardPage = ({
       };
     }
   })();
-  
+
   // 修正: この関数はリストが空でなければタイトルとカードを表示するだけにする
   const renderProjectList = (list, title, isRecommended = false) => {
     if (!list || list.length === 0) {
       return null;
     }
-  
+
     return (
       <>
         {title && (
@@ -170,7 +173,7 @@ const DashboardPage = ({
           </button>
           {currentViewMode === 'client' && (
             <button
-              onClick={() => props.setActivePage('newProject')}
+              onClick={() => navigate('/newProject')}
               className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
             >
               <PlusCircle size={16} className="mr-2" />
