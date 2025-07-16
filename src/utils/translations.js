@@ -216,8 +216,7 @@ export const translations = {
     contractorOpenForProposals: '提案可能な案件',
     aiRecommendedProjectsTitle: 'AIおすすめ案件 ✨',
     aiRecommendationReasonPrefix: '推薦理由: ',
-    tabRecommended: 'おすすめ',
-    tabMyTasks: 'マイタスク',
+    // エラーメッセージ
     tabCompletedHistory: '完了・履歴',
     // エラーメッセージ
     errorGeneric: '予期せぬエラーが発生しました',
@@ -227,12 +226,21 @@ export const translations = {
     // ステータス
     statusOpen: '募集中',
     statusCompleted: '完了',
+    tabRecommended: 'おすすめ',
+    tabMyTasks: 'マイタスク',
+    tabCompletedHistory: '完了・履歴',
 
     // マイルストーン
     milestoneSubmissionComment: '{name}が成果物を提出しました',
     milestoneApprovalComment: '{name}がマイルストーンを承認しました',
   },
   en: {
+    // Error messages
+    tabRecommended: 'Recommended',
+    tabMyTasks: 'My Tasks',
+    tabCompletedHistory: 'Completed / History',
+    tabMyTasks: 'My Tasks',
+    tabCompletedHistory: 'Completed / History',
     appName: 'Escrow App',
     userRoleClient: 'Client',
     userRoleContractor: 'Contractor',
@@ -448,9 +456,7 @@ export const translations = {
     contractorOpenForProposals: '提案可能な案件',
     aiRecommendedProjectsTitle: 'AIおすすめ案件 ✨',
     aiRecommendationReasonPrefix: '推薦理由: ',
-    tabRecommended: 'おすすめ',
-    tabMyTasks: 'マイタスク',
-    tabCompletedHistory: '完了・履歴',
+    // Error messages
     // Error messages
     errorGeneric: 'An unexpected error occurred',
     errorUpdateMilestone: 'Failed to update milestone',

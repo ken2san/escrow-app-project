@@ -46,6 +46,16 @@ const ProjectCard = ({
     (prop) => prop.contractorId === currentUser.id && prop.status !== 'archived'
   );
 
+  // 英語対応: 表示フィールドを言語で切り替え
+  const getField = (obj, key) => {
+    if (currentLanguage === 'en' && obj[key + '_en']) return obj[key + '_en'];
+    return obj[key];
+  };
+  const getArrayField = (obj, key) => {
+    if (currentLanguage === 'en' && obj[key + '_en']) return obj[key + '_en'];
+    return obj[key];
+  };
+
   const handleTabChange = (tabName) => {
     if (isSelected) {
       setActiveProjectDetailTab(tabName);
@@ -129,7 +139,7 @@ const ProjectCard = ({
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-blue-700">
-              {project.name}
+              {getField(project, 'name')}
             </h3>
             <span
               className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center ${getStatusPillStyle(
@@ -142,9 +152,9 @@ const ProjectCard = ({
           </div>
           <p
             className="text-sm text-gray-600 mb-1 h-10 overflow-y-hidden text-ellipsis"
-            title={project.description}
+            title={getField(project, 'description')}
           >
-            {project.description.substring(0, 100)}...
+            {getField(project, 'description').substring(0, 100)}...
           </p>
           <div className="text-xs text-gray-500 mb-3">
             {t.budget}: ¥{project.totalAmount.toLocaleString()} | {t.dueDate}:{' '}

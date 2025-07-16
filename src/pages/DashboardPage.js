@@ -153,13 +153,15 @@ const DashboardPage = ({
     </div>
   );
 
+  const translationsObj = require('../utils/translations').translations;
+  const tCurrent = translationsObj[props.currentLanguage];
   return (
-    <>
+    <div>
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="relative w-full sm:w-auto">
           <input
             type="text"
-            placeholder={t.searchPlaceholder}
+            placeholder={tCurrent.searchPlaceholder}
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80 shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -169,7 +171,7 @@ const DashboardPage = ({
         <div className="flex items-center space-x-2">
           <button className="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm shadow-sm">
             <Filter size={16} className="mr-2" />
-            {t.filter}
+            {tCurrent.filter}
           </button>
           {currentViewMode === 'client' && (
             <button
@@ -177,48 +179,48 @@ const DashboardPage = ({
               className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
             >
               <PlusCircle size={16} className="mr-2" />
-              {t.registerNewProject}
+              {tCurrent.registerNewProject}
             </button>
           )}
         </div>
       </div>
-       {currentViewMode === 'contractor' ? (
+      {currentViewMode === 'contractor' ? (
         <>
           <div className="flex border-b border-gray-300 mb-6">
-            <TabButton title={t.tabRecommended} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
-            <TabButton title={t.tabMyTasks} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
-            <TabButton title={t.tabCompletedHistory} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />
+            <TabButton title={tCurrent.tabRecommended} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
+            <TabButton title={tCurrent.tabMyTasks} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
+            <TabButton title={tCurrent.tabCompletedHistory} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />
           </div>
           <div className={`grid grid-cols-1 ${currentViewMode === 'contractor' ? 'md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3'} gap-6 items-start`}>
             {activeDashboardTab === 'recommended' && (
-              (projectsToDisplay.aiRecommendedProjects.length === 0 && projectsToDisplay.openForProposals.length === 0)
-              ? <NoProjectsMessage />
-              : <>
-                  {renderProjectList(projectsToDisplay.aiRecommendedProjects, t.aiRecommendedProjectsTitle, true)}
-                  {renderProjectList(projectsToDisplay.openForProposals, t.contractorOpenForProposals)}
-                </>
+              (Array.isArray(projectsToDisplay.aiRecommendedProjects) && Array.isArray(projectsToDisplay.openForProposals) && projectsToDisplay.aiRecommendedProjects.length === 0 && projectsToDisplay.openForProposals.length === 0)
+                ? <NoProjectsMessage />
+                : <>
+                    {Array.isArray(projectsToDisplay.aiRecommendedProjects) && projectsToDisplay.aiRecommendedProjects.length > 0 && renderProjectList(projectsToDisplay.aiRecommendedProjects, tCurrent.contractorAiRecommendedProjectsTitle, true)}
+                    {Array.isArray(projectsToDisplay.openForProposals) && projectsToDisplay.openForProposals.length > 0 && renderProjectList(projectsToDisplay.openForProposals, tCurrent.contractorOpenForProposals)}
+                  </>
             )}
             {activeDashboardTab === 'my_tasks' && (
-              (projectsToDisplay.activeContracts.length === 0 && projectsToDisplay.myPendingProposals.length === 0)
-              ? <NoProjectsMessage />
-              : <>
-                  {renderProjectList(projectsToDisplay.activeContracts, t.contractorActiveProjects)}
-                  {renderProjectList(projectsToDisplay.myPendingProposals, t.contractorMyPendingProposals)}
-                </>
+              (Array.isArray(projectsToDisplay.activeContracts) && Array.isArray(projectsToDisplay.myPendingProposals) && projectsToDisplay.activeContracts.length === 0 && projectsToDisplay.myPendingProposals.length === 0)
+                ? <NoProjectsMessage />
+                : <>
+                    {Array.isArray(projectsToDisplay.activeContracts) && projectsToDisplay.activeContracts.length > 0 && renderProjectList(projectsToDisplay.activeContracts, tCurrent.contractorActiveProjects)}
+                    {Array.isArray(projectsToDisplay.myPendingProposals) && projectsToDisplay.myPendingProposals.length > 0 && renderProjectList(projectsToDisplay.myPendingProposals, tCurrent.contractorMyPendingProposals)}
+                  </>
             )}
             {activeDashboardTab === 'completed_history' && (
-              (projectsToDisplay.completedContracts.length === 0)
-              ? <NoProjectsMessage />
-              : renderProjectList(projectsToDisplay.completedContracts, t.contractorCompletedProjects)
+              (Array.isArray(projectsToDisplay.completedContracts) && projectsToDisplay.completedContracts.length === 0)
+                ? <NoProjectsMessage />
+                : Array.isArray(projectsToDisplay.completedContracts) && projectsToDisplay.completedContracts.length > 0 && renderProjectList(projectsToDisplay.completedContracts, tCurrent.contractorCompletedProjects)
             )}
           </div>
         </>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
-          {projectsToDisplay.length === 0 ? <NoProjectsMessage /> : renderProjectList(projectsToDisplay, null)}
+          {Array.isArray(projectsToDisplay) && projectsToDisplay.length === 0 ? <NoProjectsMessage /> : Array.isArray(projectsToDisplay) && projectsToDisplay.length > 0 && renderProjectList(projectsToDisplay, null)}
         </div>
       )}
-    </>
+    </div>
   );
 };
 

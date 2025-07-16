@@ -8,7 +8,9 @@ export const initialProjects = [
   {
     id: 'job101',
     name: '新サービス紹介LPデザイン',
+    name_en: 'New Service Landing Page Design',
     clientName: '株式会社スタートアップ支援',
+    clientName_en: 'Startup Support Inc.',
     clientId: 'client101',
     contractorName: null,
     contractorId: null,
@@ -22,18 +24,32 @@ export const initialProjects = [
     completionDate: null,
     description:
       '7月にリリース予定の新サービスの魅力を伝えるランディングページのデザインをお願いします。ターゲットは20代後半～30代の男女。ワイヤーフレームはこちらで用意します。イラスト制作も可能であれば尚可。',
+    description_en:
+      'Please design a landing page to showcase the appeal of our new service scheduled for release in July. The target audience is men and women in their late 20s to 30s. Wireframes will be provided. Illustration skills are a plus.',
     deliverables: 'LPデザインデータ一式（Figma）',
+    deliverables_en: 'Complete LP design files (Figma)',
     deliverableDetails:
       'Figma形式での納品。主要画面（トップ、サービス紹介、料金、会社概要、問い合わせ）のデザイン。スマートフォン表示にも対応。',
+    deliverableDetails_en:
+      'Delivery in Figma format. Design for main screens (Top, Service Introduction, Pricing, Company Info, Contact). Must support smartphone display.',
     acceptanceCriteria: 'デザインカンプ通りの実装、主要ブラウザでの表示確認',
+    acceptanceCriteria_en: 'Implementation matches design comp, display confirmed on major browsers',
     acceptanceCriteriaDetails:
       '納品後5営業日以内に検収。修正は2回までとし、大幅な変更は別途協議。',
+    acceptanceCriteriaDetails_en:
+      'Inspection within 5 business days after delivery. Up to 2 revisions allowed; major changes require separate discussion.',
     scopeOfWork_included:
       'LPデザイン制作、レスポンシブデザイン対応、画像素材選定（フリー素材）',
+    scopeOfWork_included_en:
+      'LP design, responsive design, selection of image materials (free resources)',
     scopeOfWork_excluded:
       'サーバー設定、ドメイン取得、有料画像素材の購入、テキストライティング',
+    scopeOfWork_excluded_en:
+      'Server setup, domain acquisition, purchase of paid images, text writing',
     additionalWorkTerms:
       '大幅なデザイン変更やページ追加が発生する場合は、別途お見積もりとなります。',
+    additionalWorkTerms_en:
+      'Major design changes or additional pages will require a separate estimate.',
     agreementDocLink: null,
     changeOrders: [],
     communicationLogCount: 0,
@@ -43,18 +59,22 @@ export const initialProjects = [
       {
         id: 'job101-m1',
         name: 'デザインカンプ初稿提出',
+        name_en: 'Initial Design Draft Submission',
         amount: 40000,
         status: 'pending',
         dueDate: '2025-06-20',
         description: 'PC・スマホ両対応のデザインカンプを提出。',
+        description_en: 'Submit design comp for both PC and smartphone.',
       },
       {
         id: 'job101-m2',
         name: '最終デザインデータ納品',
+        name_en: 'Final Design Data Delivery',
         amount: 40000,
         status: 'pending',
         dueDate: '2025-07-10',
         description: '修正対応後、デザインデータ一式を納品。',
+        description_en: 'Deliver all design files after revisions.',
       },
     ],
     requiredSkills: [
@@ -63,6 +83,12 @@ export const initialProjects = [
       'Figma',
       'レスポンシブデザイン',
     ],
+    requiredSkills_en: [
+      'Web Design',
+      'LP Creation',
+      'Figma',
+      'Responsive Design',
+    ],
     clientRating: { averageScore: 4.5, totalReviews: 12 },
     imageUrl:
       'https://placehold.co/600x400/7C3AED/FFFFFF?text=LP%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3',
@@ -70,6 +96,8 @@ export const initialProjects = [
     aiRecommendationScore: 0.9,
     aiRecommendationReason:
       'あなたのスキル「Figma」「ウェブデザイン」に強く合致しています！',
+    aiRecommendationReason_en:
+      'Your skills "Figma" and "Web Design" are a strong match for this project!',
     proposals: [
       {
         id: 'prop_user555_for_job101',
@@ -81,12 +109,16 @@ export const initialProjects = [
           totalReviews: 15,
           identityVerified: true,
           skillsCertified: ['ウェブデザイン'],
+          skillsCertified_en: ['Web Design'],
         },
         contractorResellingRisk: 5,
         proposalText:
           'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
+        proposalText_en:
+          'I have extensive experience in LP design. I can create in Figma and support responsive design. I would love to take on this project.',
         proposedAmount: 78000,
         estimatedDeliveryTime: '2週間',
+        estimatedDeliveryTime_en: '2 weeks',
         submissionDate: '2025-06-06',
         status: 'pending_review',
       },
