@@ -8,7 +8,7 @@ export const initialProjects = [
   {
     id: 'job101',
     name: '新サービス紹介LPデザイン',
-    name_en: 'New Service Landing Page Design',
+    name_en: 'Landing Page Design for New Service',
     clientName: '株式会社スタートアップ支援',
     clientName_en: 'Startup Support Inc.',
     clientId: 'client101',
@@ -25,31 +25,31 @@ export const initialProjects = [
     description:
       '7月にリリース予定の新サービスの魅力を伝えるランディングページのデザインをお願いします。ターゲットは20代後半～30代の男女。ワイヤーフレームはこちらで用意します。イラスト制作も可能であれば尚可。',
     description_en:
-      'Please design a landing page to showcase the appeal of our new service scheduled for release in July. The target audience is men and women in their late 20s to 30s. Wireframes will be provided. Illustration skills are a plus.',
+      'Design a landing page to highlight our new service launching in July. Target audience: men and women in their late 20s to 30s. Wireframes will be provided. Illustration skills are a bonus.',
     deliverables: 'LPデザインデータ一式（Figma）',
-    deliverables_en: 'Complete LP design files (Figma)',
+    deliverables_en: 'All LP design files (Figma)',
     deliverableDetails:
       'Figma形式での納品。主要画面（トップ、サービス紹介、料金、会社概要、問い合わせ）のデザイン。スマートフォン表示にも対応。',
     deliverableDetails_en:
-      'Delivery in Figma format. Design for main screens (Top, Service Introduction, Pricing, Company Info, Contact). Must support smartphone display.',
+      'Deliver in Figma format. Includes designs for main screens (Home, Service Introduction, Pricing, About Us, Contact). Must be mobile responsive.',
     acceptanceCriteria: 'デザインカンプ通りの実装、主要ブラウザでの表示確認',
-    acceptanceCriteria_en: 'Implementation matches design comp, display confirmed on major browsers',
+    acceptanceCriteria_en: 'Implementation matches design comp and displays correctly on major browsers',
     acceptanceCriteriaDetails:
       '納品後5営業日以内に検収。修正は2回までとし、大幅な変更は別途協議。',
     acceptanceCriteriaDetails_en:
-      'Inspection within 5 business days after delivery. Up to 2 revisions allowed; major changes require separate discussion.',
+      'Client will inspect within 5 business days after delivery. Up to 2 rounds of revisions allowed; major changes require separate discussion.',
     scopeOfWork_included:
       'LPデザイン制作、レスポンシブデザイン対応、画像素材選定（フリー素材）',
     scopeOfWork_included_en:
-      'LP design, responsive design, selection of image materials (free resources)',
+      'LP design, responsive layout, selection of free image resources',
     scopeOfWork_excluded:
       'サーバー設定、ドメイン取得、有料画像素材の購入、テキストライティング',
     scopeOfWork_excluded_en:
-      'Server setup, domain acquisition, purchase of paid images, text writing',
+      'Server setup, domain registration, purchase of paid images, copywriting',
     additionalWorkTerms:
       '大幅なデザイン変更やページ追加が発生する場合は、別途お見積もりとなります。',
     additionalWorkTerms_en:
-      'Major design changes or additional pages will require a separate estimate.',
+      'Major design changes or adding pages will require a separate quote.',
     agreementDocLink: null,
     changeOrders: [],
     communicationLogCount: 0,
@@ -94,28 +94,20 @@ export const initialProjects = [
       'https://placehold.co/600x400/7C3AED/FFFFFF?text=LP%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3',
     allowSubcontracting: false,
     aiRecommendationScore: 0.9,
-    aiRecommendationReason:
-      'あなたのスキル「Figma」「ウェブデザイン」に強く合致しています！',
+    description_en:
+      'Design a landing page that highlights the appeal of our new service launching in July. Target audience: men and women in their late 20s to 30s. Wireframes will be provided. Illustration skills are a plus.',
     aiRecommendationReason_en:
-      'Your skills "Figma" and "Web Design" are a strong match for this project!',
+      'Your skills in Figma and web design are a great fit for this project! Deliverables in Figma format. Includes designs for main screens (Home, Service Introduction, Pricing, About Us, Contact). Must be mobile responsive. Client will inspect within 5 business days after delivery. Up to 2 rounds of revisions allowed; major changes require separate discussion. LP design, responsive layout, selection of free image resources. Server setup, domain registration, purchase of paid images, copywriting. Major design changes or adding pages will require a separate quote.',
     proposals: [
       {
         id: 'prop_user555_for_job101',
-        projectId: 'job101',
         contractorId: loggedInUserDataGlobal.id,
-        contractorName: loggedInUserDataGlobal.name,
         contractorReputation: {
-          averageScore: 4.8,
           totalReviews: 15,
-          identityVerified: true,
           skillsCertified: ['ウェブデザイン'],
-          skillsCertified_en: ['Web Design'],
         },
-        contractorResellingRisk: 5,
-        proposalText:
-          'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
-        proposalText_en:
-          'I have extensive experience in LP design. I can create in Figma and support responsive design. I would love to take on this project.',
+        proposalText: 'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
+        proposalText_en: 'I have extensive experience in LP design. I can create in Figma and support responsive design. I would love to take on this project.',
         proposedAmount: 78000,
         estimatedDeliveryTime: '2週間',
         estimatedDeliveryTime_en: '2 weeks',
@@ -229,6 +221,16 @@ export const initialProjects = [
     description:
       '創業50年を迎える老舗ベーカリー「山田ベーカリー」のブランドイメージを一新するためのロゴマーク、タグライン、および基本的なブランドガイドラインの制作。',
     deliverables: 'ロゴデータ（AI, PNG, JPG）、ブランドガイドライン（PDF）',
+    name_en: 'Corporate Logo Renewal Project',
+    clientName_en: 'Yamada Bakery',
+    description_en: 'Create a new logo, tagline, and basic brand guidelines for Yamada Bakery, a long-established bakery celebrating its 50th anniversary.',
+    deliverables_en: 'Logo data (AI, PNG, JPG), brand guidelines (PDF)',
+    deliverableDetails_en: 'Logo mark (color, monochrome, reversed), tagline, basic design system (color scheme, specified fonts), brand guidelines including prohibited usage examples.',
+    acceptanceCriteria_en: 'Delivery matches the final approved design proposal.',
+    acceptanceCriteriaDetails_en: 'Inspection is complete upon final confirmation and approval by the client.',
+    scopeOfWork_included_en: 'Propose 3 logo designs, refine the selected design, create brand guidelines (approx. 10 pages).',
+    scopeOfWork_excluded_en: 'Designing promotional materials (business cards, flyers, etc.), incorporating the logo into the website.',
+    additionalWorkTerms_en: 'Promotional material design will be quoted separately. Significant increase in guideline pages may incur additional costs.',
     deliverableDetails:
       'ロゴマーク（カラー、モノクロ、反転）、タグライン、基本デザインシステム（カラースキーム、指定フォント）、使用禁止例などを記載したブランドガイドライン。',
     acceptanceCriteria: '最終承認されたデザイン案通りの納品',
@@ -357,26 +359,26 @@ export const initialProjects = [
     dueDate: '2025-07-05',
     description:
       '既存モバイルアプリのUI改善提案とモック作成。週1回の定例ミーティング必須。',
-    description_en: 'UI improvement proposal and mock creation for an existing mobile app. Weekly meetings required.',
+    description_en: 'Propose UI improvements and create mockups for an existing mobile app. Weekly meetings are required.',
     deliverables: 'UI改善提案資料（PDF）、主要画面モックアップ（Figma）',
     deliverables_en: 'UI improvement proposal document (PDF), main screen mockups (Figma)',
     deliverableDetails:
       '現状分析レポート、UI改善案（3パターン）、主要5画面のインタラクティブモックアップ。',
-    deliverableDetails_en: 'Current state analysis report, 3 UI improvement ideas, interactive mockups for 5 main screens.',
+    deliverableDetails_en: 'Report on current state analysis, 3 UI improvement ideas, and interactive mockups for 5 main screens.',
     acceptanceCriteria: '提案内容がユーザビリティテストで高評価を得ること',
-    acceptanceCriteria_en: 'Proposal receives high marks in usability testing',
+    acceptanceCriteria_en: 'Proposal receives high marks in usability testing.',
     acceptanceCriteriaDetails:
       'ユーザビリティテストは依頼者側で実施。テスト結果に基づき、致命的な問題がないことを確認。',
-    acceptanceCriteriaDetails_en: 'Usability testing is conducted by the client. No critical issues based on test results.',
+    acceptanceCriteriaDetails_en: 'Usability testing will be conducted by the client. No critical issues should be found based on the test results.',
     scopeOfWork_included:
       '現状分析、ユーザーインタビュー（3名まで）、競合調査、改善提案、ワイヤーフレーム作成、モックアップ作成',
-    scopeOfWork_included_en: 'Current state analysis, user interviews (up to 3), competitor research, improvement proposals, wireframe creation, mockup creation',
+    scopeOfWork_included_en: 'Current state analysis, user interviews (up to 3 people), competitor research, improvement proposals, wireframe creation, mockup creation.',
     scopeOfWork_excluded:
       '実装、A/Bテストの実施、ユーザーインタビュー対象者のリクルーティング',
-    scopeOfWork_excluded_en: 'Implementation, A/B testing, recruiting interview subjects',
+    scopeOfWork_excluded_en: 'Implementation, A/B testing, recruiting interview subjects.',
     additionalWorkTerms:
       '追加画面のモック作成は1画面あたり20,000円。ユーザビリティテストの設計・実施サポートは別途お見積もり。',
-    additionalWorkTerms_en: 'Additional mockups: ¥20,000 per screen. Usability test design/support: separate estimate.',
+    additionalWorkTerms_en: 'Additional mockups: ¥20,000 per screen. Usability test design/support will be quoted separately.',
     agreementDocLink: 'agreement_project4.pdf',
     changeOrders: [],
     communicationLogCount: 12,
@@ -392,7 +394,7 @@ export const initialProjects = [
         status_en: 'Approved',
         dueDate: '2025-06-10',
         description: 'ユーザーインタビューと競合分析。',
-        description_en: 'User interviews and competitor analysis.',
+        description_en: 'Conduct user interviews and competitor analysis.',
         submittedFiles: [
           { name: 'analysis_report_v1.pdf', date: '2025-06-09' },
         ],
@@ -402,7 +404,7 @@ export const initialProjects = [
             type_en: 'Approval',
             date: '2025-06-10',
             comment: '分析内容、課題認識ともに的確です。次へ進んでください。',
-            comment_en: 'Analysis and issue recognition are accurate. Please proceed.',
+            comment_en: 'The analysis and issue identification are accurate. Please proceed.',
           },
         ],
       },
@@ -416,7 +418,7 @@ export const initialProjects = [
         dueDate: '2025-06-25',
         description:
           '具体的な改善UI案（3パターン）と主要画面のワイヤーフレームを作成。',
-        description_en: 'Create 3 specific UI improvement ideas and wireframes for main screens.',
+        description_en: 'Create 3 specific UI improvement ideas and wireframes for the main screens.',
         submittedFiles: [],
         feedbackHistory: [],
       },
@@ -459,32 +461,32 @@ export const initialProjects = [
     completionDate: null,
     description:
       '既存コーポレートサイトのフルリニューアル。デザインとコーディングを含む。現在、仕様変更の範囲について依頼者と意見の相違が発生し、協議中です。',
-    description_en: 'Full renewal of existing corporate website, including design and coding. Currently in discussion due to differences in scope changes with the client.',
+    description_en: 'Complete renewal of the existing corporate website, including design and coding. Currently in discussion due to differences in the scope of changes with the client.',
     deliverables:
       'ウェブサイト一式（HTML, CSS, JS, 画像素材）、デザインカンプ（Photoshop）',
-    deliverables_en: 'Complete website (HTML, CSS, JS, images), design comps (Photoshop)',
+    deliverables_en: 'Full website (HTML, CSS, JS, image assets), design comps (Photoshop)',
     deliverableDetails: '全10ページ構成。お問い合わせフォーム機能を含む。',
-    deliverableDetails_en: '10 pages total. Includes contact form functionality.',
+    deliverableDetails_en: 'Consists of 10 pages in total. Includes contact form functionality.',
     acceptanceCriteria: '全ページのデザインと機能が仕様書通りであること',
-    acceptanceCriteria_en: 'All pages match design and functionality specifications.',
+    acceptanceCriteria_en: 'All pages match the design and functionality specifications.',
     acceptanceCriteriaDetails: 'テスト環境での動作確認後、依頼者による承認。',
-    acceptanceCriteriaDetails_en: 'Operation confirmed in test environment, then client approval.',
+    acceptanceCriteriaDetails_en: 'Operation confirmed in the test environment, then client approval.',
     scopeOfWork_included:
       'デザイン制作（トップページ＋下層9ページ）、HTML/CSS/JSコーディング、レスポンシブ対応、基本的なSEO設定',
-    scopeOfWork_included_en: 'Design (top page + 9 subpages), HTML/CSS/JS coding, responsive support, basic SEO settings',
+    scopeOfWork_included_en: 'Design (top page + 9 subpages), HTML/CSS/JS coding, responsive support, basic SEO settings.',
     scopeOfWork_excluded:
       'サーバー移管作業、公開後の保守運用、コンテンツ作成（テキスト・画像素材は依頼者支給）',
-    scopeOfWork_excluded_en: 'Server migration, post-launch maintenance, content creation (text/images provided by client)',
+    scopeOfWork_excluded_en: 'Server migration, post-launch maintenance, content creation (text/images provided by client).',
     additionalWorkTerms:
       '仕様変更や追加ページ作成は、都度協議の上、追加費用を決定する。',
-    additionalWorkTerms_en: 'Scope changes or additional pages: cost determined through discussion each time.',
+    additionalWorkTerms_en: 'Scope changes or additional pages: cost will be determined through discussion each time.',
     agreementDocLink: 'agreement_dispute_01.pdf',
     changeOrders: [
       {
         id: 'co_d1',
         date: '2025-04-15',
         description: '追加ページ作成依頼（未合意）',
-        description_en: 'Request for additional page creation (not agreed yet)',
+        description_en: 'Request for additional page creation (not yet agreed)',
       },
     ],
     communicationLogCount: 35,
@@ -492,7 +494,7 @@ export const initialProjects = [
     hasDispute: true,
     disputeDetails:
       '仕様変更の範囲と追加費用について合意に至らず、作業が中断しています。',
-    disputeDetails_en: 'Work is suspended due to lack of agreement on scope changes and additional costs.',
+    disputeDetails_en: 'Work is suspended due to lack of agreement on the scope changes and additional costs.',
     milestones: [
       {
         id: 'job_d01-m1',
@@ -503,7 +505,7 @@ export const initialProjects = [
         status_en: 'Approved',
         dueDate: '2025-04-10',
         description: 'トップページと主要下層ページのデザイン承認済み。',
-        description_en: 'Design for top page and main subpages approved.',
+        description_en: 'Designs for the top page and main subpages have been approved.',
       },
       {
         id: 'job_d01-m2',
@@ -514,7 +516,7 @@ export const initialProjects = [
         status_en: 'Submitted',
         dueDate: '2025-04-25',
         description: '主要機能実装済み。追加仕様について協議中。',
-        description_en: 'Main features implemented. Additional specifications under discussion.',
+        description_en: 'Main features have been implemented. Additional specifications are under discussion.',
       },
       {
         id: 'job_d01-m3',
@@ -525,7 +527,7 @@ export const initialProjects = [
         status_en: 'Pending',
         dueDate: '2025-05-10',
         description: '全機能実装後、最終確認。',
-        description_en: 'Final confirmation after all features implemented.',
+        description_en: 'Final confirmation after all features have been implemented.',
       },
     ],
     requiredSkills: ['HTML', 'CSS', 'JavaScript', 'PHP'],
@@ -578,7 +580,7 @@ export const initialProjects = [
     clientRating: { averageScore: 4.7, totalReviews: 8 },
     allowSubcontracting: false,
     aiRecommendationScore: 0.85, // High score
-    aiRecommendationReason: 'あなたのスキル「React」「Node.js」に強く合致しています！',
+    aiRecommendationReason_en: 'Your skills in React and Node.js are a perfect match for this project!',
     proposals: [], // No proposals from user555 yet
     milestones: [
       {
