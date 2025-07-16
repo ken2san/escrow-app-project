@@ -374,7 +374,7 @@ const ProjectCard = ({
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-teal-700 hover:text-teal-800">
-              {project.name}
+              {getField(project, 'name')}
             </h3>
             <span
               className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center ${getStatusPillStyle(
@@ -387,7 +387,7 @@ const ProjectCard = ({
           </div>
           <div className="text-xs text-gray-500 mb-1">
             <span>
-              {t.client}: {project.clientName}
+              {t.client}: {getField(project, 'clientName')}
             </span>
           </div>
           {project.clientRating && (
@@ -403,10 +403,10 @@ const ProjectCard = ({
           )}
           <p
             className="text-sm text-gray-700 mb-3 h-10 overflow-hidden text-ellipsis"
-            title={project.description}
+            title={getField(project, 'description')}
           >
-            {project.description.substring(0, 100)}
-            {project.description.length > 100 ? '...' : ''}
+            {getField(project, 'description').substring(0, 100)}
+            {getField(project, 'description').length > 100 ? '...' : ''}
           </p>
           <div className="flex justify-between items-center text-sm mb-3">
             <p className="font-bold text-gray-800">
