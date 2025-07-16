@@ -119,7 +119,9 @@ export const initialProjects = [
   {
     id: 'job103',
     name: 'PR記事作成依頼（月5本）',
+    name_en: 'PR Article Writing Request (5 per month)',
     clientName: '田中 さとし',
+    clientName_en: 'Satoshi Tanaka',
     clientId: 'user555',
     contractorName: null,
     contractorId: null,
@@ -129,18 +131,30 @@ export const initialProjects = [
     fundsDeposited: 0,
     fundsReleased: 0,
     status: '募集中',
+    status_en: 'Open for Applications',
     dueDate: '2025-06-30',
     description:
       '弊社サービスの認知度向上のため、指定キーワードに基づいたPR記事を月5本作成・納品していただけるライター様を募集します。1記事あたり2000字程度。SEOライティング経験者歓迎。継続依頼の可能性あり。',
+    description_en:
+      'We are seeking a writer to create and deliver 5 PR articles per month based on specified keywords to increase awareness of our service. Each article should be around 2,000 characters. SEO writing experience is welcome. Possible ongoing work.',
     deliverables: 'PR記事5本（Word形式）、各記事のキーワードリスト',
+    deliverables_en: '5 PR articles (Word format), keyword list for each article',
     deliverableDetails:
       '各記事2000字以上。指定キーワードを適切に含み、読者の検索意図に合致する内容であること。コピーコンテンツでないこと。',
+    deliverableDetails_en:
+      'Each article must be at least 2,000 characters, include specified keywords appropriately, and match the reader’s search intent. No duplicate content.',
     acceptanceCriteria: '指定キーワードでの検索順位目標達成、誤字脱字なし',
+    acceptanceCriteria_en: 'Achieve target search ranking for specified keywords, no typos or errors',
     acceptanceCriteriaDetails:
       '納品後3営業日以内に検収。修正は各記事1回まで。文法・表現の誤りがないこと。',
+    acceptanceCriteriaDetails_en:
+      'Inspection within 3 business days after delivery. Each article may be revised once. No grammatical or expression errors.',
     scopeOfWork_included: '記事執筆、キーワードリサーチ、SEO観点での構成案作成',
+    scopeOfWork_included_en: 'Article writing, keyword research, creating structure proposals from an SEO perspective',
     scopeOfWork_excluded: '画像選定、CMSへの入稿作業、SNSでの拡散',
+    scopeOfWork_excluded_en: 'Image selection, CMS posting, social media sharing',
     additionalWorkTerms: '追加記事は1本あたり10,000円（税別）とします。',
+    additionalWorkTerms_en: 'Additional articles will be charged at ¥10,000 (excluding tax) per article.',
     agreementDocLink: null,
     changeOrders: [],
     communicationLogCount: 0,
@@ -150,13 +164,17 @@ export const initialProjects = [
       {
         id: 'job103-m1',
         name: '初回記事5本納品',
+        name_en: 'First Delivery of 5 Articles',
         amount: 50000,
         status: 'pending',
+        status_en: 'Pending',
         dueDate: '2025-06-30',
         description: '指定キーワードに基づく記事5本',
+        description_en: '5 articles based on specified keywords',
       },
     ],
     requiredSkills: ['SEOライティング', 'コンテンツ作成', 'キーワードリサーチ'],
+    requiredSkills_en: ['SEO Writing', 'Content Creation', 'Keyword Research'],
     clientRating: { averageScore: null, totalReviews: 0 },
     imageUrl:
       'https://placehold.co/600x400/DB2777/FFFFFF?text=PR%E8%A8%98%E4%BA%8B%E4%BD%9C%E6%88%90',
@@ -164,12 +182,15 @@ export const initialProjects = [
     aiRecommendationScore: 0.75,
     aiRecommendationReason:
       'あなたの「コンテンツ作成」スキルと過去の類似案件実績に合致しています。',
+    aiRecommendationReason_en:
+      'Your content creation skills and past experience with similar projects are a great match.',
     proposals: [
       {
         id: 'prop001',
         projectId: 'job103',
         contractorId: 'user888',
         contractorName: '鈴木 一郎',
+        contractorName_en: 'Ichiro Suzuki',
         contractorReputation: {
           averageScore: 4.9,
           totalReviews: 25,
@@ -179,8 +200,11 @@ export const initialProjects = [
         contractorResellingRisk: 15,
         proposalText:
           'SEOライティング歴5年の鈴木と申します。貴社サービスに貢献できる質の高い記事を迅速に作成いたします。過去実績はポートフォリオをご覧ください。月5本、2000字/記事でご提案の予算内で対応可能です。納期も柔軟に対応できます。',
+        proposalText_en:
+          'My name is Ichiro Suzuki and I have 5 years of experience in SEO writing. I will quickly create high-quality articles to contribute to your service. Please see my portfolio for past work. I can deliver 5 articles per month, 2,000 characters each, within your proposed budget. I am flexible with deadlines.',
         proposedAmount: 50000,
         estimatedDeliveryTime: '各記事3営業日以内',
+        estimatedDeliveryTime_en: 'Within 3 business days per article',
         submissionDate: '2025-06-03',
         status: 'pending_review',
       },
@@ -189,6 +213,7 @@ export const initialProjects = [
         projectId: 'job103',
         contractorId: 'user999',
         contractorName: '高橋 文子',
+        contractorName_en: 'Ayako Takahashi',
         contractorReputation: {
           averageScore: 4.7,
           totalReviews: 18,
@@ -198,12 +223,19 @@ export const initialProjects = [
         contractorResellingRisk: 5,
         proposalText:
           'ライターの高橋です。特にIT・テクノロジー分野のPR記事を得意としております。キーワードリサーチから構成案作成、執筆まで一貫して対応可能です。ご提示の条件でぜひお受けしたく存じます。',
+        proposalText_en:
+          'I am Ayako Takahashi, a writer specializing in PR articles for IT and technology fields. I can handle everything from keyword research and structure proposals to writing. I would be happy to accept your offer under the stated conditions.',
         proposedAmount: 48000,
         estimatedDeliveryTime: '月5本を月末までに納品',
+        estimatedDeliveryTime_en: 'Deliver 5 articles by the end of the month',
         submissionDate: '2025-06-04',
         status: 'pending_review',
       },
     ],
+    // --- 英語フィールド追加 ---
+    comment_en: null,
+    contractorResponse_en: null,
+    status_en: 'Open for Applications',
   },
   {
     id: 1,
