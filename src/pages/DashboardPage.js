@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
+import { translations } from '../utils/translations';
 
 const DashboardPage = ({
   projects,
@@ -91,10 +92,10 @@ const DashboardPage = ({
         allProjects.filter(
           (p) =>
             p.contractorId === loggedInUser.id &&
-            (p.status === t.statusInProgress ||
-              p.status === t.statusWorkReady ||
-              p.status === t.agreementPending ||
-              p.status === t.statusInDispute)
+            ([t.statusInProgress, translations.ja.statusInProgress].includes(p.status) ||
+             [t.statusWorkReady, translations.ja.statusWorkReady].includes(p.status) ||
+             [t.agreementPending, translations.ja.agreementPending].includes(p.status) ||
+             [t.statusInDispute, translations.ja.statusInDispute].includes(p.status))
         )
       ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
