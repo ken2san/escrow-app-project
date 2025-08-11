@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Paperclip, CheckCircle, AlertOctagon, FileUp, Banknote } from 'lucide-react';
+import React from 'react';
 import { getStatusPillStyle, getStatusIcon } from '../../utils/helpers';
 
 const MilestoneItem = ({ milestone, project, userRole, lang, t, onUpdateMilestoneStatus }) => {
-  const [showRejectionInput, setShowRejectionInput] = useState(false);
-  const [rejectionReasonInput, setRejectionReasonInput] = useState('');
+  // const [showRejectionInput, setShowRejectionInput] = useState(false);
+  // const [rejectionReasonInput, setRejectionReasonInput] = useState('');
 
   const getMilestoneStatusText = (status) => {
     switch (status) {
@@ -18,27 +17,7 @@ const MilestoneItem = ({ milestone, project, userRole, lang, t, onUpdateMileston
     }
   };
 
-  const handleStartWork = () =>
-    onUpdateMilestoneStatus(project.id, milestone.id, 'in_progress');
-  const handleSubmitDeliverables = () =>
-    onUpdateMilestoneStatus(project.id, milestone.id, 'submitted', {
-      submittedFile: `deliverable_${milestone.id}.zip`,
-    });
-  const handleApproveMilestone = () =>
-    onUpdateMilestoneStatus(project.id, milestone.id, 'approved');
-  const handleRejectMilestone = () => {
-    if (!rejectionReasonInput.trim()) {
-      alert(lang === 'ja' ? '差戻し理由を入力してください。' : 'Please enter a rejection reason.');
-      return;
-    }
-    onUpdateMilestoneStatus(project.id, milestone.id, 'rejected', {
-      rejectionReason: rejectionReasonInput,
-    });
-    setShowRejectionInput(false);
-    setRejectionReasonInput('');
-  };
-  const handleExecutePayment = () =>
-    onUpdateMilestoneStatus(project.id, milestone.id, 'paid');
+  // Unused handlers and state removed for lint clean-up
 
   return (
     <div className="border-t border-gray-200 py-3 px-1 first:border-t-0">
