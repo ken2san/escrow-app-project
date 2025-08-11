@@ -264,7 +264,9 @@ const ProjectCard = ({
                             name: getField(prop, 'name'),
                             description: getField(prop, 'description'),
                             proposalText: getField(prop, 'proposalText'),
-                            estimatedDeliveryTime: getField(prop, 'estimatedDeliveryTime')
+                            estimatedDeliveryTime: getField(prop, 'estimatedDeliveryTime'),
+                            contractorName: getField(prop, 'contractorName'),
+                            contractorName_en: getField(prop, 'contractorName_en')
                           }}
                           onViewDetails={openProposalDetailsModal}
                           lang={currentLanguage}
@@ -348,11 +350,13 @@ const ProjectCard = ({
             : 'shadow-lg hover:shadow-xl'
         } ${isRecommendedCard ? 'border-2 border-yellow-400' : ''}`}
       >
-        {isRecommendedCard && project.aiRecommendationReason && (
+        {isRecommendedCard && (project.aiRecommendationReason || project.aiRecommendationReason_en) && (
           <div className="p-2 bg-yellow-100 border-b border-yellow-300 text-xs text-yellow-700 flex items-center">
             <Zap size={14} className="mr-1.5 text-yellow-500" />
             <strong>{t.aiRecommendationReasonPrefix}</strong>
-            {project.aiRecommendationReason}
+            {currentLanguage === 'en' && project.aiRecommendationReason_en
+              ? project.aiRecommendationReason_en
+              : project.aiRecommendationReason}
           </div>
         )}
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>

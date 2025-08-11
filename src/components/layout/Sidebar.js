@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 
 const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage }) => {
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   // Helper to get correct path
   const getPath = (page) => {
@@ -40,7 +42,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
               size={isSidebarOpen ? 48 : 28}
               className="mx-auto mb-1 text-gray-400"
             />
-            <p className="text-sm font-medium">{loggedInUser.name}</p>
+            <p className="text-sm font-medium">{(i18n.language === 'en' && loggedInUser.name_en) ? loggedInUser.name_en : loggedInUser.name}</p>
             <p className="text-xs text-gray-400">
               {t('currentRoleIs')}{' '}
               {currentViewMode === 'client'
@@ -53,7 +55,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
           <UserCircle
             size={28}
             className="mx-auto text-gray-400 mb-2"
-            title={`${loggedInUser.name} (${t('currentRoleIs')} ${
+            title={`${(i18n.language === 'en' && loggedInUser.name_en) ? loggedInUser.name_en : loggedInUser.name} (${t('currentRoleIs')} ${
               currentViewMode === 'client'
                 ? t('userRoleClient')
                 : t('userRoleContractor')

@@ -1,6 +1,7 @@
 export const loggedInUserDataGlobal = {
   id: 'user555',
   name: '田中 さとし',
+  name_en: 'Satoshi Tanaka',
 };
 
 // --- ダミーデータ ---

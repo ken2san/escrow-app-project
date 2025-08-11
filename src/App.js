@@ -25,7 +25,7 @@ import { callGeminiAPI } from './utils/api';
 import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
 
 export default function App() {
-  const [loggedInUser] = useState({ id: loggedInUserDataGlobal.id, name: loggedInUserDataGlobal.name });
+  const [loggedInUser] = useState({ id: loggedInUserDataGlobal.id, name: loggedInUserDataGlobal.name, name_en: loggedInUserDataGlobal.name_en });
   const [projects, setProjects] = useState(initialProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
