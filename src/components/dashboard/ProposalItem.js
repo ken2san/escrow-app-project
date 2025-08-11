@@ -53,18 +53,18 @@ const ProposalItem = ({ proposal, lang, t, isAnyProposalSelectedOnProject, onVie
             className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md flex items-center"
           >
             <Eye size={14} className="mr-1" />
-            {t.viewProposalDetails}
+            {t('viewProposalDetails')}
           </button>
         )}
       {proposal.status === 'accepted' && (
         <span className="text-xs text-green-600 font-semibold flex items-center">
           <CheckCircle size={14} className="mr-1" />
-          {t.proposalStatusSelected}
+          {t('proposalStatusSelected')}
         </span>
       )}
       {proposal.status === 'archived' && (
         <span className="text-xs text-gray-500 font-semibold">
-          {t.proposalStatusArchived}
+          {t('proposalStatusArchived')}
         </span>
       )}
     </div>

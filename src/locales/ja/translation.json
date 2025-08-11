@@ -94,5 +94,6 @@
   "depositFunds": "入金する",
   "fullDescription": "詳細説明",
   "noTitle": "タイトル未設定",
-  "proposalsReceived": "{{count}} 件の提案あり"
+  "proposalsReceived": "{{count}} 件の提案あり",
+  "viewProposalDetails": "提案詳細を見る"
 }

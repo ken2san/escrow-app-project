@@ -81,4 +81,5 @@
   "fullDescription": "Full Description",
   "noTitle": "No Title",
   "proposalsReceived": "{{count}} proposals received"
+  ,"viewProposalDetails": "View Proposal Details"
 }
