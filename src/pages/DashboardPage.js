@@ -118,7 +118,8 @@ const DashboardPage = ({
     if (!list || list.length === 0) {
       return null;
     }
-
+    // handleProjectClickが未定義の場合はダミー関数を使う
+    const safeHandleProjectClick = typeof handleProjectClick === 'function' ? handleProjectClick : () => {};
     return (
       <>
         {title && (
@@ -131,19 +132,20 @@ const DashboardPage = ({
           <ProjectCard
             key={project.id}
             project={project}
-            onSelect={handleProjectClick}
+            onSelect={(project, forceSelect) => safeHandleProjectClick(project, forceSelect)}
             isSelected={selectedProjectId === project.id}
             currentUser={loggedInUser}
             t={t}
             currentViewMode={currentViewMode}
             isRecommendedCard={isRecommended}
             setActivePage={setActivePage}
+            navigate={navigate}
             {...props}
           />
         ))}
       </>
     );
-  };
+  } // ←ここでrenderProjectListを閉じる
 
   // 修正: 「案件なし」メッセージを表示するためのコンポーネント
   const NoProjectsMessage = () => (
@@ -220,6 +222,6 @@ const DashboardPage = ({
       )}
     </div>
   );
-};
+}
 
 export default DashboardPage;

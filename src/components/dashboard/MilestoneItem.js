@@ -36,12 +36,24 @@ const MilestoneItem = ({ milestone, project, userRole, lang, t, onUpdateMileston
       </div>
       <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-0.5">
   <span>{t('dueDate')}: {milestone.dueDate || '-'}</span>
-  <span>{t('totalAmount')}: ¥{milestone.amount ? milestone.amount.toLocaleString() : '-'}</span>
+  <span>{t('totalAmount')}: {milestone.amount ? milestone.amount.toLocaleString() : '-'} pt</span>
       </div>
       {milestone.description && (
         <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-1.5 rounded">
           {milestone.description}
         </p>
+      )}
+      {/* 支払いボタン（クライアントで未払い・承認済みの場合のみ表示） */}
+      {userRole === 'client' && milestone.status === 'approved' && project.fundsDeposited >= milestone.amount && (
+        <button
+          className="mt-2 px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded transition"
+          onClick={() => onUpdateMilestoneStatus(project.id, milestone.id, 'paid')}
+        >
+          {t('payWithPoints') || 'ポイントで支払う'}
+        </button>
+      )}
+      {userRole === 'client' && milestone.status === 'approved' && project.fundsDeposited < milestone.amount && (
+        <div className="mt-2 text-xs text-red-500">{t('insufficientEscrow') || 'エスクロー残高が不足しています'}</div>
       )}
     </div>
   );

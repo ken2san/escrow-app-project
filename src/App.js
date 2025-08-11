@@ -73,7 +73,9 @@ export default function App() {
   const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] = useState(false);
   const [proposalForDetails, setProposalForDetails] = useState(null);
 
-  const selectedProjectForReview = projects.find((p) => p.id === selectedProjectId);
+  // ContractReviewページ用: 選択中プロジェクトを明示的に保持
+  const [projectForContractReview, setProjectForContractReview] = useState(null);
+  const selectedProjectForReview = projectForContractReview || projects.find((p) => p.id === selectedProjectId);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'ja' ? 'en' : 'ja';
@@ -117,6 +119,7 @@ export default function App() {
   const navigateToContractReview = (project) => {
     if (project?.id) {
       setSelectedProjectId(project.id);
+      setProjectForContractReview(project);
       navigate('contractReview');
     }
   };
@@ -155,7 +158,7 @@ export default function App() {
     }));
     if (projectToNavigate) {
       setSelectedProjectId(projectToNavigate.id);
-      alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName));
+      // alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName)); // 不要な警告を削除
       navigateToContractReview(projectToNavigate);
       closeProposalDetailsModal();
     }
@@ -167,9 +170,9 @@ export default function App() {
   };
 
   const handleFinalizeContract = (projectId) => {
-    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t.statusWorkReady } : p));
-    alert(t.contractFinalizedMessage);
-    navigate('dashboard');
+  setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t('statusWorkReady') } : p));
+  // alert(t.contractFinalizedMessage); // 不要な警告を削除
+  navigate('dashboard');
   };
 
   const handleExecuteDeposit = (projectId, amount) => {
@@ -195,17 +198,27 @@ export default function App() {
     setProjects(prev => prev.map(p => {
       if (p.id !== projectId) return p;
       let updatedFundsReleased = p.fundsReleased;
+      let updatedFundsDeposited = p.fundsDeposited;
       const updatedMilestones = p.milestones.map(m => {
         if (m.id !== milestoneId) return m;
         const newMilestone = { ...m, status: newStatus };
         if (newStatus === 'paid') {
           updatedFundsReleased += m.amount;
+          updatedFundsDeposited -= m.amount;
           newMilestone.paidDate = new Date().toISOString().split('T')[0];
+          // 履歴追加
+          mockTransactions.push({
+            id: `tx_${Date.now()}`,
+            type: 'release',
+            amount: -m.amount,
+            date: new Date().toISOString().split('T')[0],
+            description: `マイルストーン支払い: ${m.name}`,
+          });
         }
         return newMilestone;
       });
       const allMilestonesPaid = updatedMilestones.every(m => m.status === 'paid');
-      return { ...p, milestones: updatedMilestones, fundsReleased: updatedFundsReleased, status: allMilestonesPaid ? '完了' : p.status };
+      return { ...p, milestones: updatedMilestones, fundsReleased: updatedFundsReleased, fundsDeposited: updatedFundsDeposited, status: allMilestonesPaid ? '完了' : p.status };
     }));
   };
 
@@ -251,7 +264,7 @@ export default function App() {
             <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
-            <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
+            <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/messages" element={<PlaceholderPage t={t} title={t.messages} icon={<MessageSquare />} />} />
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />

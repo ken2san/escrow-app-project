@@ -1,29 +1,56 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileSignature, CheckCircle } from 'lucide-react';
 
 const ContractReviewPage = ({ selectedProjectForReview, t, setActivePage, handleFinalizeContract, currentLanguage, handleCancelProposalSelection, setActiveProjectDetailTab }) => {
-  useEffect(() => {
-    if (!selectedProjectForReview) {
-      setActivePage('dashboard');
-    }
-  }, [selectedProjectForReview, setActivePage]);
+
+  const [isContractFinalized, setIsContractFinalized] = useState(false);
 
   if (!selectedProjectForReview) {
     return (
-      <div className="p-6 text-center text-gray-500">
-  {t('pageUnderConstructionDetail')?.replace(
-          '{placeholder}',
-          'contract review (project not found)'
-        ) ||
-          (currentLanguage === 'ja'
-            ? '案件情報が見つかりません。ダッシュボードに戻ります...'
-            : 'Project information not found. Returning to dashboard...')}
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-2xl text-gray-400 mb-4">🚫</div>
+        <div className="text-lg font-semibold text-gray-700 mb-2">
+          {currentLanguage === 'ja' ? '案件情報が見つかりません' : 'Project information not found'}
+        </div>
+        <div className="text-gray-500 mb-6">
+          {currentLanguage === 'ja'
+            ? 'このページは直接アクセスできません。ダッシュボードから案件を選択してください。'
+            : 'This page cannot be accessed directly. Please select a project from the dashboard.'}
+        </div>
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+          onClick={() => setActivePage('dashboard')}
+        >
+          {currentLanguage === 'ja' ? 'ダッシュボードに戻る' : 'Return to Dashboard'}
+        </button>
       </div>
     );
   }
   const selectedProposal = selectedProjectForReview.proposals?.find(
     (p) => p.status === 'accepted'
   );
+
+  if (isContractFinalized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <CheckCircle size={48} className="text-green-500 mb-4" />
+        <div className="text-2xl font-bold text-gray-800 mb-2">
+          {currentLanguage === 'ja' ? '契約が締結されました' : 'Contract Finalized'}
+        </div>
+        <div className="text-gray-600 mb-6">
+          {currentLanguage === 'ja'
+            ? '契約内容が確定しました。ダッシュボードから進行状況をご確認ください。'
+            : 'The contract has been finalized. You can check the progress from the dashboard.'}
+        </div>
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+          onClick={() => setActivePage('dashboard')}
+        >
+          {currentLanguage === 'ja' ? 'ダッシュボードに戻る' : 'Return to Dashboard'}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl max-w-3xl mx-auto">
@@ -119,7 +146,10 @@ const ContractReviewPage = ({ selectedProjectForReview, t, setActivePage, handle
             {t('cancelAndReturnToProposals')}
           </button>
           <button
-            onClick={() => handleFinalizeContract(selectedProjectForReview.id)}
+            onClick={() => {
+              handleFinalizeContract(selectedProjectForReview.id);
+              setIsContractFinalized(true);
+            }}
             className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
           >
             <CheckCircle size={18} className="mr-2" />

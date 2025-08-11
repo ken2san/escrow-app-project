@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MilestoneItem from './MilestoneItem';
 import ProposalItem from './ProposalItem';
@@ -8,8 +9,8 @@ import { getStatusPillStyle, getStatusIcon } from '../../utils/helpers';
 import { Users, ListChecks, FileSignature, Award, AlertOctagon, Zap, Eye, Heart, Banknote, Undo2, Star, SendHorizonal, AlertTriangle } from 'lucide-react';
 
 const ProjectCard = ({
-    project,
-    onSelect,
+  project,
+  onSelect = () => {},
     isSelected,
     currentUser,
     openProposalModalFunc,
@@ -17,7 +18,8 @@ const ProjectCard = ({
     t,
     currentLanguage,
     currentViewMode,
-    setActivePage,
+  setActivePage,
+  navigate,
     setActiveProjectDetailTab,
     activeProjectDetailTab,
     handleGenerateDisputeSummary,
@@ -84,8 +86,14 @@ const ProjectCard = ({
 
   const navigateToContractReviewPage = (e) => {
     e.stopPropagation();
-    onSelect(project, true);
-    setActivePage('contractReview');
+    if (typeof onSelect === 'function') {
+      onSelect(project, true);
+    }
+    if (typeof navigate === 'function') {
+      navigate('contractReview');
+    } else {
+      setActivePage('contractReview');
+    }
   };
 
   // Client's view of their own projects (open for proposals, agreement pending, or work ready)
@@ -94,7 +102,7 @@ const ProjectCard = ({
     isUserClient &&
     (project.status === '募集中' ||
       project.status === t.agreementPending ||
-      project.status === t.statusWorkReady)
+      project.status === t('statusWorkReady'))
   ) {
     return (
       <div
@@ -104,7 +112,7 @@ const ProjectCard = ({
             : 'shadow-lg hover:shadow-xl'
         }`}
       >
-        <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
+  <div className="p-5 cursor-pointer" onClick={() => { if (typeof onSelect === 'function') onSelect(project); }}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-blue-700">
               {getField(project, 'name') || t('noTitle') || 'No Title'}
@@ -204,7 +212,7 @@ const ProjectCard = ({
               </div>
             </div>
           )}
-          {project.status === t.statusWorkReady && (
+          {project.status === t('statusWorkReady') && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -681,5 +689,7 @@ const ProjectCard = ({
   }
   return null;
 };
+
+
 
 export default ProjectCard;
