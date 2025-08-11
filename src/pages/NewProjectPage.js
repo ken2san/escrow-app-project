@@ -229,7 +229,7 @@ const NewProjectPage = ({
                 className="text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
               />
               <p className="text-xs text-yellow-700">
-                {t('importantNoticeOnRegistration')}
+                {t('newProjectRegistrationNotice')}
               </p>
             </div>
           </div>
@@ -239,7 +239,7 @@ const NewProjectPage = ({
               onClick={onCancelProject}
               className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              {t('cancel')}
+              {t('clear')}
             </button>
             <button
               type="submit"

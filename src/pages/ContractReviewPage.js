@@ -116,14 +116,14 @@ const ContractReviewPage = ({ selectedProjectForReview, t, setActivePage, handle
             }}
             className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            {t.cancelAndReturnToProposals}
+            {t('cancelAndReturnToProposals')}
           </button>
           <button
             onClick={() => handleFinalizeContract(selectedProjectForReview.id)}
             className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
           >
             <CheckCircle size={18} className="mr-2" />
-            {t.agreeAndFinalizeContract}
+            {t('agreeAndFinalizeContract')}
           </button>
         </div>
       </div>

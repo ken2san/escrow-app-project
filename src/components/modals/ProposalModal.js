@@ -34,7 +34,7 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
       <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">
-            {t.submitProposalFor}「{project.name}」
+            {t('submitProposalFor')}「{project.name}」
           </h3>
           <button
             onClick={onClose}
@@ -49,7 +49,7 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
               htmlFor="proposalText"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              {t.proposalMessage} <span className="text-red-500">*</span>
+              {t('proposalMessage')} <span className="text-red-500">*</span>
             </label>
             <textarea
               id="proposalText"
@@ -66,7 +66,7 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
                 htmlFor="proposedAmount"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                {t.proposedAmount} ({t.optional})
+                {t('proposedAmount')} ({t('optional')})
               </label>
               <input
                 type="number"
@@ -84,7 +84,7 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
                 htmlFor="estimatedTime"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                {t.estimatedDeliveryTime} ({t.optional})
+                {t('estimatedDeliveryTime')} ({t('optional')})
               </label>
               <input
                 type="text"
@@ -98,7 +98,7 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t.attachPortfolio} ({t.optional})
+              {t('attachPortfolio')} ({t('optional')})
             </label>
             <input
               type="file"
@@ -111,14 +111,14 @@ const ProposalModal = ({ isOpen, onClose, onSubmit, project, lang, t, currentUse
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300"
             >
-              {t.cancel}
+              {t('cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center shadow-sm"
             >
               <SendHorizonal size={16} className="mr-2" />
-              {t.submitProposal}
+              {t('submitProposal')}
             </button>
           </div>
         </form>

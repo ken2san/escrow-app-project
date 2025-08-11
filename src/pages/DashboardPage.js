@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
-
 
 const DashboardPage = ({
   projects,
@@ -11,11 +11,12 @@ const DashboardPage = ({
   setSearchTerm,
   currentViewMode,
   loggedInUser,
-  t,
   handleProjectClick,
   selectedProjectId,
+  setActivePage,
   ...props
 }) => {
+  const { t } = useTranslation();
   const [activeDashboardTab, setActiveDashboardTab] = useState(
     currentViewMode === 'contractor' ? 'recommended' : 'my_tasks'
   );
@@ -136,6 +137,7 @@ const DashboardPage = ({
             t={t}
             currentViewMode={currentViewMode}
             isRecommendedCard={isRecommended}
+            setActivePage={setActivePage}
             {...props}
           />
         ))}
@@ -147,7 +149,7 @@ const DashboardPage = ({
   const NoProjectsMessage = () => (
     <div className="text-center py-10 col-span-full">
       <Briefcase size={40} className="mx-auto text-gray-400 mb-4" />
-      <p className="text-gray-500">{t.noProjectsFound}</p>
+  <p className="text-gray-500">{t('noProjectsFound')}</p>
     </div>
   );
 

@@ -61,14 +61,14 @@ const ProjectCard = ({
 
   const getProjectStatusText = (status) => {
     switch (status) {
-      case '作業中': return t.statusInProgress;
-      case '承認待ち': return t.statusInReview;
-      case '支払い待ち': return t.statusPaymentWaiting;
-      case '完了': return t.statusCompleted;
-      case '協議中': return t.statusInDispute;
-      case '募集中': return t.statusOpenForProposals;
-      case '契約準備中': return t.agreementPending;
-      case '作業準備完了': return t.statusWorkReady;
+      case '作業中': return t('statusInProgress');
+      case '承認待ち': return t('statusInReview');
+      case '支払い待ち': return t('statusPaymentWaiting');
+      case '完了': return t('statusCompleted');
+      case '協議中': return t('statusInDispute');
+      case '募集中': return t('statusOpenForProposals');
+      case '契約準備中': return t('agreementPending');
+      case '作業準備完了': return t('statusWorkReady');
       default: return status;
     }
   };
@@ -123,7 +123,7 @@ const ProjectCard = ({
             {getField(project, 'description').substring(0, 100)}...
           </p>
           <div className="text-xs text-gray-500 mb-3">
-            {t.budget}: ¥{project.totalAmount.toLocaleString()} | {t.dueDate}:{' '}
+            {t('budget')}: ¥{project.totalAmount.toLocaleString()} | {t('dueDate')}:
             {project.dueDate}
           </div>
           {project.status === '募集中' &&
@@ -160,13 +160,13 @@ const ProjectCard = ({
                 }
               >
                 <Users size={16} className="mr-2" />
-                {t.reviewProposals}
+                {t('reviewProposals')}
               </button>
             )}
           {project.status === t.agreementPending && project.contractorName && (
             <div className="mt-2 p-3 bg-purple-50 rounded-md border border-purple-200">
               <p className="text-sm font-semibold text-purple-700">
-                {t.proposalStatusSelected}: {project.contractorName}
+                {t('proposalStatusSelected')}: {project.contractorName}
               </p>
               <div className="mt-2 space-y-2 sm:space-y-0 sm:flex sm:space-x-2">
                 <button
@@ -177,14 +177,14 @@ const ProjectCard = ({
                   className="w-full sm:w-auto text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center"
                 >
                   <Undo2 size={14} className="mr-1.5" />
-                  {t.cancelSelection}
+                  {t('cancelSelection')}
                 </button>
                 <button
                   onClick={navigateToContractReviewPage}
                   className="w-full sm:w-auto text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center"
                 >
                   <FileSignature size={14} className="mr-1.5" />
-                  {t.confirmFinalAgreementAndProceed}
+                  {t('confirmFinalAgreementAndProceed')}
                 </button>
               </div>
             </div>
@@ -198,7 +198,7 @@ const ProjectCard = ({
               className="w-full mt-2 text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md inline-flex items-center justify-center"
             >
               <Banknote size={16} className="mr-2" />
-              {t.depositFunds}
+              {t('depositFunds')}
             </button>
           )}
         </div>
@@ -405,10 +405,10 @@ const ProjectCard = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    alert(t.interestedAction + ' (mock)');
+                    alert(t('interestedAction') + ' (mock)');
                   }}
                   className="p-1.5 rounded-full hover:bg-red-100 text-red-500 hover:text-red-600 transition-colors"
-                  title={t.interestedAction}
+                  title={t('interestedAction')}
                 >
                   <Heart size={18} />
                 </button>
@@ -422,14 +422,14 @@ const ProjectCard = ({
                 className="text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg inline-flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
               >
                 <Eye size={14} className="mr-1.5" />
-                {t.viewDetailsAndApply}
+                {t('viewDetailsAndApply')}
               </button>
             </div>
           )}
           {hasUserProposed &&
             project.clientId !== currentUser.id && (
               <div className="mt-4 pt-3 border-t border-gray-200 text-sm text-green-600 font-semibold p-2 bg-green-50 rounded-md text-center">
-                {(t.applicationSubmitted && t.applicationSubmitted.split('（')[0]) || ''}
+                {(t('applicationSubmitted') && t('applicationSubmitted').split('（')[0]) || ''}
               </div>
             )}
         </div>
@@ -438,11 +438,11 @@ const ProjectCard = ({
           project.clientId !== currentUser.id && (
             <div className="bg-gray-50 p-4 border-t border-gray-200">
               <h4 className="text-md font-semibold text-gray-800 mb-3">
-                {t.projectDetails}
+                {t('projectDetails')}
               </h4>
               <div className="space-y-2 text-sm mb-4">
                 <p>
-                  <span className="font-semibold">{t.client}:</span>{' '}
+                  <span className="font-semibold">{t('client')}:</span>{' '}
                   {project.clientName}
                 </p>
                 {project.clientRating && (
@@ -476,7 +476,7 @@ const ProjectCard = ({
                   className="w-full mt-3 text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md inline-flex items-center justify-center"
                 >
                   <SendHorizonal size={16} className="mr-2" />
-                  {t.applyForThisProject}
+                  {t('applyForThisProject')}
                 </button>
               )}
             </div>
@@ -520,17 +520,17 @@ const ProjectCard = ({
               <>
                 {' | '}
                 <span>
-                  {t.contractor}: {getField(project, 'contractorName')}
+                  {t('contractor')}: {getField(project, 'contractorName')}
                 </span>
               </>
             )}
           </div>
           <div className="flex justify-between items-center text-sm mb-3">
             <p className="font-bold text-gray-800">
-              {t.totalAmount}: ¥{project.totalAmount.toLocaleString()}
+              {t('totalAmount')}: ¥{project.totalAmount.toLocaleString()}
             </p>
             <p className="text-gray-500">
-              {t.dueDate}: {project.dueDate || project.completionDate || 'N/A'}
+              {t('dueDate')}: {project.dueDate || project.completionDate || 'N/A'}
             </p>
           </div>
           {project.status !== '募集中' &&
@@ -545,7 +545,7 @@ const ProjectCard = ({
                 </div>
                 <p className="text-xs text-gray-500 text-right mb-3">
                   {Math.round(progress)}
-                  {t.progressCompleted}
+                  {t('progressCompleted')}
                 </p>
               </>
             )}
@@ -563,12 +563,12 @@ const ProjectCard = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  alert(t.evaluateContractor + ' (mock)');
+                  alert(t('evaluateContractor') + ' (mock)');
                 }}
                 className="text-xs bg-yellow-400 hover:bg-yellow-500 text-yellow-800 px-3 py-1.5 rounded-md inline-flex items-center"
               >
                 <Star size={14} className="mr-1.5" />
-                {t.evaluateContractor}
+                {t('evaluateContractor')}
               </button>
             )}
           </div>
