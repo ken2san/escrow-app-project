@@ -1,4 +1,5 @@
-  {
+{
+  "statusOpenForProposals": "Open for\nProposals",
   "newProjectRegistrationNotice": "The registered content forms the basis for agreement with the contractor and serves as important evidence in case of problems. Please enter accurate and detailed information. Any major changes to contract terms after registration require mutual agreement and documentation.",
   "pageUnderConstructionDetail": "In the future, you will be able to view and manage detailed information and actions related to {placeholder} here.",
   "dashboardDummyDetail": "In the future, you will be able to view and manage detailed information and actions related to the dashboard here.",
@@ -43,7 +44,7 @@
   ,"tabMyTasks": "My Tasks"
   ,"tabCompletedHistory": "Completed History"
   ,"contractorAiRecommendedProjectsTitle": "AI Recommended Projects"
-  ,"contractorOpenForProposals": "Open for Proposals"
+  ,"contractorOpenForProposals": "Open for\nProposals"
   ,"contractorActiveProjects": "Active Projects"
   ,"contractorMyPendingProposals": "My Pending Proposals"
   ,"contractorCompletedProjects": "Completed Projects"

@@ -113,7 +113,16 @@ const ProjectCard = ({
               )}`}
             >
               {getStatusIcon(project.status)}{' '}
-              {getProjectStatusText(project.status)}
+              {typeof getProjectStatusText(project.status) === 'string' && getProjectStatusText(project.status).includes('\n') ? (
+                getProjectStatusText(project.status).split('\n').map((line, idx) => (
+                  <React.Fragment key={idx}>
+                    {line}
+                    {idx !== getProjectStatusText(project.status).split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))
+              ) : (
+                getProjectStatusText(project.status)
+              )}
             </span>
           </div>
           <p

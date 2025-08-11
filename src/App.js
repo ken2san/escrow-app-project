@@ -62,7 +62,10 @@ export default function App() {
 
   const selectedProjectForReview = projects.find((p) => p.id === selectedProjectId);
 
-  // const toggleLanguage = () => setCurrentLanguage((prev) => (prev === 'ja' ? 'en' : 'ja'));
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === 'ja' ? 'en' : 'ja';
+    i18n.changeLanguage(nextLang);
+  };
 
   const resetNewProjectForm = () => {
     setNewProjectData({
@@ -193,7 +196,7 @@ export default function App() {
     <div className="flex h-screen bg-gray-100 font-sans">
       <Sidebar t={t} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} loggedInUser={loggedInUser} currentViewMode={currentViewMode} activePage={activePage} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-  <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} currentLanguage={currentLanguage} />
+  <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
             <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
