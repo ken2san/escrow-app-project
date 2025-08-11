@@ -89,5 +89,8 @@
   "tabCompletedHistory": "完了履歴",
   "contractorAiRecommendedProjectsTitle": "AIおすすめ案件",
   "confirmFinalAgreementAndProceed": "契約を確定して進む",
-  "depositFunds": "入金する"
+  "depositFunds": "入金する",
+  "fullDescription": "詳細説明",
+  "noTitle": "タイトル未設定",
+  "proposalsReceived": "{{count}} 件の提案あり"
 }

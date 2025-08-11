@@ -74,5 +74,8 @@
   "estimatedDeliveryTime": "Estimated Delivery Time",
   "cancel": "Cancel",
   "confirmFinalAgreementAndProceed": "Confirm Final Agreement & Proceed",
-  "depositFunds": "Deposit Funds"
+  "depositFunds": "Deposit Funds",
+  "fullDescription": "Full Description",
+  "noTitle": "No Title",
+  "proposalsReceived": "{{count}} proposals received"
 }

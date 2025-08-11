@@ -48,7 +48,9 @@ const ProjectCard = ({
 
   // 英語対応: 表示フィールドを言語で切り替え
   const getField = (obj, key) => {
-    if (currentLanguage === 'en' && obj[key + '_en']) return obj[key + '_en'];
+    if (currentLanguage === 'en' && obj[key + '_en'] !== undefined && obj[key + '_en'] !== null && obj[key + '_en'] !== '') {
+      return obj[key + '_en'];
+    }
     return obj[key];
   };
 
@@ -105,7 +107,7 @@ const ProjectCard = ({
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-semibold text-blue-700">
-              {getField(project, 'name')}
+              {getField(project, 'name') || t('noTitle') || 'No Title'}
             </h3>
             <span
               className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center ${getStatusPillStyle(
@@ -129,22 +131,23 @@ const ProjectCard = ({
             className="text-sm text-gray-600 mb-1 h-10 overflow-y-hidden text-ellipsis"
             title={getField(project, 'description')}
           >
-            {getField(project, 'description').substring(0, 100)}...
+            {getField(project, 'description') ? getField(project, 'description').substring(0, 100) : ''}
+            {getField(project, 'description') && getField(project, 'description').length > 100 ? '...' : ''}
           </p>
           <div className="text-xs text-gray-500 mb-3">
-            {t('budget')}: ¥{project.totalAmount.toLocaleString()} | {t('dueDate')}:
-            {project.dueDate}
+            {project.totalAmount && (
+              <span>{t('budget')}: ¥{project.totalAmount.toLocaleString()}</span>
+            )}
+            {project.dueDate && (
+              <span> | {t('dueDate')}: {project.dueDate}</span>
+            )}
           </div>
           {project.status === '募集中' &&
             project.proposals &&
             project.proposals.length > 0 &&
             !isAnyProposalSelectedOnThisProject && (
               <p className="text-sm font-semibold text-green-600 mb-2">
-                {
-                  project.proposals.filter((p) => p.status === 'pending_review')
-                    .length
-                }{' '}
-                {t.proposalsReceived}
+                {t('proposalsReceived', { count: project.proposals.filter((p) => p.status === 'pending_review').length })}
               </p>
             )}
           {project.status === '募集中' &&
@@ -256,7 +259,13 @@ const ProjectCard = ({
                       {project.proposals.map((prop) => (
                         <ProposalItem
                           key={prop.id}
-                          proposal={prop}
+                          proposal={{
+                            ...prop,
+                            name: getField(prop, 'name'),
+                            description: getField(prop, 'description'),
+                            proposalText: getField(prop, 'proposalText'),
+                            estimatedDeliveryTime: getField(prop, 'estimatedDeliveryTime')
+                          }}
                           onViewDetails={openProposalDetailsModal}
                           lang={currentLanguage}
                           t={t}
@@ -281,7 +290,7 @@ const ProjectCard = ({
                       {project.milestones.map((milestone) => (
                         <MilestoneItem
                           key={milestone.id}
-                          milestone={milestone}
+                          milestone={{...milestone, name: getField(milestone, 'name'), description: getField(milestone, 'description')}}
                           project={project}
                           userRole={currentViewMode}
                           lang={currentLanguage}
@@ -316,7 +325,7 @@ const ProjectCard = ({
                         {t.deliverableDetailsLabel}:
                       </p>
                       <p className="text-gray-600 whitespace-pre-line bg-white p-2 rounded border">
-                        {project.deliverableDetails}
+                        {getField(project, 'deliverableDetails')}
                       </p>
                     </div>
                   )}
@@ -380,24 +389,24 @@ const ProjectCard = ({
             className="text-sm text-gray-700 mb-3 h-10 overflow-hidden text-ellipsis"
             title={getField(project, 'description')}
           >
-            {getField(project, 'description').substring(0, 100)}
+            <span className="font-semibold">{t('fullDescription') || 'Full Description'}:</span> {getField(project, 'description').substring(0, 100)}
             {getField(project, 'description').length > 100 ? '...' : ''}
           </p>
           <div className="flex justify-between items-center text-sm mb-3">
             <p className="font-bold text-gray-800">
-              {t.budget}: ¥{project.totalAmount.toLocaleString()}
+              <span className="font-semibold">{t('budget') || 'Budget'}:</span> ¥{project.totalAmount.toLocaleString()}
             </p>
             <p className="text-gray-500">
-              {t.dueDate}: {project.dueDate}
+              <span className="font-semibold">{t('dueDate') || 'Due Date'}:</span> {project.dueDate}
             </p>
           </div>
-          {project.requiredSkills && project.requiredSkills.length > 0 && (
+          {Array.isArray(getField(project, 'requiredSkills')) && getField(project, 'requiredSkills').length > 0 && (
             <div className="mb-3">
-              <p className="text-xs font-semibold text-gray-600 mb-1">
-                {t.requiredSkills}:
+              <p className="text-sm font-semibold text-gray-600 mb-1">
+                {t('requiredSkills') || 'Required Skills'}:
               </p>
-              <div className="flex flex-wrap gap-1">
-                {project.requiredSkills.map((skill) => (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {getField(project, 'requiredSkills').map((skill) => (
                   <span
                     key={skill}
                     className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs"
@@ -452,8 +461,29 @@ const ProjectCard = ({
               <div className="space-y-2 text-sm mb-4">
                 <p>
                   <span className="font-semibold">{t('client')}:</span>{' '}
-                  {project.clientName}
+                  {getField(project, 'clientName')}
                 </p>
+                <p>
+                  <span className="font-semibold">{t('budget')}:</span> ¥{project.totalAmount ? project.totalAmount.toLocaleString() : ''}
+                </p>
+                <p>
+                  <span className="font-semibold">{t('dueDate')}:</span> {project.dueDate}
+                </p>
+                {Array.isArray(getField(project, 'requiredSkills')) && getField(project, 'requiredSkills').length > 0 && (
+                  <div>
+                    <span className="font-semibold">{t('requiredSkills')}:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {getField(project, 'requiredSkills').map((skill) => (
+                        <span
+                          key={skill}
+                          className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {project.clientRating && (
                   <div className="mb-1">
                     <StarRatingDisplay
@@ -465,18 +495,16 @@ const ProjectCard = ({
                   </div>
                 )}
                 <p>
-                  <span className="font-semibold">{t.budget}:</span> ¥
-                  {project.totalAmount.toLocaleString()}
+                  <span className="font-semibold">{t('budget')}:</span> ¥{project.totalAmount ? project.totalAmount.toLocaleString() : ''}
                 </p>
                 <p>
-                  <span className="font-semibold">{t.dueDate}:</span>{' '}
-                  {project.dueDate}
+                  <span className="font-semibold">{t('dueDate')}:</span> {project.dueDate}
                 </p>
                 <p className="mt-2">
-                  <span className="font-semibold">{t.fullDescription}:</span>
+                  <span className="font-semibold">{t('fullDescription') || 'Full Description'}:</span>
                 </p>
                 <p className="text-gray-700 whitespace-pre-line bg-white p-2 rounded border text-xs max-h-40 overflow-y-auto">
-                  {project.description}
+                  {getField(project, 'description')}
                 </p>
               </div>
               {!hasUserProposed && (
@@ -625,7 +653,7 @@ const ProjectCard = ({
                       {project.milestones.map((milestone) => (
                         <MilestoneItem
                           key={milestone.id}
-                          milestone={milestone}
+                          milestone={{...milestone, name: getField(milestone, 'name'), description: getField(milestone, 'description')}}
                           project={project}
                           userRole={currentViewMode}
                           lang={currentLanguage}
