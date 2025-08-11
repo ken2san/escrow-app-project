@@ -1,9 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
+import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
 
-const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage }) => {
+const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory }) => {
+            <button
+              className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-gray-600 text-yellow-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
+              onClick={onShowPointsHistory}
+              style={{ minHeight: '40px' }}
+            >
+              <History className="h-5 w-5 mr-2 text-gray-400" />
+              <span>{t('pointsHistory') || 'ポイント履歴'}</span>
+            </button>
   const { i18n } = useTranslation();
   const navigate = useNavigate();
   // Helper to get correct path
@@ -49,6 +57,18 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
                 ? t('userRoleClient')
                 : t('userRoleContractor')}
             </p>
+            {/* ポイント残高表示 */}
+            <p className="text-xs text-yellow-300 mt-2 font-semibold">
+              {t('pointsBalance') || 'ポイント残高'}: {userPoints} pt
+            </p>
+            <button
+              className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-indigo-600 text-yellow-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
+              onClick={onPurchasePointsClick}
+              style={{ minHeight: '40px' }}
+            >
+              <Coins className="h-5 w-5 mr-2 text-yellow-300" />
+              <span>{t('purchasePoints') || 'ポイント購入'}</span>
+            </button>
           </div>
         )}
         {!isSidebarOpen && (

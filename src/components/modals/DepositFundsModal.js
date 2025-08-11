@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { X, Banknote, CreditCard, Landmark, AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { X, AlertTriangle, Coins } from 'lucide-react';
 
 const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit }) => {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('creditCard');
+  // 支払い方法選択は不要のため削除
 
   if (!isOpen || !project) return null;
 
@@ -40,8 +40,8 @@ const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit 
           </p>
           <p>
             {t.amountToDeposit}:{' '}
-            <span className="font-semibold text-green-600">
-              ¥{project.totalAmount.toLocaleString()}
+            <span className="font-semibold text-yellow-600">
+              {project.totalAmount.toLocaleString()} pt
             </span>
           </p>
           {showResellingAlert && (
@@ -67,37 +67,7 @@ const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit 
               </div>
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t.paymentMethod}
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="creditCard"
-                  checked={selectedPaymentMethod === 'creditCard'}
-                  onChange={() => setSelectedPaymentMethod('creditCard')}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                <CreditCard size={16} className="mr-1 text-gray-600" />{' '}
-                {t.creditCard}
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="bankTransfer"
-                  checked={selectedPaymentMethod === 'bankTransfer'}
-                  onChange={() => setSelectedPaymentMethod('bankTransfer')}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                <Landmark size={16} className="mr-1 text-gray-600" />{' '}
-                {t.bankTransfer}
-              </label>
-            </div>
-          </div>
+          {/* 支払い方法選択UIは省略（ポイントのみ） */}
           <p className="text-xs text-gray-500 mt-2">
             （
             {lang === 'ja'
@@ -119,7 +89,7 @@ const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit 
             onClick={handleDeposit}
             className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center shadow-sm"
           >
-            <Banknote size={16} className="mr-2" />
+            <Coins size={16} className="mr-2" />
             {t.executeDeposit}
           </button>
         </div>

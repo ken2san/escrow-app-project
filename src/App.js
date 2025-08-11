@@ -15,17 +15,30 @@ import PlaceholderPage from './components/common/PlaceholderPage';
 import ProposalModal from './components/modals/ProposalModal';
 import ProposalDetailsModal from './components/modals/ProposalDetailsModal';
 import DepositFundsModal from './components/modals/DepositFundsModal';
+import PurchasePointsModal from './components/modals/PurchasePointsModal';
+import PointsHistoryModal from './components/modals/PointsHistoryModal';
 
 // Data and Utilities
 import { useTranslation } from 'react-i18next';
 import { initialProjects, loggedInUserDataGlobal } from './utils/initialData';
 import { callGeminiAPI } from './utils/api';
 
-// Icons
+import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
 import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
 
 export default function App() {
+  const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
+
   const [loggedInUser] = useState({ id: loggedInUserDataGlobal.id, name: loggedInUserDataGlobal.name, name_en: loggedInUserDataGlobal.name_en });
+  // ポイント残高のダミーデータをuseStateで管理
+  const [userPoints, setUserPoints] = useState(mockUserPoints.points);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  // ポイント購入ハンドラ
+  const handlePurchasePoints = (amount) => {
+    setUserPoints(prev => prev + amount);
+    setIsPurchaseModalOpen(false);
+    // 本来はここでトランザクション履歴追加やAPI連携も
+  };
   const [projects, setProjects] = useState(initialProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -85,7 +98,7 @@ export default function App() {
     navigate('dashboard');
     setSelectedProjectId(null);
     setSearchTerm('');
-  // setDisputeSummary(''); // Not defined, commented out
+    // setDisputeSummary(''); // Not defined, commented out
     resetNewProjectForm();
   };
 
@@ -93,11 +106,11 @@ export default function App() {
     const newSelectedId = selectedProjectId === project.id && !forceSelect ? null : project.id;
     setSelectedProjectId(newSelectedId);
     if (newSelectedId) {
-        const isContractorViewingOpenProject = currentViewMode === 'contractor' && project.status === '募集中';
-        const isClientViewingOwnOpenProject = currentViewMode === 'client' && project.clientId === loggedInUser.id && (project.status === '募集中' || project.status === t.agreementPending);
-        if (isContractorViewingOpenProject) setActiveProjectDetailTab('details');
-        else if (isClientViewingOwnOpenProject) setActiveProjectDetailTab('proposals');
-        else setActiveProjectDetailTab('milestones');
+      const isContractorViewingOpenProject = currentViewMode === 'contractor' && project.status === '募集中';
+      const isClientViewingOwnOpenProject = currentViewMode === 'client' && project.clientId === loggedInUser.id && (project.status === '募集中' || project.status === t.agreementPending);
+      if (isContractorViewingOpenProject) setActiveProjectDetailTab('details');
+      else if (isClientViewingOwnOpenProject) setActiveProjectDetailTab('proposals');
+      else setActiveProjectDetailTab('milestones');
     }
   };
 
@@ -160,7 +173,20 @@ export default function App() {
   };
 
   const handleExecuteDeposit = (projectId, amount) => {
+    if (userPoints < amount) {
+      alert(t.insufficientPoints || 'ポイント残高が不足しています');
+      return;
+    }
+    setUserPoints(prev => prev - amount);
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t.statusInProgress, fundsDeposited: p.fundsDeposited + amount } : p));
+    // 履歴追加（本来はsetState管理推奨だが、今回はmockTransactionsにpush）
+    mockTransactions.push({
+      id: `tx_${Date.now()}`,
+      type: 'deposit',
+      amount: -amount,
+      date: new Date().toISOString().split('T')[0],
+      description: 'プロジェクトデポジット',
+    });
     alert(t.depositCompletedMessage);
     closeDepositModal();
   };
@@ -194,9 +220,32 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
-      <Sidebar t={t} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} loggedInUser={loggedInUser} currentViewMode={currentViewMode} activePage={activePage} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />
+      <Sidebar
+        t={t}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        loggedInUser={loggedInUser}
+        currentViewMode={currentViewMode}
+        activePage={activePage}
+        setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)}
+        userPoints={userPoints}
+        onPurchasePointsClick={() => setIsPurchaseModalOpen(true)}
+        onShowPointsHistory={() => setIsPointsHistoryOpen(true)}
+      />
+      <PointsHistoryModal
+        isOpen={isPointsHistoryOpen}
+        onClose={() => setIsPointsHistoryOpen(false)}
+        transactions={mockTransactions}
+        t={t}
+      />
+      <PurchasePointsModal
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setIsPurchaseModalOpen(false)}
+        onPurchase={handlePurchasePoints}
+        t={t}
+      />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-  <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
+        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
             <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
@@ -213,6 +262,5 @@ export default function App() {
         <DepositFundsModal isOpen={isDepositModalOpen} onClose={closeDepositModal} project={projectForDeposit} lang={currentLanguage} t={t} onSubmitDeposit={handleExecuteDeposit} />
       </div>
     </div>
-
   );
 }
