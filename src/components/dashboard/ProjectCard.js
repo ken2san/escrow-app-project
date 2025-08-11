@@ -141,13 +141,16 @@ const ProjectCard = ({
             {project.dueDate && (
               <span> | {t('dueDate')}: {project.dueDate}</span>
             )}
+            {project.desiredAmount && (
+              <span> | {t('desiredAmount')}: ¥{project.desiredAmount.toLocaleString()}</span>
+            )}
           </div>
           {project.status === '募集中' &&
             project.proposals &&
             project.proposals.length > 0 &&
             !isAnyProposalSelectedOnThisProject && (
               <p className="text-sm font-semibold text-green-600 mb-2">
-                {t('proposalsReceived', { count: project.proposals.filter((p) => p.status === 'pending_review').length })}
+                {t('proposalsList')} ({t('proposalsReceived', { count: project.proposals.filter((p) => p.status === 'pending_review').length })})
               </p>
             )}
           {project.status === '募集中' &&
@@ -220,14 +223,14 @@ const ProjectCard = ({
               {(project.status === '募集中' ||
                 project.status === t.agreementPending) && (
                 <TabButton
-                  title={t.proposals}
+                  title={t('proposalsList')}
                   icon={<Users />}
                   isActive={activeProjectDetailTab === 'proposals'}
                   onClick={() => handleTabChange('proposals')}
                 />
               )}
               <TabButton
-                title={t.milestoneList}
+                title={t('milestoneList')}
                 icon={<ListChecks />}
                 isActive={activeProjectDetailTab === 'milestones'}
                 onClick={() => handleTabChange('milestones')}
@@ -248,10 +251,7 @@ const ProjectCard = ({
               {activeProjectDetailTab === 'proposals' && (
                 <div>
                   <h4 className="text-md font-semibold text-gray-800 mb-3">
-                    {t.proposals} (
-                    {project.proposals?.filter((p) => p.status !== 'archived')
-                      .length || 0}
-                    )
+                    {t('proposalsList')} ({project.proposals?.filter((p) => p.status !== 'archived').length || 0})
                   </h4>
                   {project.proposals &&
                   project.proposals.some((p) => p.status !== 'archived') ? (
@@ -283,7 +283,7 @@ const ProjectCard = ({
               {activeProjectDetailTab === 'milestones' && (
                 <div>
                   <h4 className="text-md font-semibold text-indigo-800 mb-3">
-                    {t.milestoneList}
+                    {t('milestoneList')}
                   </h4>
                   {project.milestones?.length > 0 ? (
                     <div className="space-y-2">
@@ -614,7 +614,7 @@ const ProjectCard = ({
           <div className="bg-gray-50 p-4 border-t border-gray-200">
             <div className="flex border-b border-gray-300 -mx-4 px-2">
               <TabButton
-                title={t.milestoneList}
+                title={t('milestoneList')}
                 icon={<ListChecks />}
                 isActive={activeProjectDetailTab === 'milestones'}
                 onClick={() => handleTabChange('milestones')}
@@ -646,7 +646,7 @@ const ProjectCard = ({
               {activeProjectDetailTab === 'milestones' && (
                 <div>
                   <h4 className="text-md font-semibold text-indigo-800 mb-3">
-                    {t.milestoneList}
+                    {t('milestoneList')}
                   </h4>
                   {project.milestones?.length > 0 ? (
                     <div className="space-y-2">

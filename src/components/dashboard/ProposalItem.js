@@ -14,7 +14,7 @@ const ProposalItem = ({ proposal, lang, t, isAnyProposalSelectedOnProject, onVie
     <div className="flex justify-between items-start">
       <div>
         <h5 className="text-md font-semibold text-indigo-700">
-          {proposal.contractorName}
+          {(lang === 'en' && proposal.contractorName_en) ? proposal.contractorName_en : proposal.contractorName}
         </h5>
         {proposal.contractorReputation && (
           <div className="mt-0.5 mb-1">
@@ -38,16 +38,12 @@ const ProposalItem = ({ proposal, lang, t, isAnyProposalSelectedOnProject, onVie
       {proposal.proposalText.length > 120 ? '...' : ''}
     </p>
     <div className="text-xs text-gray-600 mt-2">
+      <span>{t('desiredAmount')}: {proposal.desiredAmount ? `¥${Number(proposal.desiredAmount).toLocaleString()}` : '-'}</span>
       {proposal.proposedAmount && (
-        <span>
-          {t.proposedAmount}: ¥
-          {Number(proposal.proposedAmount).toLocaleString()}
-        </span>
+        <span className="ml-2">| {t.proposedAmount}: ¥{Number(proposal.proposedAmount).toLocaleString()}</span>
       )}
       {proposal.estimatedDeliveryTime && (
-        <span className="ml-2">
-          | {t.estimatedDeliveryTime}: {proposal.estimatedDeliveryTime}
-        </span>
+        <span className="ml-2">| {t.estimatedDeliveryTime}: {proposal.estimatedDeliveryTime}</span>
       )}
     </div>
     <div className="mt-3 flex justify-end space-x-2">

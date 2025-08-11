@@ -55,10 +55,10 @@ const MilestoneItem = ({ milestone, project, userRole, lang, t, onUpdateMileston
           {getMilestoneStatusText(milestone.status)}
         </span>
       </div>
-      <p className="text-xs text-gray-500 mt-0.5">
-        {t.dueDate}: {milestone.dueDate} | {t.totalAmount}: ¥
-        {milestone.amount.toLocaleString()}
-      </p>
+      <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-0.5">
+  <span>{t('dueDate')}: {milestone.dueDate || '-'}</span>
+  <span>{t('totalAmount')}: ¥{milestone.amount ? milestone.amount.toLocaleString() : '-'}</span>
+      </div>
       {milestone.description && (
         <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-1.5 rounded">
           {milestone.description}
