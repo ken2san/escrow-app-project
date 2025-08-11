@@ -1,7 +1,18 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 
-const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, setActivePage }) => {
+const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage }) => {
+  const navigate = useNavigate();
+  // Helper to get correct path
+  const getPath = (page) => {
+    if (page === 'dashboard') return '/dashboard';
+    if (page === 'newProject') return '/newProject';
+    if (page === 'messages') return '/messages';
+    if (page === 'disputes') return '/disputes';
+    if (page === 'settings') return '/settings';
+    return '/';
+  };
   return (
     <div
       className={`bg-gray-800 text-white ${
@@ -12,7 +23,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
         {isSidebarOpen && (
           <div className="flex items-center">
             <Briefcase className="h-7 w-7 mr-2 text-indigo-400" />
-            <h1 className="text-xl font-semibold">{t.appName}</h1>
+            <h1 className="text-xl font-semibold">{t('appName')}</h1>
           </div>
         )}
         <button
@@ -31,10 +42,10 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
             />
             <p className="text-sm font-medium">{loggedInUser.name}</p>
             <p className="text-xs text-gray-400">
-              {t.currentRoleIs}{' '}
+              {t('currentRoleIs')}{' '}
               {currentViewMode === 'client'
-                ? t.userRoleClient
-                : t.userRoleContractor}
+                ? t('userRoleClient')
+                : t('userRoleContractor')}
             </p>
           </div>
         )}
@@ -42,10 +53,10 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
           <UserCircle
             size={28}
             className="mx-auto text-gray-400 mb-2"
-            title={`${loggedInUser.name} (${t.currentRoleIs} ${
+            title={`${loggedInUser.name} (${t('currentRoleIs')} ${
               currentViewMode === 'client'
-                ? t.userRoleClient
-                : t.userRoleContractor
+                ? t('userRoleClient')
+                : t('userRoleContractor')
             })`}
           />
         )}
@@ -85,17 +96,17 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
             .map((item) => (
               <li key={item.nameKey} className="mb-1.5">
                 <button
-                  onClick={() => setActivePage(item.page)}
+                  onClick={() => navigate(getPath(item.page))}
                   className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
                     activePage === item.page
                       ? 'bg-indigo-600 text-white shadow-lg'
                       : 'text-gray-300 hover:text-white'
                   } ${!isSidebarOpen ? 'justify-center' : ''}`}
-                  title={isSidebarOpen ? '' : t[item.nameKey]}
+                  title={isSidebarOpen ? '' : t(item.nameKey)}
                 >
                   {item.icon}
                   {isSidebarOpen && (
-                    <span className="ml-3 text-sm">{t[item.nameKey]}</span>
+                    <span className="ml-3 text-sm">{t(item.nameKey)}</span>
                   )}
                 </button>
               </li>
@@ -107,10 +118,10 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
           className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white ${
             !isSidebarOpen ? 'justify-center' : ''
           }`}
-          title={isSidebarOpen ? '' : t.logout}
+          title={isSidebarOpen ? '' : t('logout')}
         >
           <LogOut className="h-5 w-5" />
-          {isSidebarOpen && <span className="ml-3 text-sm">{t.logout}</span>}
+          {isSidebarOpen && <span className="ml-3 text-sm">{t('logout')}</span>}
         </button>
       </div>
     </div>

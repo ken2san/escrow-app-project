@@ -11,7 +11,7 @@ const ContractReviewPage = ({ selectedProjectForReview, t, setActivePage, handle
   if (!selectedProjectForReview) {
     return (
       <div className="p-6 text-center text-gray-500">
-        {t.pageUnderConstructionDetail?.replace(
+  {t('pageUnderConstructionDetail')?.replace(
           '{placeholder}',
           'contract review (project not found)'
         ) ||

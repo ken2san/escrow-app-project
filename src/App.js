@@ -17,7 +17,7 @@ import ProposalDetailsModal from './components/modals/ProposalDetailsModal';
 import DepositFundsModal from './components/modals/DepositFundsModal';
 
 // Data and Utilities
-import { translations } from './utils/translations';
+import { useTranslation } from 'react-i18next';
 import { initialProjects, loggedInUserDataGlobal } from './utils/initialData';
 import { callGeminiAPI } from './utils/api';
 
@@ -36,9 +36,11 @@ export default function App() {
   const activePage = location.pathname.replace('/', '') || 'dashboard'; // この行を追加 (activePage state は削除)
 
   const [activeProjectDetailTab, setActiveProjectDetailTab] = useState('details');
-  const [currentLanguage, setCurrentLanguage] = useState('ja');
+  // i18nのuseTranslationフックを利用
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
   const [currentViewMode, setCurrentViewMode] = useState('client');
-  const [disputeSummary, setDisputeSummary] = useState('');
+  // const [disputeSummary, setDisputeSummary] = useState(''); // Unused, commented out
   const [milestoneSuggestions, setMilestoneSuggestions] = useState('');
   const [contractCheckSuggestions, setContractCheckSuggestions] = useState('');
   const [isLoadingGemini, setIsLoadingGemini] = useState(false);
@@ -58,10 +60,9 @@ export default function App() {
   const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] = useState(false);
   const [proposalForDetails, setProposalForDetails] = useState(null);
 
-  const t = translations[currentLanguage];
   const selectedProjectForReview = projects.find((p) => p.id === selectedProjectId);
 
-  const toggleLanguage = () => setCurrentLanguage((prev) => (prev === 'ja' ? 'en' : 'ja'));
+  // const toggleLanguage = () => setCurrentLanguage((prev) => (prev === 'ja' ? 'en' : 'ja'));
 
   const resetNewProjectForm = () => {
     setNewProjectData({
@@ -81,7 +82,7 @@ export default function App() {
     navigate('dashboard');
     setSelectedProjectId(null);
     setSearchTerm('');
-    setDisputeSummary('');
+  // setDisputeSummary(''); // Not defined, commented out
     resetNewProjectForm();
   };
 
@@ -101,29 +102,7 @@ export default function App() {
     if (project?.id) {
       setSelectedProjectId(project.id);
       navigate('contractReview');
-    } else {
-      navigate('dashboard');
     }
-  };
-
-  const handleGenerateDisputeSummary = async (project) => {
-    if (!project) return;
-    setIsLoadingGemini(true);
-    setDisputeSummary('');
-    const prompt = `...`; // Prompt logic here
-    const summary = await callGeminiAPI(prompt, currentLanguage);
-    setDisputeSummary(summary);
-    setIsLoadingGemini(false);
-  };
-
-  const handleGenerateMilestonesForNewProject = async () => {
-    if (!newProjectData.description.trim()) return;
-    setIsLoadingGemini(true);
-    setMilestoneSuggestions('');
-    const prompt = `...`; // Prompt logic here
-    const suggestions = await callGeminiAPI(prompt, currentLanguage);
-    setMilestoneSuggestions(suggestions);
-    setIsLoadingGemini(false);
   };
 
   const handleContractCheck = async () => {
@@ -158,9 +137,12 @@ export default function App() {
       }
       return p;
     }));
-    alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName));
-    navigateToContractReview(projectToNavigate);
-    closeProposalDetailsModal();
+    if (projectToNavigate) {
+      setSelectedProjectId(projectToNavigate.id);
+      alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName));
+      navigateToContractReview(projectToNavigate);
+      closeProposalDetailsModal();
+    }
   };
 
   const handleCancelProposalSelection = (project) => {
@@ -211,12 +193,12 @@ export default function App() {
     <div className="flex h-screen bg-gray-100 font-sans">
       <Sidebar t={t} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} loggedInUser={loggedInUser} currentViewMode={currentViewMode} activePage={activePage} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
+  <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} currentLanguage={currentLanguage} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} handleGenerateDisputeSummary={handleGenerateDisputeSummary} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} />} />
-            <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={searchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} handleGenerateDisputeSummary={handleGenerateDisputeSummary} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} />} />
-            <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={handleGenerateMilestonesForNewProject} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
+            <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} />} />
+            <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={searchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} />} />
+            <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
             <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} />} />
             <Route path="/messages" element={<PlaceholderPage t={t} title={t.messages} icon={<MessageSquare />} />} />
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />

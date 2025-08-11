@@ -5,20 +5,20 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
   let pageTitle = '';
   if (activePage === 'dashboard') {
     pageTitle =
-      currentViewMode === 'client' ? t.dashboard : t.openProjectsDashboard;
+      currentViewMode === 'client' ? t('dashboard') : t('openProjectsDashboard');
   } else if (activePage === 'newProject' && currentViewMode === 'client') {
-    pageTitle = t.newProject;
+    pageTitle = t('newProject');
   } else if (activePage === 'contractReview') {
-    pageTitle = t.contractReviewTitle;
+    pageTitle = t('contractReviewTitle');
   } else if (activePage === 'messages') {
-    pageTitle = t.messages;
+    pageTitle = t('messages');
   } else if (activePage === 'disputes') {
-    pageTitle = t.disputes;
+    pageTitle = t('disputes');
   } else if (activePage === 'settings') {
-    pageTitle = t.settings;
+    pageTitle = t('settings');
   }
   const roleSwitchButtonText =
-    currentViewMode === 'client' ? t.viewAsContractor : t.viewAsClient;
+    currentViewMode === 'client' ? t('viewAsContractor') : t('viewAsClient');
 
   return (
     <header
@@ -39,7 +39,7 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
         <button
           onClick={toggleViewMode}
           className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm whitespace-nowrap"
-          title={t.roleSwitchButton}
+          title={t('roleSwitchButton')}
         >
           <Repeat size={16} className="mr-1 sm:mr-1.5 flex-shrink-0" />
           {roleSwitchButtonText}

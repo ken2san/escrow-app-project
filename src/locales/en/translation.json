@@ -1,0 +1,30 @@
+{
+  "appName": "Escrow App",
+  "userRoleClient": "Client",
+  "userRoleContractor": "Contractor",
+  "dashboard": "Your Projects",
+  "newProject": "New Project",
+  "messages": "Messages",
+  "disputes": "Ongoing Discussions",
+  "settings": "Settings",
+  "logout": "Logout"
+  ,"searchPlaceholder": "Search by project name, client, etc..."
+  ,"filter": "Filter"
+  ,"registerNewProject": "Register New Project"
+  ,"noProjectsFound": "No projects found."
+  ,"tabRecommended": "Recommended"
+  ,"tabMyTasks": "My Tasks"
+  ,"tabCompletedHistory": "Completed History"
+  ,"contractorAiRecommendedProjectsTitle": "AI Recommended Projects"
+  ,"contractorOpenForProposals": "Open for Proposals"
+  ,"contractorActiveProjects": "Active Projects"
+  ,"contractorMyPendingProposals": "My Pending Proposals"
+  ,"contractorCompletedProjects": "Completed Projects"
+  ,"statusInProgress": "In Progress"
+  ,"statusWorkReady": "Ready for Work"
+  ,"agreementPending": "Agreement Pending"
+  ,"statusInDispute": "Under Discussion",
+  "subcontractingAllowed": "Subcontracting Allowed: Subcontracting is permitted",
+  "subcontractingNotAllowed": "Subcontracting Not Allowed: Subcontracting is not permitted",
+  "applicationSubmitted": "Application Submitted (Your proposal has been sent)"
+}

@@ -1,0 +1,20 @@
+{
+  "appName": "エスクローアプリ",
+  "userRoleClient": "依頼者",
+  "userRoleContractor": "受注者",
+  "dashboard": "あなたの案件",
+  "newProject": "新規案件登録",
+  "messages": "メッセージ",
+  "disputes": "協議中の案件",
+  "settings": "設定",
+  "logout": "ログアウト",
+  "currentRoleIs": "現在の表示モード:",
+  "viewAsClient": "依頼者モードへ",
+  "viewAsContractor": "受注者モードへ",
+  "roleSwitchButton": "表示モード切替",
+  "openProjectsDashboard": "お仕事を探す",
+  "contractReviewTitle": "契約内容の最終確認",
+  "subcontractingAllowed": "外注可: 外注が許可されています",
+  "subcontractingNotAllowed": "外注不可: 外注は許可されていません",
+  "applicationSubmitted": "応募済み（あなたの提案は送信されました）"
+}

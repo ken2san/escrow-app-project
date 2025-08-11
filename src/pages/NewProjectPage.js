@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Loader2, ShieldCheck, Plus, Trash2, Info } from 'lucide-react';
+import { Sparkles, Loader2, ShieldCheck, Info } from 'lucide-react';
 
 const NewProjectPage = ({
   newProjectData,
@@ -37,22 +37,9 @@ const NewProjectPage = ({
     }
   };
 
-  const addMilestoneField = () => {
-    setNewProjectData((prevData) => ({
-      ...prevData,
-      milestones: [
-        ...prevData.milestones,
-        { id: Date.now(), name: '', amount: '', dueDate: '' },
-      ],
-    }));
-  };
 
-  const removeMilestoneField = (index) => {
-    setNewProjectData((prevData) => ({
-      ...prevData,
-      milestones: prevData.milestones.filter((_, i) => i !== index),
-    }));
-  };
+
+
 
   const localHandleSubmit = (e) => {
     e.preventDefault();
@@ -65,10 +52,10 @@ const NewProjectPage = ({
     const fieldLabelFromSuggestion = parts[0].trim();
     const suggestionText = parts.slice(1).join(':').trim();
     const fieldMap = {
-      [t.deliverableDetailsLabel]: 'deliverableDetails',
-      [t.acceptanceCriteriaDetailsLabel]: 'acceptanceCriteriaDetails',
-      [t.scopeOfWorkIncludedLabel]: 'scopeOfWork_included',
-      [t.scopeOfWorkExcludedLabel]: 'scopeOfWork_excluded',
+  [t('deliverableDetailsLabel')]: 'deliverableDetails',
+  [t('acceptanceCriteriaDetailsLabel')]: 'acceptanceCriteriaDetails',
+  [t('scopeOfWorkIncludedLabel')]: 'scopeOfWork_included',
+  [t('scopeOfWorkExcludedLabel')]: 'scopeOfWork_excluded',
     };
     const fieldKey = fieldMap[fieldLabelFromSuggestion];
     if (fieldKey) {
@@ -79,7 +66,7 @@ const NewProjectPage = ({
   return (
     <div className="bg-white p-6 md:p-8 rounded-xl shadow-xl max-w-3xl mx-auto">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        {t.newProjectRegistration}
+  {t('newProjectRegistration')}
       </h2>
       <form onSubmit={localHandleSubmit} className="space-y-6">
         <div>
@@ -87,7 +74,7 @@ const NewProjectPage = ({
             htmlFor="title"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            {t.projectTitle} <span className="text-red-500">*</span>
+            {t('projectTitle')} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -96,7 +83,7 @@ const NewProjectPage = ({
             value={newProjectData.title}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder={t.projectTitlePlaceholder}
+            placeholder={t('projectTitlePlaceholder')}
             required
           />
         </div>
@@ -105,7 +92,7 @@ const NewProjectPage = ({
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            {t.projectCategory}
+            {t('projectCategory')}
           </label>
           <input
             type="text"
@@ -114,7 +101,7 @@ const NewProjectPage = ({
             value={newProjectData.category}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder={t.projectCategoryPlaceholder}
+            placeholder={t('projectCategoryPlaceholder')}
           />
         </div>
 
@@ -124,7 +111,7 @@ const NewProjectPage = ({
               htmlFor="description"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              {t.detailedDescription} <span className="text-red-500">*</span>
+              {t('detailedDescription')} <span className="text-red-500">*</span>
             </label>
             <textarea
               name="description"
@@ -133,7 +120,7 @@ const NewProjectPage = ({
               onChange={handleInputChange}
               rows="5"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder={t.detailedDescriptionPlaceholder}
+              placeholder={t('detailedDescriptionPlaceholder')}
               required
             ></textarea>
           </div>
@@ -152,7 +139,7 @@ const NewProjectPage = ({
               !contractCheckSuggestions ? (
                 <Loader2 className="animate-spin h-4 w-4 mr-1" />
               ) : null}
-              {t.generateMilestoneSuggestions}
+              {t('generateMilestoneSuggestions')}
             </button>
             <button
               type="button"
@@ -166,7 +153,7 @@ const NewProjectPage = ({
               !milestoneSuggestions ? (
                 <Loader2 className="animate-spin h-4 w-4 mr-1" />
               ) : null}
-              {t.aiContractCheck}
+              {t('aiContractCheck')}
             </button>
           </div>
           {isLoadingGemini &&
@@ -183,7 +170,7 @@ const NewProjectPage = ({
             <div className="mt-4 p-4 bg-teal-50 rounded-lg">
               <h4 className="text-md font-semibold text-teal-700 mb-2 flex items-center">
                 <Sparkles size={16} className="mr-2 text-teal-500" />{' '}
-                {t.aiMilestoneSuggestions}
+                {t('aiMilestoneSuggestions')}
               </h4>
               <div className="text-sm text-gray-700 whitespace-pre-wrap">
                 {milestoneSuggestions}
@@ -194,7 +181,7 @@ const NewProjectPage = ({
             <div className="mt-4 p-4 bg-purple-50 rounded-lg">
               <h4 className="text-md font-semibold text-purple-700 mb-2 flex items-center">
                 <ShieldCheck size={16} className="mr-2 text-purple-500" />{' '}
-                {t.aiContractSuggestions}
+                {t('aiContractSuggestions')}
               </h4>
               <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
                 {contractCheckSuggestions.split('\n').map(
@@ -210,7 +197,7 @@ const NewProjectPage = ({
                           onClick={() => handleApplySuggestion(suggestion)}
                           className="ml-4 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded-md whitespace-nowrap"
                         >
-                          {t.applySuggestion}
+                          {t('applySuggestion')}
                         </button>
                       </li>
                     )
@@ -224,7 +211,7 @@ const NewProjectPage = ({
             htmlFor="attachments"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            {t.attachFiles}
+            {t('attachFiles')}
           </label>
           <input
             type="file"
@@ -242,7 +229,7 @@ const NewProjectPage = ({
                 className="text-yellow-500 mr-2 mt-0.5 flex-shrink-0"
               />
               <p className="text-xs text-yellow-700">
-                {t.importantNoticeOnRegistration}
+                {t('importantNoticeOnRegistration')}
               </p>
             </div>
           </div>
@@ -252,13 +239,13 @@ const NewProjectPage = ({
               onClick={onCancelProject}
               className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              {t.cancel}
+              {t('cancel')}
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              {t.confirmAndRegister}
+              {t('confirmAndRegister')}
             </button>
           </div>
         </div>

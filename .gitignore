@@ -2,13 +2,18 @@
 node_modules/
 
 # Environment variables
+
 .env
+.env.*
 
 # API code
 src/utils/api.js
 
 # macOS system files
 .DS_Store
+
+# Windows system files
+Thumbs.db
 
 # Logs
 logs/
@@ -17,9 +22,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Test coverage
+coverage/
+
 # Build output
 dist/
 build/
 
 # IDE settings
 .vscode/
+.idea/
+
+# Misc
+*.local

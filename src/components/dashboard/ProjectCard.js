@@ -5,7 +5,7 @@ import StarRatingDisplay from '../common/StarRatingDisplay';
 import TabButton from '../common/TabButton';
 import NextActionIndicator from '../common/NextActionIndicator';
 import { getStatusPillStyle, getStatusIcon } from '../../utils/helpers';
-import { Users, ListChecks, FileSignature, Award, AlertOctagon, Zap, Eye, Heart, Banknote, FileTextIcon, History, MessageSquare, AlertTriangle, Sparkles, Loader2, Undo2, Star, SendHorizonal } from 'lucide-react';
+import { Users, ListChecks, FileSignature, Award, AlertOctagon, Zap, Eye, Heart, Banknote, Undo2, Star, SendHorizonal, AlertTriangle } from 'lucide-react';
 
 const ProjectCard = ({
     project,
@@ -51,10 +51,7 @@ const ProjectCard = ({
     if (currentLanguage === 'en' && obj[key + '_en']) return obj[key + '_en'];
     return obj[key];
   };
-  const getArrayField = (obj, key) => {
-    if (currentLanguage === 'en' && obj[key + '_en']) return obj[key + '_en'];
-    return obj[key];
-  };
+
 
   const handleTabChange = (tabName) => {
     if (isSelected) {
@@ -81,38 +78,7 @@ const ProjectCard = ({
     openProposalModalFunc(project);
   };
 
-  const handleViewAgreement = (e) => {
-    e.stopPropagation();
-    alert(
-      `${t.initialAgreement}「${
-        project.agreementDocLink || 'N/A'
-      }」(仮) を表示します。\n${t.changeOrders}: ${
-        project.changeOrders?.length || 0
-      }件`
-    );
-  };
-  const handleViewCommunicationLog = (e) => {
-    e.stopPropagation();
-    alert(
-      `${t.communicationLog} 全 ${project.communicationLogCount} ${t.confirmRecords}。(仮)\n全てのやり取りは日時と共に記録されています。`
-    );
-  };
-  const handleReportProblem = (e) => {
-    e.stopPropagation();
-    alert(
-      currentLanguage === 'ja'
-        ? '問題報告フォームへ進みます。(仮)\n契約内容、メッセージ履歴、成果物などが証拠として参照されます。'
-        : 'Proceed to problem report form (mock).\nContract, messages, deliverables will be referenced as evidence.'
-    );
-  };
-  const handleSendMessage = (e) => {
-    e.stopPropagation();
-    alert(t.sendMessage + ' (mock)');
-  };
-  const handleDisputeSupportFromCard = (e) => {
-    e.stopPropagation();
-    handleGenerateDisputeSummary(project);
-  };
+
 
   const navigateToContractReviewPage = (e) => {
     e.stopPropagation();
@@ -332,8 +298,8 @@ const ProjectCard = ({
                       {t.allowSubcontracting}:
                     </span>{' '}
                     {project.allowSubcontracting
-                      ? t.subcontractingAllowed.split(': ')[1]
-                      : t.subcontractingNotAllowed.split(': ')[1]}
+                      ? (t.subcontractingAllowed ? t.subcontractingAllowed.split(': ')[1] : '')
+                      : (t.subcontractingNotAllowed ? t.subcontractingNotAllowed.split(': ')[1] : '')}
                   </p>
                   {project.deliverableDetails && (
                     <div>
@@ -463,7 +429,7 @@ const ProjectCard = ({
           {hasUserProposed &&
             project.clientId !== currentUser.id && (
               <div className="mt-4 pt-3 border-t border-gray-200 text-sm text-green-600 font-semibold p-2 bg-green-50 rounded-md text-center">
-                {t.applicationSubmitted.split('（')[0]}
+                {(t.applicationSubmitted && t.applicationSubmitted.split('（')[0]) || ''}
               </div>
             )}
         </div>

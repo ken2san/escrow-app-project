@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
-import { translations } from '../utils/translations';
+
 
 const DashboardPage = ({
   projects,
@@ -92,10 +92,7 @@ const DashboardPage = ({
         allProjects.filter(
           (p) =>
             p.contractorId === loggedInUser.id &&
-            ([t.statusInProgress, translations.ja.statusInProgress].includes(p.status) ||
-             [t.statusWorkReady, translations.ja.statusWorkReady].includes(p.status) ||
-             [t.agreementPending, translations.ja.agreementPending].includes(p.status) ||
-             [t.statusInDispute, translations.ja.statusInDispute].includes(p.status))
+            ([t('statusInProgress'), t('statusWorkReady'), t('agreementPending'), t('statusInDispute')].includes(p.status))
         )
       ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
@@ -154,15 +151,13 @@ const DashboardPage = ({
     </div>
   );
 
-  const translationsObj = require('../utils/translations').translations;
-  const tCurrent = translationsObj[props.currentLanguage];
   return (
     <div>
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="relative w-full sm:w-auto">
           <input
             type="text"
-            placeholder={tCurrent.searchPlaceholder}
+            placeholder={t('searchPlaceholder')}
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80 shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -172,7 +167,7 @@ const DashboardPage = ({
         <div className="flex items-center space-x-2">
           <button className="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm shadow-sm">
             <Filter size={16} className="mr-2" />
-            {tCurrent.filter}
+            {t('filter')}
           </button>
           {currentViewMode === 'client' && (
             <button
@@ -180,7 +175,7 @@ const DashboardPage = ({
               className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
             >
               <PlusCircle size={16} className="mr-2" />
-              {tCurrent.registerNewProject}
+              {t('registerNewProject')}
             </button>
           )}
         </div>
@@ -188,31 +183,31 @@ const DashboardPage = ({
       {currentViewMode === 'contractor' ? (
         <>
           <div className="flex border-b border-gray-300 mb-6">
-            <TabButton title={tCurrent.tabRecommended} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
-            <TabButton title={tCurrent.tabMyTasks} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
-            <TabButton title={tCurrent.tabCompletedHistory} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />
+            <TabButton title={t('tabRecommended')} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
+            <TabButton title={t('tabMyTasks')} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
+            <TabButton title={t('tabCompletedHistory')} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />
           </div>
           <div className={`grid grid-cols-1 ${currentViewMode === 'contractor' ? 'md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3'} gap-6 items-start`}>
             {activeDashboardTab === 'recommended' && (
               (Array.isArray(projectsToDisplay.aiRecommendedProjects) && Array.isArray(projectsToDisplay.openForProposals) && projectsToDisplay.aiRecommendedProjects.length === 0 && projectsToDisplay.openForProposals.length === 0)
                 ? <NoProjectsMessage />
                 : <>
-                    {Array.isArray(projectsToDisplay.aiRecommendedProjects) && projectsToDisplay.aiRecommendedProjects.length > 0 && renderProjectList(projectsToDisplay.aiRecommendedProjects, tCurrent.contractorAiRecommendedProjectsTitle, true)}
-                    {Array.isArray(projectsToDisplay.openForProposals) && projectsToDisplay.openForProposals.length > 0 && renderProjectList(projectsToDisplay.openForProposals, tCurrent.contractorOpenForProposals)}
+                    {Array.isArray(projectsToDisplay.aiRecommendedProjects) && projectsToDisplay.aiRecommendedProjects.length > 0 && renderProjectList(projectsToDisplay.aiRecommendedProjects, t('contractorAiRecommendedProjectsTitle'), true)}
+                    {Array.isArray(projectsToDisplay.openForProposals) && projectsToDisplay.openForProposals.length > 0 && renderProjectList(projectsToDisplay.openForProposals, t('contractorOpenForProposals'))}
                   </>
             )}
             {activeDashboardTab === 'my_tasks' && (
               (Array.isArray(projectsToDisplay.activeContracts) && Array.isArray(projectsToDisplay.myPendingProposals) && projectsToDisplay.activeContracts.length === 0 && projectsToDisplay.myPendingProposals.length === 0)
                 ? <NoProjectsMessage />
                 : <>
-                    {Array.isArray(projectsToDisplay.activeContracts) && projectsToDisplay.activeContracts.length > 0 && renderProjectList(projectsToDisplay.activeContracts, tCurrent.contractorActiveProjects)}
-                    {Array.isArray(projectsToDisplay.myPendingProposals) && projectsToDisplay.myPendingProposals.length > 0 && renderProjectList(projectsToDisplay.myPendingProposals, tCurrent.contractorMyPendingProposals)}
+                    {Array.isArray(projectsToDisplay.activeContracts) && projectsToDisplay.activeContracts.length > 0 && renderProjectList(projectsToDisplay.activeContracts, t('contractorActiveProjects'))}
+                    {Array.isArray(projectsToDisplay.myPendingProposals) && projectsToDisplay.myPendingProposals.length > 0 && renderProjectList(projectsToDisplay.myPendingProposals, t('contractorMyPendingProposals'))}
                   </>
             )}
             {activeDashboardTab === 'completed_history' && (
               (Array.isArray(projectsToDisplay.completedContracts) && projectsToDisplay.completedContracts.length === 0)
                 ? <NoProjectsMessage />
-                : Array.isArray(projectsToDisplay.completedContracts) && projectsToDisplay.completedContracts.length > 0 && renderProjectList(projectsToDisplay.completedContracts, tCurrent.contractorCompletedProjects)
+                : Array.isArray(projectsToDisplay.completedContracts) && projectsToDisplay.completedContracts.length > 0 && renderProjectList(projectsToDisplay.completedContracts, t('contractorCompletedProjects'))
             )}
           </div>
         </>
