@@ -25,6 +25,7 @@ import { callGeminiAPI } from './utils/api';
 
 import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
 import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
+import ProjectOverviewPage from './pages/ProjectOverviewPage';
 
 export default function App() {
   const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
@@ -266,6 +267,7 @@ export default function App() {
             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
             <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/dashboard/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
+            <Route path="/project-overview" element={<ProjectOverviewPage />} />
             <Route path="/messages" element={<PlaceholderPage t={t} title={t.messages} icon={<MessageSquare />} />} />
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />

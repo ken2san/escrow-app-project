@@ -18,6 +18,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
   const getPath = (page) => {
     if (page === 'dashboard') return '/dashboard';
     if (page === 'newProject') return '/newProject';
+    if (page === 'project-overview') return '/project-overview';
     if (page === 'messages') return '/messages';
     if (page === 'disputes') return '/disputes';
     if (page === 'settings') return '/settings';
@@ -134,6 +135,23 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
               </li>
             ))}
         </ul>
+        {/* Project Overview button separated visually */}
+        <div className="mt-8 pt-4 border-t border-gray-700">
+          <button
+            onClick={() => navigate(getPath('project-overview'))}
+            className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+              activePage === 'project-overview'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-gray-300 hover:text-white'
+            } ${!isSidebarOpen ? 'justify-center' : ''}`}
+            title={isSidebarOpen ? '' : t('projectOverview')}
+          >
+            <Briefcase className="h-5 w-5" />
+            {isSidebarOpen && (
+              <span className="ml-3 text-sm">{t('projectOverview')}</span>
+            )}
+          </button>
+        </div>
       </nav>
       <div className="mt-auto border-t border-gray-700 pt-3">
         <button
