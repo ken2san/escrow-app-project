@@ -218,6 +218,11 @@ export const translations = {
 
   // ポイント購入モーダル
   purchasePoints: 'ポイント購入',
+  walletAddress: 'ウォレットアドレス',
+  onChainBalance: 'オンチェーン残高',
+  sync: '同期',
+  syncing: '同期中...',
+  copy: 'コピー',
   pointsToPurchase: '購入ポイント数',
   enterPointsAmount: '例: 100',
   purchase: '購入',
@@ -456,6 +461,11 @@ export const translations = {
 
   // Purchase Points Modal
   purchasePoints: 'Purchase Points',
+  walletAddress: 'Wallet Address',
+  onChainBalance: 'On-chain Balance',
+  sync: 'Sync',
+  syncing: 'Syncing...',
+  copy: 'Copy',
   pointsToPurchase: 'Points to Purchase',
   enterPointsAmount: 'e.g., 100',
   purchase: 'Purchase',

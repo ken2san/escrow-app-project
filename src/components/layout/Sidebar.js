@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
+import WalletInfo from '../common/WalletInfo';
 
 const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory }) => {
             <button
@@ -62,6 +63,15 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
             <p className="text-xs text-yellow-300 mt-2 font-semibold">
               {t('pointsBalance') || 'ポイント残高'}: {userPoints} pt
             </p>
+            {/* ウォレット情報コンポーネント化 */}
+            <WalletInfo
+              walletAddress="0x1234...abcd"
+              onChainBalance="1,234.56"
+              unit="PT"
+              onSync={() => alert(t('syncing') || '同期中...')}
+              onCopy={(addr) => navigator.clipboard.writeText(addr)}
+              syncing={false}
+            />
             <button
               className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-indigo-600 text-yellow-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
               onClick={onPurchasePointsClick}
