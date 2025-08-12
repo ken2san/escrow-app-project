@@ -17,7 +17,8 @@ import ProposalDetailsModal from './components/modals/ProposalDetailsModal';
 import DepositFundsModal from './components/modals/DepositFundsModal';
 import PurchasePointsModal from './components/modals/PurchasePointsModal';
 import PointsHistoryModal from './components/modals/PointsHistoryModal';
-
+import SendPointsModal from './components/modals/SendPointsModal';
+import ReceivePointsModal from './components/modals/ReceivePointsModal';
 // Data and Utilities
 import { useTranslation } from 'react-i18next';
 import { initialProjects, loggedInUserDataGlobal } from './utils/initialData';
@@ -28,6 +29,22 @@ import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
 import ProjectOverviewPage from './pages/ProjectOverviewPage';
 
 export default function App() {
+  // ポイント送信・受信モーダルの状態
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  // 送信時のダミーハンドラ
+  const handleSendPoints = ({ recipient, amount, txHash }) => {
+    // 本来はここで残高減算や履歴追加
+    mockTransactions.push({
+      id: `tx_${Date.now()}`,
+      type: 'send',
+      amount: -Number(amount),
+      date: new Date().toISOString().split('T')[0],
+      txHash,
+      description: `送信: ${recipient}`,
+    });
+    setIsSendModalOpen(false);
+  };
   const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
 
   const [loggedInUser] = useState({ id: loggedInUserDataGlobal.id, name: loggedInUserDataGlobal.name, name_en: loggedInUserDataGlobal.name_en });
@@ -245,6 +262,21 @@ export default function App() {
         userPoints={userPoints}
         onPurchasePointsClick={() => setIsPurchaseModalOpen(true)}
         onShowPointsHistory={() => setIsPointsHistoryOpen(true)}
+        onSendPointsClick={() => setIsSendModalOpen(true)}
+        onReceivePointsClick={() => setIsReceiveModalOpen(true)}
+      />
+      <SendPointsModal
+        isOpen={isSendModalOpen}
+        onClose={() => setIsSendModalOpen(false)}
+        onSend={handleSendPoints}
+        walletAddress={loggedInUser.walletAddress || '0x1234...abcd'}
+        t={t}
+      />
+      <ReceivePointsModal
+        isOpen={isReceiveModalOpen}
+        onClose={() => setIsReceiveModalOpen(false)}
+        walletAddress={loggedInUser.walletAddress || '0x1234...abcd'}
+        t={t}
       />
       <PointsHistoryModal
         isOpen={isPointsHistoryOpen}

@@ -13,13 +13,20 @@ const PointsHistoryModal = ({ isOpen, onClose, transactions, t }) => {
             <p className="text-center text-gray-400 py-8">{t('noHistory') || '履歴がありません'}</p>
           ) : (
             transactions.slice().reverse().map(tx => (
-              <div key={tx.id} className="py-3 flex items-center justify-between">
+              <div key={tx.id} className="py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="text-sm font-medium text-gray-800 dark:text-gray-100">{tx.description}</div>
                   <div className="text-xs text-gray-400">{tx.date}</div>
+                  {tx.txHash && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] font-mono text-blue-400">{tx.txHash.slice(0, 6) + '...' + tx.txHash.slice(-4)}</span>
+                      <button type="button" className="text-xs text-indigo-500 underline hover:text-indigo-700" title="View on Etherscan (dummy)" tabIndex={0}>Etherscan</button>
+                    </div>
+                  )}
                 </div>
-                <div className={`text-base font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {tx.amount > 0 ? '+' : ''}{tx.amount} pt
+                <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                  <span className={`text-base font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-yellow-600'}`}>{tx.amount > 0 ? '+' : ''}{tx.amount} pt</span>
+                  <span className="ml-1 text-[10px] bg-indigo-700 text-white px-1 rounded">on-chain</span>
                 </div>
               </div>
             ))
