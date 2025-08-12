@@ -30,7 +30,7 @@
   "appName": "Escrow App",
   "userRoleClient": "Client",
   "userRoleContractor": "Contractor",
-  "dashboard": "Your Projects",
+  "dashboard": "Dashboard",
   "newProject": "New Project",
   "messages": "Messages",
   "disputes": "Ongoing Discussions",

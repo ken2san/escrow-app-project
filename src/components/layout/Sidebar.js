@@ -4,34 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
 import WalletInfo from '../common/WalletInfo';
 
-const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
-            <>
-              <button
-                className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-gray-600 text-yellow-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
-                onClick={onShowPointsHistory}
-                style={{ minHeight: '40px' }}
-              >
-                <History className="h-5 w-5 mr-2 text-gray-400" />
-                <span>{t('pointsHistory') || 'ポイント履歴'}</span>
-              </button>
-              <button
-                className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-green-600 text-green-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
-                onClick={onSendPointsClick}
-                style={{ minHeight: '40px' }}
-              >
-                <Coins className="h-5 w-5 mr-2 text-green-300" />
-                <span>{t('sendPoints') || 'ポイント送信'}</span>
-              </button>
-              <button
-                className="w-full flex items-center justify-center mt-2 p-2 rounded-md bg-gray-700 hover:bg-blue-600 text-blue-200 hover:text-white text-sm font-medium transition shadow-sm border border-gray-600"
-                onClick={onReceivePointsClick}
-                style={{ minHeight: '40px' }}
-              >
-                <Coins className="h-5 w-5 mr-2 text-blue-300" />
-                <span>{t('receivePoints') || 'ポイント受取'}</span>
-              </button>
-            </>
-  const { i18n } = useTranslation();
+const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   // Helper to get correct path
   const getPath = (page) => {
@@ -203,7 +177,8 @@ export default Sidebar;
 
 // ドロップダウン式ポイント操作ボタン群
 
-function DropdownPointsActions({ t, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) {
+function DropdownPointsActions({ onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   return (
     <div className="relative w-full">
@@ -214,7 +189,7 @@ function DropdownPointsActions({ t, onShowPointsHistory, onSendPointsClick, onRe
         style={{ minHeight: '40px' }}
       >
         <History className="h-5 w-5 mr-2 text-gray-400" />
-        <span>{t('pointsActions') || 'ポイント操作'}</span>
+  <span>{t('pointsActions') || 'ポイント操作'}</span>
         <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (

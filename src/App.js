@@ -252,13 +252,11 @@ export default function App() {
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
       <Sidebar
-        t={t}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         loggedInUser={loggedInUser}
         currentViewMode={currentViewMode}
         activePage={activePage}
-        setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)}
         userPoints={userPoints}
         onPurchasePointsClick={() => setIsPurchaseModalOpen(true)}
         onShowPointsHistory={() => setIsPointsHistoryOpen(true)}
