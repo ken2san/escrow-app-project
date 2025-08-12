@@ -1,8 +1,24 @@
 
 import React, { useState } from 'react';
+// For QR code, use a placeholder image (could be replaced with a QR component later)
+
+
+const paymentMethods = [
+  { key: 'creditCard', label: 'Credit Card' },
+  { key: 'paypal', label: 'PayPal' },
+  { key: 'bankTransfer', label: 'Bank Transfer' },
+  { key: 'crypto', label: 'Cryptocurrency' },
+];
+
+const dummyWallet = '0x1234...abcd';
+const dummyQR = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=0x1234...abcd';
 
 const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
   const [amount, setAmount] = useState('');
+  const [method, setMethod] = useState('creditCard');
+  const [card, setCard] = useState({ number: '', expiry: '', cvc: '' });
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [bankInfo, setBankInfo] = useState({ name: '', ref: '' });
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -10,17 +26,63 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
         <h2 className="text-xl font-bold mb-5 text-gray-800 dark:text-gray-100 text-center">
           {t('purchasePoints') || 'ポイント購入'}
         </h2>
+        {/* 決済方法選択 */}
+        <div className="mb-4 flex flex-wrap gap-2 justify-center">
+          {paymentMethods.map((m) => (
+            <button
+              key={m.key}
+              className={`px-2 py-1 rounded border text-xs font-medium transition ${method === m.key ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              onClick={() => setMethod(m.key)}
+              type="button"
+            >
+              {t(m.key) || m.label}
+            </button>
+          ))}
+        </div>
         <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
           {t('pointsToPurchase') || '購入ポイント数'}
         </label>
         <input
           type="number"
           min="1"
-          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 mb-5 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition"
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition"
           value={amount}
           onChange={e => setAmount(e.target.value)}
           placeholder={t('enterPointsAmount') || '例: 100'}
         />
+        {/* 決済方法ごとの入力欄 */}
+        {method === 'creditCard' && (
+          <div className="mb-4 space-y-2">
+            <input type="text" className="w-full border rounded px-3 py-2 text-sm" placeholder="Card Number" value={card.number} onChange={e => setCard({ ...card, number: e.target.value })} />
+            <div className="flex gap-1 min-w-0">
+              <input type="text" className="flex-1 border rounded px-3 py-2 text-sm min-w-0" placeholder="MM/YY" value={card.expiry} onChange={e => setCard({ ...card, expiry: e.target.value })} />
+              <input type="text" className="border rounded px-3 py-2 text-sm min-w-0 max-w-[80px]" placeholder="CVC" value={card.cvc} onChange={e => setCard({ ...card, cvc: e.target.value })} />
+            </div>
+          </div>
+        )}
+        {method === 'paypal' && (
+          <div className="mb-4">
+            <input type="email" className="w-full border rounded px-3 py-2 text-sm" placeholder="PayPal Email" value={paypalEmail} onChange={e => setPaypalEmail(e.target.value)} />
+            <p className="text-xs text-gray-500 mt-1">{t('paypalInstruction') || 'You will be redirected to PayPal after clicking Purchase.'}</p>
+          </div>
+        )}
+        {method === 'bankTransfer' && (
+          <div className="mb-4">
+            <input type="text" className="w-full border rounded px-3 py-2 text-sm mb-2" placeholder="Bank Name" value={bankInfo.name} onChange={e => setBankInfo({ ...bankInfo, name: e.target.value })} />
+            <input type="text" className="w-full border rounded px-3 py-2 text-sm" placeholder="Reference Code" value={bankInfo.ref} onChange={e => setBankInfo({ ...bankInfo, ref: e.target.value })} />
+            <p className="text-xs text-gray-500 mt-1">{t('bankInstruction') || 'Transfer to the designated bank account. Enter the reference code above.'}</p>
+          </div>
+        )}
+        {method === 'crypto' && (
+          <div className="mb-4 text-center">
+            <div className="mb-2">
+              <span className="text-xs text-gray-400">{t('sendToWallet') || 'Send to wallet address:'}</span>
+              <div className="font-mono text-green-400 text-xs mt-1">{dummyWallet}</div>
+            </div>
+            <img src={dummyQR} alt="QR code" className="mx-auto mb-2 rounded bg-white p-1 border border-gray-300" style={{ width: 80, height: 80 }} />
+            <p className="text-xs text-gray-500">{t('cryptoInstruction') || 'Send the exact amount to the above address. Tx hash will be shown after confirmation.'}</p>
+          </div>
+        )}
         <div className="flex justify-end gap-2">
           <button
             className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 transition"

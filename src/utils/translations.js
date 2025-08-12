@@ -1,5 +1,14 @@
+// ...existing code...
 export const translations = {
   ja: {
+  creditCard: 'クレジットカード',
+  paypal: 'PayPal',
+  bankTransfer: '銀行振込',
+  crypto: '暗号資産',
+  paypalInstruction: '購入ボタン押下後、PayPal決済画面に遷移します。',
+  bankInstruction: '指定口座にお振込ください。上記の参照コードを入力してください。',
+  sendToWallet: 'ウォレットアドレス宛に送金してください:',
+  cryptoInstruction: '上記アドレスに正確な金額を送金してください。Txハッシュは確認後に表示されます。',
     appName: 'エスクローアプリ',
     userRoleClient: '依頼者',
     userRoleContractor: '受注者',
@@ -128,8 +137,8 @@ export const translations = {
     depositFundsTitle: '資金をデポジット',
     amountToDeposit: 'デポジット金額',
     paymentMethod: '支払い方法',
-    creditCard: 'クレジットカード',
-    bankTransfer: '銀行振込',
+  // creditCard: 'クレジットカード', // duplicate removed
+  // bankTransfer: '銀行振込', // duplicate removed
     executeDeposit: 'デポジットを実行する',
     depositCompletedMessage: '資金がデポジットされました。作業を開始できます。',
     resellingAlertTitle: '警告：',
@@ -228,6 +237,14 @@ export const translations = {
   purchase: '購入',
   },
   en: {
+  creditCard: 'Credit Card',
+  paypal: 'PayPal',
+  bankTransfer: 'Bank Transfer',
+  crypto: 'Cryptocurrency',
+  paypalInstruction: 'You will be redirected to PayPal after clicking Purchase.',
+  bankInstruction: 'Transfer to the designated bank account. Enter the reference code above.',
+  sendToWallet: 'Send to wallet address:',
+  cryptoInstruction: 'Send the exact amount to the above address. Tx hash will be shown after confirmation.',
     // Error messages
     tabRecommended: 'Recommended',
   // tabMyTasks: 'My Tasks',
@@ -380,8 +397,8 @@ export const translations = {
     depositFundsTitle: 'Deposit Funds',
     amountToDeposit: 'Deposit Amount',
     paymentMethod: 'Payment Method',
-    creditCard: 'Credit Card',
-    bankTransfer: 'Bank Transfer',
+  // creditCard: 'Credit Card',
+  // bankTransfer: 'Bank Transfer',
     executeDeposit: 'Execute Deposit',
     depositCompletedMessage: 'Funds have been deposited. Work can now begin.',
     resellingAlertTitle: 'Warning:',
