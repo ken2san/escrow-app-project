@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Home, PlusCircle, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
+import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
 import WalletInfo from '../common/WalletInfo';
 
 const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
@@ -127,13 +127,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
               icon: <Home className="h-5 w-5" />,
               page: 'dashboard',
             },
-            currentViewMode === 'client'
-              ? {
-                  nameKey: 'newProject',
-                  icon: <PlusCircle className="h-5 w-5" />,
-                  page: 'newProject',
-                }
-              : null,
+            // newProject（新規案件）はSidebarから削除
             {
               nameKey: 'messages',
               icon: <MessageSquare className="h-5 w-5" />,
@@ -150,9 +144,8 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
               page: 'settings',
             },
           ]
-            .filter(Boolean)
-            .map((item) => (
-              <li key={item.nameKey} className="mb-1.5">
+            .map((item, idx, arr) => (
+              <li key={item.nameKey} className={idx === arr.length - 1 ? '' : 'mb-1'}>
                 <button
                   onClick={() => navigate(getPath(item.page))}
                   className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
@@ -171,7 +164,7 @@ const Sidebar = ({ t, isSidebarOpen, setIsSidebarOpen, loggedInUser, currentView
             ))}
         </ul>
         {/* Project Overview button separated visually */}
-        <div className="mt-8 pt-4 border-t border-gray-700">
+  <div className="mt-4 pt-2 border-t border-gray-700">
           <button
             onClick={() => navigate(getPath('project-overview'))}
             className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
