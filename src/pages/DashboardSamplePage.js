@@ -7,12 +7,10 @@ import React, { useState } from 'react';
 
 import {
   DndContext,
-  rectIntersection,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
-  useDraggable,
-  useDroppable,
   DragOverlay
 } from '@dnd-kit/core';
 import {
@@ -27,15 +25,15 @@ const initialColumns = [
     id: 'todo',
     title: 'To Do',
     cards: [
-      { id: '1', title: 'Sample Project 1', desc: 'This is a sample project card for demonstration.' },
-      { id: '2', title: 'Sample Project 2', desc: 'Another example of a dashboard card.' },
+      { id: 'card-1', title: 'Sample Project 1', desc: 'This is a sample project card for demonstration.' },
+      { id: 'card-2', title: 'Sample Project 2', desc: 'Another example of a dashboard card.' },
     ],
   },
   {
     id: 'doing',
     title: 'Doing',
     cards: [
-      { id: '3', title: 'Sample Project 3', desc: 'You can add more sample cards as needed.' },
+      { id: 'card-3', title: 'Sample Project 3', desc: 'You can add more sample cards as needed.' },
     ],
   },
   {
@@ -99,35 +97,44 @@ export default function DashboardSamplePage() {
       }
     }
 
-    // カードの移動
-    const from = findCard(active.id);
-    if (!from) return;
-
-    let toColId, toIdx;
-    if (typeof over.id === 'string' && over.id.includes(':')) {
-      // カード間へのドロップ
-      const to = over.id.split(':');
-      toColId = to[0];
-      toIdx = to[1] ? parseInt(to[1], 10) : 0;
-    } else {
-      // カラム自体へのドロップ（末尾）
-      toColId = over.id;
-      const col = columns.find(c => c.id === toColId);
-      toIdx = col ? col.cards.length : 0;
+    // 空リストのダミーにドロップされた場合
+    if (typeof over.id === 'string' && over.id.startsWith('__empty__-')) {
+      const from = findCard(active.id);
+      if (!from) return;
+      // over.idからカラムIDを抽出
+      const toColId = over.id.replace('__empty__-', '');
+      const toCol = columns.find(col => col.id === toColId);
+      if (!toCol) return;
+      setColumns(prevCols => {
+        const cols = prevCols.map(col => ({ ...col, cards: [...col.cards] }));
+        const fromCol = cols.find(col => col.id === from.colId);
+        const toCol2 = cols.find(col => col.id === toCol.id);
+        if (!fromCol || !toCol2) return cols;
+        const [moved] = fromCol.cards.splice(from.idx, 1);
+        toCol2.cards.push(moved);
+        return cols;
+      });
+      return;
     }
 
-    // 移動元と移動先が同じ位置なら何もしない
-    if (from.colId === toColId && from.idx === toIdx) return;
+    // カードの移動・並び替え
+    const from = findCard(active.id);
+    const to = findCard(over.id);
+    if (!from || !to) return;
+
+    // 同じ位置なら何もしない
+    if (from.colId === to.colId && from.idx === to.idx) return;
 
     setColumns(prevCols => {
       const cols = prevCols.map(col => ({ ...col, cards: [...col.cards] }));
       const fromCol = cols.find(col => col.id === from.colId);
-      const toCol = cols.find(col => col.id === toColId);
+      const toCol = cols.find(col => col.id === to.colId);
       if (!fromCol || !toCol) return cols;
       const [moved] = fromCol.cards.splice(from.idx, 1);
-      // 同じカラム内で下方向に移動する場合はtoIdxを1つ減らす
-      if (from.colId === toColId && from.idx < toIdx) toIdx--;
-      toCol.cards.splice(toIdx, 0, moved);
+      let insertIdx = to.idx;
+      // 同じカラム内で下方向に移動する場合はto.idxを1つ減らす
+      if (from.colId === to.colId && from.idx < to.idx) insertIdx--;
+      toCol.cards.splice(insertIdx, 0, moved);
       return cols;
     });
   }
@@ -143,11 +150,15 @@ export default function DashboardSamplePage() {
   }
 
   function handleAddCard(colId, title, desc) {
-    setColumns(cols => cols.map(col =>
-      col.id === colId
-        ? { ...col, cards: [...col.cards, { id: `${cardIdCounter++}`, title, desc }] }
-        : col
-    ));
+    setColumns(cols => {
+      const newCols = cols.map(col =>
+        col.id === colId
+          ? { ...col, cards: [...col.cards, { id: `card-${cardIdCounter++}`, title, desc }] }
+          : col
+      );
+      console.log('handleAddCard', { colId, title, desc, newCols });
+      return newCols;
+    });
   }
 
   return (
@@ -155,7 +166,7 @@ export default function DashboardSamplePage() {
   <h1 className="text-2xl font-bold mb-6 text-white drop-shadow">Kanban Board Sample</h1>
       <DndContext
         sensors={sensors}
-        collisionDetection={rectIntersection}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
@@ -171,7 +182,9 @@ export default function DashboardSamplePage() {
                 onAddCard={handleAddCard}
                 isOverlay={false}
                 isDragging={activeColumnId === col.id}
-              />
+              >
+                <KanbanColumn key={col.id} column={col} onAddCard={handleAddCard} />
+              </SortableKanbanColumn>
             ))}
             <div style={{ minWidth: 280 }}>
               {addingCol ? (
@@ -231,7 +244,6 @@ export default function DashboardSamplePage() {
 
 // カラム自体をSortableにする
 function SortableKanbanColumn({ column, onAddCard, isOverlay, isDragging }) {
-  // useSortableは常に呼び出す
   const { attributes, listeners, setNodeRef, transform } = useSortable({ id: column.id });
   let style = {
     background: isDragging || isOverlay ? '#d2e4f7' : '#ebecf0',
@@ -256,31 +268,37 @@ function SortableKanbanColumn({ column, onAddCard, isOverlay, isDragging }) {
     opacity: isDragging ? 0.3 : 1,
     pointerEvents: isOverlay ? 'none' : undefined,
   };
-  // 通常時のみSortableのpropsやtransformを適用
-  const divProps = isOverlay
-    ? {}
-    : { ref: setNodeRef, ...attributes, ...listeners };
   if (!isOverlay && transform) {
     style = { ...style, transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(1.04) rotate(-1deg)` };
   }
   return (
-    <div {...divProps} style={style}>
-      <KanbanColumn column={column} onAddCard={onAddCard} />
+    <div ref={setNodeRef} style={style}>
+      {/* カラムタイトルだけドラッグ可能にする */}
+      <div
+        className="text-base font-bold mb-1 flex items-center cursor-grab select-none"
+        style={{ color: '#172b4d', userSelect: 'none', marginBottom: 8 }}
+        {...attributes}
+        {...listeners}
+      >
+        {column.title}
+      </div>
+      <KanbanColumn key={column.id} column={column} onAddCard={onAddCard} hideTitle={true} />
     </div>
   );
 }
 }
 
-function KanbanColumn({ column, onAddCard }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+function KanbanColumn({ column, onAddCard, hideTitle }) {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
+  // 空リスト用のダミーSortable
+  const emptyId = `__empty__-${column.id}`;
+  const emptySortable = useSortable({ id: emptyId });
   return (
     <div
-      ref={setNodeRef}
       style={{
-        background: isOver ? '#bcdffb' : '#ebecf0',
+        background: '#ebecf0',
         borderRadius: 8,
         minWidth: 280,
         padding: 12,
@@ -290,19 +308,41 @@ function KanbanColumn({ column, onAddCard }) {
         gap: 0,
         maxHeight: 600,
         overflowY: 'auto',
-        minHeight: 200, // カラム自体のDropZoneを広く
+        minHeight: 200,
         position: 'relative',
         transition: 'background 0.2s',
       }}
     >
-      <h2 className="text-base font-bold mb-1" style={{ color: '#172b4d' }}>{column.title}</h2>
-      {column.cards.map((card, idx) => (
-        <React.Fragment key={card.id}>
-          <CardDropZone colId={column.id} idx={idx} />
-          <KanbanCard card={card} colId={column.id} idx={idx} />
-        </React.Fragment>
-      ))}
-      <CardDropZone colId={column.id} idx={column.cards.length} />
+      {!hideTitle && (
+        <h2 className="text-base font-bold mb-1" style={{ color: '#172b4d' }}>{column.title}</h2>
+      )}
+      {column.cards.length === 0 ? (
+        <div
+          ref={emptySortable.setNodeRef}
+          {...emptySortable.attributes}
+          {...emptySortable.listeners}
+          style={{
+            minHeight: 48,
+            border: emptySortable.isOver ? '2px dashed #4f8ef7' : '2px dashed #ccc',
+            borderRadius: 6,
+            margin: '8px 0',
+            background: emptySortable.isOver ? '#e3f0ff' : '#f8fafc',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#aaa',
+            fontSize: 14,
+            ...(emptySortable.transform ? {
+              transform: `translate3d(${emptySortable.transform.x}px, ${emptySortable.transform.y}px, 0)`
+            } : {})
+          }}
+        >
+          ここにカードをドロップ
+        </div>
+      ) : (
+        column.cards.map(card => <KanbanCard key={card.id} card={card} />)
+      )}
+
       {adding ? (
         <div style={{ background: '#fff', borderRadius: 6, padding: 8, marginTop: 4 }}>
           <input
@@ -335,56 +375,30 @@ function KanbanColumn({ column, onAddCard }) {
       ) : (
         <button
           className="bg-white/80 hover:bg-white text-gray-700 px-2 py-1 rounded text-sm border border-gray-200"
+          style={{ zIndex: 1, position: 'relative' }}
           onClick={() => setAdding(true)}
         >+ カードを追加</button>
-      )}
-      {column.cards.length === 0 && !adding && (
-        <div style={{ color: '#bbb', fontSize: 14, textAlign: 'center', padding: 12 }}>No cards</div>
       )}
     </div>
   );
 }
-
-// カード間・先頭・末尾のDropZone
-function CardDropZone({ colId, idx }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `${colId}:${idx}` });
+function KanbanCard({ card }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
+  if (!card) return null;
   return (
     <div
       ref={setNodeRef}
-      style={{
-        height: 14,
-        margin: '2px 0',
-        borderRadius: 4,
-        background: isOver ? '#bcdffb' : 'transparent',
-        transition: 'background 0.2s',
-      }}
-    />
-  );
-}
-
-function KanbanCard({ card, colId, idx }) {
-  const { attributes, listeners, setNodeRef: setDraggableRef, transform, isDragging } = useDraggable({ id: card.id });
-  const { setNodeRef: setDroppableRef } = useDroppable({ id: `${colId}:${idx}` });
-  const setRef = node => {
-    setDraggableRef(node);
-    setDroppableRef(node);
-  };
-  return (
-    <div
-      ref={setRef}
-      {...listeners}
       {...attributes}
+      {...listeners}
       style={{
-        background: 'white',
+        background: '#fff',
         borderRadius: 6,
-        boxShadow: '0 1px 2px rgba(0,0,0,0.10)',
+        boxShadow: isDragging ? '0 4px 16px rgba(0,0,0,0.18)' : '0 1px 4px rgba(0,0,0,0.08)',
         padding: 12,
-        userSelect: 'none',
-        marginBottom: 0,
+        margin: '4px 0',
+        opacity: isDragging ? 0.5 : 1,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        zIndex: isDragging ? 99 : 1,
-        opacity: isDragging ? 0.7 : 1,
-        transition: 'box-shadow 0.2s, transform 0.2s',
+        transition,
         cursor: 'grab',
         fontSize: 15,
       }}
