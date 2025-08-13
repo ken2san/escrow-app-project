@@ -93,8 +93,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         )}
       </div>
       <nav className="flex-grow">
-        <div className="bg-gray-800/80 rounded-2xl shadow-lg border border-gray-700 px-2 py-4 mb-4">
-        <ul>
+  <div className="bg-gray-800/80 rounded-2xl shadow-lg border border-gray-700 px-2 py-4 mb-4">
+  <ul>
           {[
             {
               nameKey: 'dashboard',
@@ -137,8 +137,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
               </li>
             ))}
         </ul>
-        {/* Project Overview button separated visually */}
-  <div className="mt-4 pt-2 border-t border-gray-700">
+        {/* Project Overview & Trello Board buttons separated visually */}
+        <div className="mt-4 pt-2 border-t border-gray-700 flex flex-col gap-2">
           <button
             onClick={() => navigate(getPath('project-overview'))}
             className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
@@ -153,8 +153,32 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
               <span className="ml-3 text-sm">{t('projectOverview')}</span>
             )}
           </button>
+          <button
+            onClick={() => navigate('/dashboard-sample')}
+            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+              window.location.pathname === '/dashboard-sample'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-indigo-200 hover:text-white'
+            } ${!isSidebarOpen ? 'justify-center' : ''}`}
+            title={isSidebarOpen ? '' : 'Trello Board'}
+          >
+            <Layout className="h-5 w-5" />
+            {isSidebarOpen && <span className="ml-3 text-sm">Kanban Board</span>}
+          </button>
+          <button
+            onClick={() => navigate('/project-flow-demo')}
+            className={`w-full flex items-center p-2.5 rounded-md hover:bg-teal-700 ${
+              window.location.pathname === '/project-flow-demo'
+                ? 'bg-teal-600 text-white shadow-lg'
+                : 'text-teal-200 hover:text-white'
+            } ${!isSidebarOpen ? 'justify-center' : ''}`}
+            title={isSidebarOpen ? '' : 'Project Flow Demo'}
+          >
+            <Briefcase className="h-5 w-5" />
+            {isSidebarOpen && <span className="ml-3 text-sm">Project Flow Demo</span>}
+          </button>
         </div>
-        </div>
+      </div> {/* ←div閉じタグ追加 */}
       </nav>
       <div className="mt-auto border-t border-gray-700 pt-3 flex flex-col gap-2">
         <button
@@ -165,16 +189,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         >
           <LogOut className="h-5 w-5" />
           {isSidebarOpen && <span className="ml-3 text-sm">{t('logout')}</span>}
-        </button>
-        <button
-          className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 text-indigo-200 hover:text-white ${
-            !isSidebarOpen ? 'justify-center' : ''
-          }`}
-          onClick={() => navigate('/dashboard-sample')}
-          title={isSidebarOpen ? '' : 'Dashboard Sample'}
-        >
-          <Layout className="h-5 w-5" />
-          {isSidebarOpen && <span className="ml-3 text-sm">Dashboard Sample</span>}
         </button>
       </div>
     </div>

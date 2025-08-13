@@ -13,6 +13,7 @@ import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
 import ProjectBoardPage from './pages/ProjectBoardPage';
 import DashboardSamplePage from './pages/DashboardSamplePage';
+import ProjectFlowDemoPage from './pages/ProjectFlowDemoPage';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -32,12 +33,10 @@ import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
 import ProjectOverviewPage from './pages/ProjectOverviewPage';
 
 export default function App() {
-  // ポイント送信・受信モーダルの状態
+  // ...existing state and handlers...
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  // 送信時のダミーハンドラ
   const handleSendPoints = ({ recipient, amount, txHash }) => {
-    // 本来はここで残高減算や履歴追加
     mockTransactions.push({
       id: `tx_${Date.now()}`,
       type: 'send',
@@ -49,32 +48,24 @@ export default function App() {
     setIsSendModalOpen(false);
   };
   const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
-
   const [loggedInUser] = useState({ id: loggedInUserDataGlobal.id, name: loggedInUserDataGlobal.name, name_en: loggedInUserDataGlobal.name_en });
-  // ポイント残高のダミーデータをuseStateで管理
   const [userPoints, setUserPoints] = useState(mockUserPoints.points);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  // ポイント購入ハンドラ
   const handlePurchasePoints = (amount) => {
     setUserPoints(prev => prev + amount);
     setIsPurchaseModalOpen(false);
-    // 本来はここでトランザクション履歴追加やAPI連携も
   };
   const [projects, setProjects] = useState(initialProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  const location = useLocation(); // この行を追加
-  const navigate = useNavigate(); // この行を追加
-  const activePage = location.pathname.replace('/', '') || 'dashboard'; // この行を追加 (activePage state は削除)
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activePage = location.pathname.replace('/', '') || 'dashboard';
   const [activeProjectDetailTab, setActiveProjectDetailTab] = useState('details');
-  // i18nのuseTranslationフックを利用
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
   const [currentViewMode, setCurrentViewMode] = useState('client');
-  // const [disputeSummary, setDisputeSummary] = useState(''); // Unused, commented out
   const [milestoneSuggestions, setMilestoneSuggestions] = useState('');
   const [contractCheckSuggestions, setContractCheckSuggestions] = useState('');
   const [isLoadingGemini, setIsLoadingGemini] = useState(false);
@@ -307,6 +298,7 @@ export default function App() {
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
             <Route path="/project-board" element={<ProjectBoardPage />} />
             <Route path="/dashboard-sample" element={<DashboardSamplePage />} />
+            <Route path="/project-flow-demo" element={<ProjectFlowDemoPage />} />
           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />
