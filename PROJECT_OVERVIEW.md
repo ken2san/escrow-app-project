@@ -1,12 +1,16 @@
-# Concordia Development Guidelines: Building the Infrastructure for Trust and Fair Work
+# Waritsu Development Guidelines: Building the Infrastructure for Trust and Fair Work
+
+> **About the Name**
+>
+> **Waritsu（ワリツ）** is a coined word, derived from the Japanese characters 「和」 (wa, meaning harmony/peace) and 「律」 (ritsu, meaning law/principle). The name embodies the vision of a system that balances harmony and fairness through clear rules and mutual respect.
 
 ## Vision
 
-Concordia is not just a transaction tool, but a **trustless platform designed to guarantee trust and fairness by design**—an infrastructure for fair work in society. By leveraging blockchain and AI, Concordia ensures reliability through system architecture, not operator discretion. This eliminates information asymmetry, reduces uncertainty in digital work, and maximizes user autonomy by minimizing operational intervention.
+Waritsu is not just a transaction tool, but a **trustless platform designed to guarantee trust and fairness by design**—an infrastructure for fair work in society. By leveraging blockchain and AI, Waritsu ensures reliability through system architecture, not operator discretion. This eliminates information asymmetry, reduces uncertainty in digital work, and maximizes user autonomy by minimizing operational intervention.
 
 ## 1. Core Philosophy: Why Build This App?
 
-Concordia exists to solve the challenges of modern work and enable more human, sustainable ways of working.
+Waritsu exists to solve the challenges of modern work and enable more human, sustainable ways of working.
 
 - **Beyond Survival:** Work should offer meaning and joy, not just a means to survive.
 - **Beyond Superficial Approval:** True trust is built on the quality and impact of work, not on social media-style popularity.
@@ -36,14 +40,14 @@ AI is not just an automation tool, but the **ethical guardian** of the platform�
 
 ## 4. System Design Assuming Malice
 
-Concordia is designed on the assumption that bad actors exist, making malicious behavior systematically unprofitable.
+Waritsu is designed on the assumption that bad actors exist, making malicious behavior systematically unprofitable.
 
 - **Absolute Clarity in Contracts:** AI guides clients to define deliverables, acceptance criteria, and scope in detail. AI calculates an “ambiguity score” and prompts corrections.
 - **User Input and Agreement:** Users provide minimal input; AI drafts detailed requirements. Both parties must review and agree before work begins. Any post-contract changes require a new, explicit change order with fees and deadlines.
 - **Objective Acceptance and AI Quality Checks:** Detailed acceptance criteria are set at contract stage. AI automatically checks deliverables for quality (e.g., code analysis, design pixel checks, plagiarism detection, data validation).
 - **Milestone-Based Payments:** Payments are only released when milestone deliverables meet acceptance criteria, removing incentives for low-quality work.
 - **Dispute Reduction:** Milestone tracking reduces ambiguity and disputes.
-- **Escrow Principle:** Full contract amount is deposited in Concordia’s escrow before work starts, preventing payment refusal due to lack of funds.
+- **Escrow Principle:** Full contract amount is deposited in Waritsu’s escrow before work starts, preventing payment refusal due to lack of funds.
 - **AI Detection of Unfair Demands:** AI analyzes communication logs to detect and warn about out-of-scope or unfair client demands.
 - **Automatic Payment Triggers:** If acceptance criteria are objectively met or the client does not provide a valid rejection within a set period, escrow funds are released automatically.
 

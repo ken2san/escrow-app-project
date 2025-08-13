@@ -11,7 +11,7 @@ import NewProjectPage from './pages/NewProjectPage';
 import ContractReviewPage from './pages/ContractReviewPage';
 import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
-import ContractBoardMockPage from './pages/ContractBoardMockPage';
+import ProjectBoardPage from './pages/ProjectBoardPage';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -304,7 +304,7 @@ export default function App() {
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
-            <Route path="/contract-board-mock" element={<ContractBoardMockPage />} />
+            <Route path="/project-board" element={<ProjectBoardPage />} />
           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />

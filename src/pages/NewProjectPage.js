@@ -39,8 +39,20 @@ const NewProjectPage = ({
     }
   };
 
+
+  // 必須項目チェック
+  const isRequiredFieldsFilled = () => {
+    return newProjectData.title && newProjectData.description;
+  };
+
   // マイルストーン案生成→仕事カード自動生成デモへ遷移
-  const handleGenerateMilestonesAndGo = async () => {
+  const handleGenerateMilestonesAndGo = async (e) => {
+    // ブラウザのバリデーションを発火
+    const form = e?.target?.form;
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
     await onGenerateMilestones();
     // 案件タイトル・詳細説明をstateで渡して遷移
     navigate('/new-contract-project', {
@@ -51,8 +63,13 @@ const NewProjectPage = ({
     });
   };
 
+
   const localHandleSubmit = (e) => {
     e.preventDefault();
+    if (!isRequiredFieldsFilled()) {
+      alert('案件タイトルと詳細説明は必須です');
+      return;
+    }
     onSubmitProject(newProjectData);
   };
 
@@ -81,7 +98,7 @@ const NewProjectPage = ({
       {/* フロー用ナビゲーションリンク */}
       <div className="mb-6 flex flex-wrap gap-4 text-sm">
         <Link to="/new-contract-project" className="text-blue-600 underline hover:text-blue-800">仕事カード自動生成デモへ</Link>
-        <Link to="/contract-board-mock" className="text-blue-600 underline hover:text-blue-800">案件ボード（モック）へ</Link>
+  <Link to="/contract-board-mock" className="text-blue-600 underline hover:text-blue-800">案件ボードで確認する</Link>
       </div>
       <form onSubmit={localHandleSubmit} className="space-y-6">
         <div>
@@ -147,6 +164,7 @@ const NewProjectPage = ({
               onClick={handleGenerateMilestonesAndGo}
               disabled={isLoadingGemini}
               className="w-full sm:w-auto flex items-center justify-center bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50"
+              formNoValidate={false}
             >
               <Sparkles size={16} className="mr-2" />
               {isLoadingGemini &&
@@ -158,9 +176,17 @@ const NewProjectPage = ({
             </button>
             <button
               type="button"
-              onClick={onContractCheck}
+              onClick={e => {
+                const form = e.target.form;
+                if (form && !form.checkValidity()) {
+                  form.reportValidity();
+                  return;
+                }
+                onContractCheck();
+              }}
               disabled={isLoadingGemini}
               className="w-full sm:w-auto flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
+              formNoValidate={false}
             >
               <ShieldCheck size={16} className="mr-2" />
               {isLoadingGemini &&

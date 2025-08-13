@@ -60,7 +60,7 @@ export default function NewContractProjectPage() {
       alert('プロジェクト名と仕事カードが必要です');
       return;
     }
-    navigate('/contract-board-mock', {
+  navigate('/project-board', {
       state: {
         projectTitle,
         projectDesc,
