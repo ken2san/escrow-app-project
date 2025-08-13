@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Loader2, ShieldCheck, Info } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const NewProjectPage = ({
   newProjectData,
@@ -14,6 +15,7 @@ const NewProjectPage = ({
   onSubmitProject,
   onCancelProject
 }) => {
+  const navigate = useNavigate();
 
   const handleInputChange = (e, index, field) => {
     const { name, value, type, checked } = e.target;
@@ -37,9 +39,17 @@ const NewProjectPage = ({
     }
   };
 
-
-
-
+  // マイルストーン案生成→仕事カード自動生成デモへ遷移
+  const handleGenerateMilestonesAndGo = async () => {
+    await onGenerateMilestones();
+    // 案件タイトル・詳細説明をstateで渡して遷移
+    navigate('/new-contract-project', {
+      state: {
+        projectTitle: newProjectData.title,
+        projectDesc: newProjectData.description
+      }
+    });
+  };
 
   const localHandleSubmit = (e) => {
     e.preventDefault();
@@ -68,6 +78,11 @@ const NewProjectPage = ({
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
   {t('newProjectRegistration')}
       </h2>
+      {/* フロー用ナビゲーションリンク */}
+      <div className="mb-6 flex flex-wrap gap-4 text-sm">
+        <Link to="/new-contract-project" className="text-blue-600 underline hover:text-blue-800">仕事カード自動生成デモへ</Link>
+        <Link to="/contract-board-mock" className="text-blue-600 underline hover:text-blue-800">案件ボード（モック）へ</Link>
+      </div>
       <form onSubmit={localHandleSubmit} className="space-y-6">
         <div>
           <label
@@ -129,7 +144,7 @@ const NewProjectPage = ({
           <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0">
             <button
               type="button"
-              onClick={onGenerateMilestones}
+              onClick={handleGenerateMilestonesAndGo}
               disabled={isLoadingGemini}
               className="w-full sm:w-auto flex items-center justify-center bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50"
             >
