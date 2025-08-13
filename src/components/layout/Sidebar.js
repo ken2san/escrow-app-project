@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History } from 'lucide-react';
+import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History, Layout } from 'lucide-react';
 import WalletInfo from '../common/WalletInfo';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
@@ -156,7 +156,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         </div>
         </div>
       </nav>
-      <div className="mt-auto border-t border-gray-700 pt-3">
+      <div className="mt-auto border-t border-gray-700 pt-3 flex flex-col gap-2">
         <button
           className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white ${
             !isSidebarOpen ? 'justify-center' : ''
@@ -165,6 +165,16 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         >
           <LogOut className="h-5 w-5" />
           {isSidebarOpen && <span className="ml-3 text-sm">{t('logout')}</span>}
+        </button>
+        <button
+          className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 text-indigo-200 hover:text-white ${
+            !isSidebarOpen ? 'justify-center' : ''
+          }`}
+          onClick={() => navigate('/dashboard-sample')}
+          title={isSidebarOpen ? '' : 'Dashboard Sample'}
+        >
+          <Layout className="h-5 w-5" />
+          {isSidebarOpen && <span className="ml-3 text-sm">Dashboard Sample</span>}
         </button>
       </div>
     </div>
