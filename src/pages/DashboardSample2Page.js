@@ -1,3 +1,4 @@
+import EmptyDropzone from '../components/common/EmptyDropzone';
 
 import React, { useState, useRef } from "react";
 import { useSortable } from '@dnd-kit/sortable';
@@ -356,19 +357,27 @@ export default function DashboardSample2Page() {
                                     const { active, over } = e;
                                     if (!over || active.id === over.id) return;
                                     let targetGroupKey = null;
-                                    for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
-                                        const ids = groupCards.map(card => card.id.toString());
-                                        if (ids.includes(over.id.toString())) {
-                                            targetGroupKey = groupKey;
-                                            break;
+                                    let overIndex = null;
+                                    // 空リストDnD対応
+                                    if (typeof over.id === 'string' && over.id.startsWith('empty-dropzone-')) {
+                                        targetGroupKey = over.id.replace('empty-dropzone-', '');
+                                        overIndex = 0;
+                                    } else {
+                                        for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
+                                            const ids = groupCards.map(card => card.id.toString());
+                                            const idx = ids.indexOf(over.id.toString());
+                                            if (idx !== -1) {
+                                                targetGroupKey = groupKey;
+                                                overIndex = idx;
+                                                break;
+                                            }
                                         }
                                     }
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
-                                    const targetCards = groupedCards[targetGroupKey];
-                                    const overIndex = targetCards.findIndex(card => card.id === over.id);
-                                    // Undo保存
+                                    // const targetCards = groupedCards[targetGroupKey];
+                                    // overIndex: 空リストDnD時は0、通常DnD時は既存カードのindex
                                     setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを移動しました', id: Date.now() }]);
                                     setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
                                     setCards(prev => {
@@ -401,12 +410,9 @@ export default function DashboardSample2Page() {
                                         });
                                         const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
                                         let reordered = arrayMove(newTargetCards, movingIdx, overIndex);
-                                        // プロジェクト内DnD時はstartDateを自動再計算
                                         if (viewSettings.groupBy === 'project') {
-                                            // プロジェクトの開始日を基準に、各カードのdurationで順にstartDateを割り当て
                                             const project = projects[targetGroupKey];
                                             let baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
-                                            // 逆順で計算（最後のカードから）
                                             for (let i = reordered.length - 1; i >= 0; i--) {
                                                 let card = reordered[i];
                                                 let duration = Number(card.duration) || 1;
@@ -415,7 +421,6 @@ export default function DashboardSample2Page() {
                                                 reordered[i] = card;
                                             }
                                         }
-                                        // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
                                         let result = [];
                                         let usedIds = new Set(reordered.map(c => c.id));
                                         for (let card of updated) {
@@ -447,7 +452,6 @@ export default function DashboardSample2Page() {
                                             const project = projects[groupKey];
                                             groupTitle = project?.name || groupKey;
                                             subTitle = project?.client ? `（${project.client}）` : '';
-                                            // プロジェクト期日・警告
                                             if (project) {
                                                 const lastDueDate = groupCards.map(card => {
                                                     if (!card.startDate || !card.duration) return '';
@@ -460,7 +464,6 @@ export default function DashboardSample2Page() {
                                                 }
                                             }
                                         } else if (viewSettings.groupBy === 'status') {
-                                            // ステータス日本語ラベル
                                             const statusLabels = {
                                                 unsent: '未編集',
                                                 edited: '編集済',
@@ -470,7 +473,6 @@ export default function DashboardSample2Page() {
                                             };
                                             groupTitle = statusLabels[groupKey] || groupKey;
                                         } else if (viewSettings.groupBy === 'dueDate') {
-                                            // 期日カテゴリ
                                             const dueLabels = {
                                                 '期限切れ': '期限切れ',
                                                 '今日が期日': '今日が期日',
@@ -479,6 +481,7 @@ export default function DashboardSample2Page() {
                                             };
                                             groupTitle = dueLabels[groupKey] || groupKey;
                                         }
+                                        const isEmpty = groupCards.length === 0;
                                         return (
                                             <div key={groupKey} className={`mb-8 ${dragOverInfo.groupKey === groupKey ? 'drag-over' : ''}`}>
                                                 <div className="p-4 pb-2">
@@ -492,14 +495,15 @@ export default function DashboardSample2Page() {
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
                                                 </div>
                                                 <SortableContext
-                                                    items={groupCards.map(card => card.id)}
+                                                    items={isEmpty ? [`empty-dropzone-${groupKey}`] : groupCards.map(card => card.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
                                                     <div className="space-y-0">
-                                                        {groupCards.map((card, idx) => (
-                                                            <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
-                                                        ))}
-                                                        {/* DnD-kit標準のtransform/transitionによる自動スペース確保に統一 */}
+                                                        {isEmpty
+                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            : groupCards.map((card, idx) => (
+                                                                <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
+                                                            ))}
                                                     </div>
                                                 </SortableContext>
                                             </div>
@@ -537,18 +541,26 @@ export default function DashboardSample2Page() {
                                     const { active, over } = e;
                                     if (!over || active.id === over.id) return;
                                     let targetGroupKey = null;
-                                    for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
-                                        const ids = groupCards.map(card => card.id.toString());
-                                        if (ids.includes(over.id.toString())) {
-                                            targetGroupKey = groupKey;
-                                            break;
+                                    let overIndex = null;
+                                    // 空カラムDnD対応
+                                    if (typeof over.id === 'string' && over.id.startsWith('empty-dropzone-')) {
+                                        targetGroupKey = over.id.replace('empty-dropzone-', '');
+                                        overIndex = 0;
+                                    } else {
+                                        for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
+                                            const ids = groupCards.map(card => card.id.toString());
+                                            const idx = ids.indexOf(over.id.toString());
+                                            if (idx !== -1) {
+                                                targetGroupKey = groupKey;
+                                                overIndex = idx;
+                                                break;
+                                            }
                                         }
                                     }
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
-                                    const targetCards = groupedCards[targetGroupKey];
-                                    const overIndex = targetCards.findIndex(card => card.id === over.id);
+                                    // overIndex: 空カラムDnD時は0、通常DnD時は既存カードのindex
                                     // Undo保存
                                     setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを移動しました', id: Date.now() }]);
                                     setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
@@ -647,7 +659,6 @@ export default function DashboardSample2Page() {
                                         if (viewSettings.groupBy === 'project' && groupCards.length > 0) {
                                             const project = projects[groupKey];
                                             let baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
-                                            // 逆順で計算（最後のカードから）
                                             displayCards = [...groupCards];
                                             for (let i = displayCards.length - 1; i >= 0; i--) {
                                                 let card = displayCards[i];
@@ -657,6 +668,7 @@ export default function DashboardSample2Page() {
                                                 displayCards[i] = card;
                                             }
                                         }
+                                        const isEmpty = displayCards.length === 0;
                                         return (
                                             <div
                                                 key={groupKey}
@@ -668,23 +680,23 @@ export default function DashboardSample2Page() {
                                                     <span className="text-sm font-semibold text-slate-500 bg-slate-300 px-2 py-1 rounded-md">{groupCards.length}</span>
                                                 </div>
                                                 <SortableContext
-                                                    items={displayCards.map(card => card.id)}
+                                                    items={isEmpty ? [`empty-dropzone-${groupKey}`] : displayCards.map(card => card.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
                                                     <div className="space-y-3 card-list-container flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 pr-1">
-                                                        {displayCards.map((card) => (
-                                                            <SortableCard
-                                                                key={card.id}
-                                                                card={card}
-                                                                activeId={activeId}
-                                                                onEdit={handleEditClick}
-                                                                projects={projects}
-                                                                layout="board"
-                                                                setNodeRef={el => { cardRefs.current[card.id] = el; }}
-                                                            />
-                                                        ))}
-                                                        {/* ドロップが末尾の場合 */}
-
+                                                        {isEmpty
+                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            : displayCards.map((card) => (
+                                                                <SortableCard
+                                                                    key={card.id}
+                                                                    card={card}
+                                                                    activeId={activeId}
+                                                                    onEdit={handleEditClick}
+                                                                    projects={projects}
+                                                                    layout="board"
+                                                                    setNodeRef={el => { cardRefs.current[card.id] = el; }}
+                                                                />
+                                                            ))}
                                                     </div>
                                                 </SortableContext>
                                             </div>
