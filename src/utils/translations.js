@@ -9,7 +9,7 @@ export const translations = {
   bankInstruction: '指定口座にお振込ください。上記の参照コードを入力してください。',
   sendToWallet: 'ウォレットアドレス宛に送金してください:',
   cryptoInstruction: '上記アドレスに正確な金額を送金してください。Txハッシュは確認後に表示されます。',
-  appName: 'ワリツ',
+  appName: 'Waritsu',
     userRoleClient: '依頼者',
     userRoleContractor: '受注者',
   dashboard: 'ダッシュボード',

@@ -27,7 +27,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         {isSidebarOpen && (
           <div className="flex items-center">
             <Briefcase className="h-7 w-7 mr-2 text-indigo-400" />
-            <h1 className="text-xl font-semibold">{t('appName')}</h1>
+            <h1 className="text-2xl font-bold text-white hidden lg:block">{t('appName')}</h1>
           </div>
         )}
         <button
@@ -176,6 +176,19 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
           >
             <Briefcase className="h-5 w-5" />
             {isSidebarOpen && <span className="ml-3 text-sm">Project Flow Demo</span>}
+          </button>
+          {/* サンプル（DashboardSample2Page）ボタン */}
+          <button
+            onClick={() => navigate('/dashboard-sample2')}
+            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+              window.location.pathname === '/dashboard-sample2'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-indigo-200 hover:text-white'
+            } ${!isSidebarOpen ? 'justify-center' : ''}`}
+            title={isSidebarOpen ? '' : 'Dashboard Sample 2'}
+          >
+            <Layout className="h-5 w-5" />
+            {isSidebarOpen && <span className="ml-3 text-sm">Dashboard Sample 2</span>}
           </button>
         </div>
       </div> {/* ←div閉じタグ追加 */}

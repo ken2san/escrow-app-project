@@ -13,6 +13,7 @@ import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
 import ProjectBoardPage from './pages/ProjectBoardPage';
 import DashboardSamplePage from './pages/DashboardSamplePage';
+import DashboardSample2Page from './pages/DashboardSample2Page';
 import ProjectFlowDemoPage from './pages/ProjectFlowDemoPage';
 
 // Modals
@@ -298,6 +299,7 @@ export default function App() {
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
             <Route path="/project-board" element={<ProjectBoardPage />} />
             <Route path="/dashboard-sample" element={<DashboardSamplePage />} />
+            <Route path="/dashboard-sample2" element={<DashboardSample2Page />} />
             <Route path="/project-flow-demo" element={<ProjectFlowDemoPage />} />
           </Routes>
         </main>
