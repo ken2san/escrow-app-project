@@ -154,18 +154,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
             )}
           </button>
           <button
-            onClick={() => navigate('/dashboard-sample')}
-            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
-              window.location.pathname === '/dashboard-sample'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-indigo-200 hover:text-white'
-            } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : 'Trello Board'}
-          >
-            <Layout className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-3 text-sm">Kanban Board</span>}
-          </button>
-          <button
             onClick={() => navigate('/project-flow-demo')}
             className={`w-full flex items-center p-2.5 rounded-md hover:bg-teal-700 ${
               window.location.pathname === '/project-flow-demo'

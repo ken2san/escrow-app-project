@@ -12,7 +12,6 @@ import ContractReviewPage from './pages/ContractReviewPage';
 import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
 import ProjectBoardPage from './pages/ProjectBoardPage';
-import DashboardSamplePage from './pages/DashboardSamplePage';
 import DashboardSample2Page from './pages/DashboardSample2Page';
 import ProjectFlowDemoPage from './pages/ProjectFlowDemoPage';
 
@@ -298,7 +297,6 @@ export default function App() {
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
             <Route path="/project-board" element={<ProjectBoardPage />} />
-            <Route path="/dashboard-sample" element={<DashboardSamplePage />} />
             <Route path="/dashboard-sample2" element={<DashboardSample2Page />} />
             <Route path="/project-flow-demo" element={<ProjectFlowDemoPage />} />
           </Routes>

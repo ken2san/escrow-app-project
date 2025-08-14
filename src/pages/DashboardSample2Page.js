@@ -376,6 +376,18 @@ export default function DashboardSample2Page() {
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
+                                    // グループがdueDateの場合はグループ間移動禁止
+                                    if (viewSettings.groupBy === 'dueDate') {
+                                        // 移動前後のグループが異なる場合は何もしない
+                                        let fromGroupKey = null;
+                                        for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
+                                            if (groupCards.some(card => card.id === movingCard.id)) {
+                                                fromGroupKey = groupKey;
+                                                break;
+                                            }
+                                        }
+                                        if (fromGroupKey !== targetGroupKey) return;
+                                    }
                                     // const targetCards = groupedCards[targetGroupKey];
                                     // overIndex: 空リストDnD時は0、通常DnD時は既存カードのindex
                                     setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを移動しました', id: Date.now() }]);
@@ -391,28 +403,60 @@ export default function DashboardSample2Page() {
                                                 card.id === movingCard.id ? { ...card, status: targetGroupKey } : card
                                             );
                                         } else if (viewSettings.groupBy === 'dueDate') {
+                                            // グループ間移動は既に禁止済みなので、ここは同一グループ内DnDのみ
+                                            // 期日未設定グループはstartDate空欄維持、他はstartDateを新しい順序で再計算
                                             if (targetGroupKey === '期日未設定') {
-                                                updated = prev.map(card =>
-                                                    card.id === movingCard.id ? { ...card, startDate: '', duration: '' } : card
-                                                );
+                                                // 何もしない（updated = prev;）
+                                                return updated;
                                             } else {
-                                                updated = prev.map(card =>
-                                                    card.id === movingCard.id ? { ...card, startDate: targetGroupKey } : card
-                                                );
+                                                // 新しい順序でstartDateを再計算
+                                                // targetGroupKeyは日付文字列
+                                                // 並び順の先頭がtargetGroupKeyの日付、以降はdurationで順次加算
+                                                // グループ内カード配列を直接使う
+                                                const groupCardsArr = groupedCards[targetGroupKey] || [];
+                                                let movingIdx = groupCardsArr.findIndex(card => card.id === movingCard.id);
+                                                let overIdx = groupCardsArr.findIndex(card => card.id === over.id);
+                                                if (movingIdx === -1 || overIdx === -1) return updated;
+                                                let reordered = arrayMove(groupCardsArr, movingIdx, overIdx);
+                                                let baseDate = new Date(targetGroupKey);
+                                                if (isNaN(baseDate.getTime())) baseDate = new Date();
+                                                for (let i = 0; i < reordered.length; i++) {
+                                                    let card = reordered[i];
+                                                    if (!card) continue;
+                                                    let duration = Number(card.duration) || 1;
+                                                    card = { ...card, startDate: baseDate.toISOString().split('T')[0] };
+                                                    baseDate.setDate(baseDate.getDate() + duration);
+                                                    reordered[i] = card;
+                                                }
+                                                // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
+                                                let result = [];
+                                                let usedIds = new Set(reordered.map(c => c.id));
+                                                for (let card of updated) {
+                                                    if (usedIds.has(card.id)) {
+                                                        if (reordered.length) {
+                                                            result.push(reordered.shift());
+                                                        }
+                                                    } else {
+                                                        result.push(card);
+                                                    }
+                                                }
+                                                return result;
                                             }
+                                        } else {
                                         }
                                         // グループ内の新しい順序をcards全体に反映
-                                        let newTargetCards = updated.filter(card => {
-                                            if (viewSettings.groupBy === 'project') return card.projectId === targetGroupKey;
-                                            if (viewSettings.groupBy === 'status') return card.status === targetGroupKey;
-                                            if (viewSettings.groupBy === 'dueDate') return card.startDate === targetGroupKey;
-                                            return false;
-                                        });
+                                        let newTargetCards = updated.filter(card =>
+                                            viewSettings.groupBy === 'project' ? card.projectId === targetGroupKey :
+                                            viewSettings.groupBy === 'status' ? card.status === targetGroupKey :
+                                            viewSettings.groupBy === 'dueDate' ? card.startDate === targetGroupKey :
+                                            false
+                                        );
                                         const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
                                         let reordered = arrayMove(newTargetCards, movingIdx, overIndex);
                                         if (viewSettings.groupBy === 'project') {
                                             const project = projects[targetGroupKey];
                                             let baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
+                                            if (isNaN(baseDate.getTime())) baseDate = new Date();
                                             for (let i = reordered.length - 1; i >= 0; i--) {
                                                 let card = reordered[i];
                                                 let duration = Number(card.duration) || 1;
@@ -566,10 +610,59 @@ export default function DashboardSample2Page() {
                                     setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
                                     setCards(prev => {
                                         let updated = prev;
-                                        if (viewSettings.groupBy === 'project') {
-                                            updated = prev.map(card =>
-                                                card.id === movingCard.id ? { ...card, projectId: targetGroupKey } : card
-                                            );
+                                        if (viewSettings.groupBy === 'project' || viewSettings.groupBy === 'dueDate') {
+                                            // プロジェクト or 期日グループDnDは同じロジックで処理
+                                            if (viewSettings.groupBy === 'project') {
+                                                updated = prev.map(card =>
+                                                    card.id === movingCard.id ? { ...card, projectId: targetGroupKey } : card
+                                                );
+                                            }
+                                            // グループ内カード配列を直接使う
+                                            const groupCardsArr = groupedCards[targetGroupKey] || [];
+                                            let movingIdx = groupCardsArr.findIndex(card => card.id === movingCard.id);
+                                            let overIdx = groupCardsArr.findIndex(card => card.id === over.id);
+                                            if (movingIdx === -1 || overIdx === -1) return updated;
+                                            let reordered = arrayMove(groupCardsArr, movingIdx, overIdx);
+                                            // startDateを再計算
+                                            let baseDate;
+                                            if (viewSettings.groupBy === 'project') {
+                                                const project = projects[targetGroupKey];
+                                                baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
+                                                if (isNaN(baseDate.getTime())) baseDate = new Date();
+                                                for (let i = reordered.length - 1; i >= 0; i--) {
+                                                    let card = reordered[i];
+                                                    if (!card) continue;
+                                                    let duration = Number(card.duration) || 1;
+                                                    baseDate.setDate(baseDate.getDate() - duration);
+                                                    card = { ...card, startDate: baseDate.toISOString().split('T')[0] };
+                                                    reordered[i] = card;
+                                                }
+                                            } else if (viewSettings.groupBy === 'dueDate') {
+                                                // 並び順の先頭がtargetGroupKeyの日付、以降はdurationで順次加算
+                                                baseDate = new Date(targetGroupKey);
+                                                if (isNaN(baseDate.getTime())) baseDate = new Date();
+                                                for (let i = 0; i < reordered.length; i++) {
+                                                    let card = reordered[i];
+                                                    if (!card) continue;
+                                                    let duration = Number(card.duration) || 1;
+                                                    card = { ...card, startDate: baseDate.toISOString().split('T')[0] };
+                                                    baseDate.setDate(baseDate.getDate() + duration);
+                                                    reordered[i] = card;
+                                                }
+                                            }
+                                            // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
+                                            let result = [];
+                                            let usedIds = new Set(reordered.map(c => c.id));
+                                            for (let card of updated) {
+                                                if (usedIds.has(card.id)) {
+                                                    if (reordered.length) {
+                                                        result.push(reordered.shift());
+                                                    }
+                                                } else {
+                                                    result.push(card);
+                                                }
+                                            }
+                                            return result;
                                         } else if (viewSettings.groupBy === 'status') {
                                             updated = prev.map(card =>
                                                 card.id === movingCard.id ? { ...card, status: targetGroupKey } : card
@@ -594,18 +687,6 @@ export default function DashboardSample2Page() {
                                         });
                                         const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
                                         let reordered = arrayMove(newTargetCards, movingIdx, overIndex);
-                                        // プロジェクト内DnD時はstartDateを自動再計算
-                                        if (viewSettings.groupBy === 'project') {
-                                            const project = projects[targetGroupKey];
-                                            let baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
-                                            for (let i = reordered.length - 1; i >= 0; i--) {
-                                                let card = reordered[i];
-                                                let duration = Number(card.duration) || 1;
-                                                baseDate.setDate(baseDate.getDate() - duration);
-                                                card = { ...card, startDate: baseDate.toISOString().split('T')[0] };
-                                                reordered[i] = card;
-                                            }
-                                        }
                                         // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
                                         let result = [];
                                         let usedIds = new Set(reordered.map(c => c.id));
@@ -659,6 +740,7 @@ export default function DashboardSample2Page() {
                                         if (viewSettings.groupBy === 'project' && groupCards.length > 0) {
                                             const project = projects[groupKey];
                                             let baseDate = project && project.deadline ? new Date(project.deadline) : new Date();
+                                            if (isNaN(baseDate.getTime())) baseDate = new Date();
                                             displayCards = [...groupCards];
                                             for (let i = displayCards.length - 1; i >= 0; i--) {
                                                 let card = displayCards[i];
@@ -763,7 +845,9 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     const dueDate = (() => {
         if (!card.startDate || !card.duration) return '';
         const date = new Date(card.startDate);
+        if (isNaN(date.getTime())) return '';
         date.setDate(date.getDate() + Number(card.duration));
+        if (isNaN(date.getTime())) return '';
         return date.toISOString().split('T')[0];
     })();
     return (
