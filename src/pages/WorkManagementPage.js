@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { initialProjects as initialProjectsData } from '../utils/initialData';
+import { workManagementProjects as initialProjectsData } from '../utils/initialData';
 
 import EmptyDropzone from '../components/common/EmptyDropzone';
 
@@ -175,7 +175,7 @@ export default function WorkManagementPage() {
     }
     if (viewSettings.groupBy === 'project') {
         projects.forEach((project) => {
-            groupedCards[project.id] = filteredCards.filter(card => Number(card.projectId) === Number(project.id));
+            groupedCards[project.id] = filteredCards.filter(card => String(card.projectId) === String(project.id));
         });
     } else if (viewSettings.groupBy === 'status') {
     // Group by status in the order of Japanese labels (for legacy compatibility)
@@ -539,8 +539,7 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="view-area" className="flex flex-col gap-8">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        // groupKeyは数値化
-                                        const numericGroupKey = Number(groupKey);
+                                        // groupKeyはそのまま使う
                                         // --- Group title, subtitle, warning ---
                                         let groupTitle = groupKey;
                                         let subTitle = '';
@@ -549,7 +548,7 @@ export default function WorkManagementPage() {
                                         let deadlineDisplay = '';
                                         let durationDisplay = '';
                                         if (viewSettings.groupBy === 'project') {
-                                            const project = projects.find(p => Number(p.id) === numericGroupKey);
+                                            const project = projects.find(p => String(p.id) === String(groupKey));
                                             groupTitle = project?.name || groupKey;
                                             subTitle = project?.client ? `（${project.client}）` : '';
                                             if (project) {
@@ -612,18 +611,18 @@ export default function WorkManagementPage() {
                                                             <span className="text-xs text-purple-700 bg-purple-100 rounded px-2 py-0.5">{durationDisplay}</span>
                                                         </div>
                                                     )}
-                                                    {viewSettings.groupBy === 'project' && projects[groupKey]?.deadline && (
-                                                        <p className="text-sm text-slate-500">プロジェクト期日: {projects[groupKey].deadline}</p>
+                                                    {viewSettings.groupBy === 'project' && projects.find(p => String(p.id) === String(groupKey))?.deadline && (
+                                                        <p className="text-sm text-slate-500">プロジェクト期日: {projects.find(p => String(p.id) === String(groupKey))?.deadline}</p>
                                                     )}
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
                                                 </div>
                                                     <SortableContext
-                                                        items={isEmpty ? [`empty-dropzone-${numericGroupKey}`] : groupCards.map(card => card.id)}
+                                                        items={isEmpty ? [`empty-dropzone-${groupKey}`] : groupCards.map(card => card.id)}
                                                         strategy={verticalListSortingStrategy}
                                                     >
                                                     <div className="space-y-0">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${numericGroupKey}`} />
+                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
                                                             : groupCards.map((card, idx) => (
                                                                 <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
                                                             ))}
@@ -790,7 +789,7 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="board-area" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        const numericGroupKey = Number(groupKey);
+                                        // groupKeyはそのまま使う
                                         // Column title and project attributes
                                         let groupTitle = groupKey;
                                         let subTitle = '';
@@ -798,7 +797,7 @@ export default function WorkManagementPage() {
                                         let deadlineDisplay = '';
                                         let durationDisplay = '';
                                         if (viewSettings.groupBy === 'project') {
-                                            const project = projects.find(p => Number(p.id) === numericGroupKey);
+                                            const project = projects.find(p => String(p.id) === String(groupKey));
                                             groupTitle = project?.name || groupKey;
                                             subTitle = project?.client ? `（${project.client}）` : '';
                                             if (project) {
@@ -872,12 +871,12 @@ export default function WorkManagementPage() {
                                                     )}
                                                 </div>
                                                 <SortableContext
-                                                    items={isEmpty ? [`empty-dropzone-${numericGroupKey}`] : displayCards.map(card => card.id)}
+                                                    items={isEmpty ? [`empty-dropzone-${groupKey}`] : displayCards.map(card => card.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
                                                     <div className="space-y-3 card-list-container flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 pr-1">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${numericGroupKey}`} />
+                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
                                                             : displayCards.map((card) => (
                                                                 <SortableCard
                                                                     key={card.id}

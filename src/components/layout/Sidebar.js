@@ -95,91 +95,112 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
       <nav className="flex-grow">
   <div className="bg-gray-800/80 rounded-2xl shadow-lg border border-gray-700 px-2 py-4 mb-4">
   <ul>
-          {[
-            {
-              nameKey: 'dashboard',
-              icon: <Home className="h-5 w-5" />,
-              page: 'dashboard',
-            },
-            // newProject（新規案件）はSidebarから削除
-            {
-              nameKey: 'messages',
-              icon: <MessageSquare className="h-5 w-5" />,
-              page: 'messages',
-            },
-            {
-              nameKey: 'disputes',
-              icon: <AlertTriangle className="h-5 w-5" />,
-              page: 'disputes',
-            },
-            {
-              nameKey: 'settings',
-              icon: <Settings className="h-5 w-5" />,
-              page: 'settings',
-            },
-          ]
-            .map((item, idx, arr) => (
-              <li key={item.nameKey} className={idx === arr.length - 1 ? '' : 'mb-1'}>
-                <button
-                  onClick={() => navigate(getPath(item.page))}
-                  className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
-                    activePage === item.page
-                      ? 'bg-indigo-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white'
-                  } ${!isSidebarOpen ? 'justify-center' : ''}`}
-                  title={isSidebarOpen ? '' : t(item.nameKey)}
-                >
-                  {item.icon}
-                  {isSidebarOpen && (
-                    <span className="ml-3 text-sm">{t(item.nameKey)}</span>
-                  )}
-                </button>
-              </li>
-            ))}
-        </ul>
-        {/* Project Overview & Trello Board buttons separated visually */}
-        <div className="mt-4 pt-2 border-t border-gray-700 flex flex-col gap-2">
-          <button
-            onClick={() => navigate(getPath('project-overview'))}
-            className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
-              activePage === 'project-overview'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white'
-            } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : t('projectOverview')}
-          >
-            <Briefcase className="h-5 w-5" />
-            {isSidebarOpen && (
-              <span className="ml-3 text-sm">{t('projectOverview')}</span>
-            )}
-          </button>
-          {/* 仕事管理ページ（WorkManagementPage）ボタン */}
-          <button
-            onClick={() => navigate('/work-management')}
-            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
-              window.location.pathname === '/work-management'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-indigo-200 hover:text-white'
-            } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : '仕事管理'}
-          >
-            <Layout className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-3 text-sm">仕事管理</span>}
-          </button>
-          {/* コマンドUIページへのボタン追加 */}
-          <button
-            onClick={() => navigate('/command-ui')}
-            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
-              window.location.pathname === '/command-ui'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-indigo-200 hover:text-white'
-            } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : 'コマンドUI'}
-          >
-            <Layout className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-3 text-sm">コマンドUI</span>}
-          </button>
-        </div>
+    {/* 仕事管理 */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/work-management')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+          window.location.pathname === '/work-management'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-indigo-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : '仕事管理'}
+      >
+        <Layout className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">仕事管理</span>}
+      </button>
+    </li>
+    {/* コマンドUI */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/command-ui')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+          window.location.pathname === '/command-ui'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-indigo-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : 'コマンドUI'}
+      >
+        <Layout className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">コマンドUI</span>}
+      </button>
+    </li>
+    {/* メッセージ */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate(getPath('messages'))}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+          activePage === 'messages'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-gray-300 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : t('messages')}
+      >
+        <MessageSquare className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('messages')}</span>}
+      </button>
+    </li>
+    {/* 協議中の案件 */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate(getPath('disputes'))}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+          activePage === 'disputes'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-gray-300 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : t('disputes')}
+      >
+        <AlertTriangle className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('disputes')}</span>}
+      </button>
+    </li>
+    {/* 設定 */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate(getPath('settings'))}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+          activePage === 'settings'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-gray-300 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : t('settings')}
+      >
+        <Settings className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('settings')}</span>}
+      </button>
+    </li>
+    {/* projectOverview */}
+    <li className="mb-1 mt-4 pt-2 border-t border-gray-700">
+      <button
+        onClick={() => navigate(getPath('project-overview'))}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+          activePage === 'project-overview'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-gray-300 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : t('projectOverview')}
+      >
+        <Briefcase className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('projectOverview')}</span>}
+      </button>
+    </li>
+    {/* ダッシュボード */}
+    <li>
+      <button
+        onClick={() => navigate(getPath('dashboard'))}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
+          activePage === 'dashboard'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-gray-300 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : t('dashboard')}
+      >
+        <Home className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboard')}</span>}
+      </button>
+    </li>
+  </ul>
       </div> {/* ←div閉じタグ追加 */}
       </nav>
       <div className="mt-auto border-t border-gray-700 pt-3 flex flex-col gap-2">

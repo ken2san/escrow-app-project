@@ -24,7 +24,7 @@ import SendPointsModal from './components/modals/SendPointsModal';
 import ReceivePointsModal from './components/modals/ReceivePointsModal';
 // Data and Utilities
 import { useTranslation } from 'react-i18next';
-import { initialProjects, loggedInUserDataGlobal } from './utils/initialData';
+import { dashboardAllProjects, loggedInUserDataGlobal } from './utils/initialData';
 import { callGeminiAPI } from './utils/api';
 
 import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
@@ -54,7 +54,8 @@ export default function App() {
     setUserPoints(prev => prev + amount);
     setIsPurchaseModalOpen(false);
   };
-  const [projects, setProjects] = useState(initialProjects);
+  // Use dashboardAllProjects for dashboard
+  const [projects, setProjects] = useState(dashboardAllProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

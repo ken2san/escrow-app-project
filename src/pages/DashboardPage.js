@@ -5,6 +5,8 @@ import ProjectCard from '../components/dashboard/ProjectCard';
 import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
 
+import { dashboardAllProjects } from '../utils/initialData';
+
 const DashboardPage = ({
   projects,
   searchTerm,
@@ -29,10 +31,18 @@ const DashboardPage = ({
     );
   }, [currentViewMode]);
 
+  // props.projectsが未指定ならdashboardAllProjectsを使う
+  // Fallback for loggedInUser and searchTerm
+  const safeLoggedInUser = loggedInUser || { id: '', name: '' };
+  const safeSearchTerm = typeof searchTerm === 'string' ? searchTerm : '';
+  // Debug: log which data is being used
+  console.log('DashboardPage: projects prop', projects);
+  console.log('DashboardPage: using projectsData', projects && Array.isArray(projects) ? 'props.projects' : 'dashboardAllProjects');
+  const projectsData = projects && Array.isArray(projects) ? projects : dashboardAllProjects;
   const projectsToDisplay = (() => {
-    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    const normalizedSearchTerm = safeSearchTerm.toLowerCase().trim();
     if (currentViewMode === 'client') {
-      const clientProjects = projects.filter(p => p.clientId === loggedInUser.id);
+      const clientProjects = projectsData.filter(p => p.clientId === safeLoggedInUser.id);
       if (!normalizedSearchTerm) return clientProjects;
       return clientProjects.filter(
         (project) =>
@@ -41,7 +51,7 @@ const DashboardPage = ({
           project.description?.toLowerCase().includes(normalizedSearchTerm)
       );
     } else {
-      const allProjects = projects;
+      const allProjects = projectsData;
       const filterBySearch = (list) => {
         if (!normalizedSearchTerm) return list;
         return list.filter(
@@ -59,7 +69,7 @@ const DashboardPage = ({
               p.aiRecommendationScore &&
               p.aiRecommendationScore > 0.7 &&
               p.status === '募集中' &&
-              p.clientId !== loggedInUser.id
+              p.clientId !== safeLoggedInUser.id
           )
           .sort((a, b) => b.aiRecommendationScore - a.aiRecommendationScore)
       );
@@ -68,10 +78,10 @@ const DashboardPage = ({
         allProjects.filter(
           (p) =>
             p.status === '募集中' &&
-            p.clientId !== loggedInUser.id &&
+            p.clientId !== safeLoggedInUser.id &&
             !p.proposals?.some(
               (prop) =>
-                prop.contractorId === loggedInUser.id &&
+                prop.contractorId === safeLoggedInUser.id &&
                 prop.status !== 'archived'
             )
         )
@@ -83,7 +93,7 @@ const DashboardPage = ({
             p.status === '募集中' &&
             p.proposals?.some(
               (prop) =>
-                prop.contractorId === loggedInUser.id &&
+                prop.contractorId === safeLoggedInUser.id &&
                 prop.status === 'pending_review'
             )
         )
@@ -92,14 +102,14 @@ const DashboardPage = ({
       let activeContracts = filterBySearch(
         allProjects.filter(
           (p) =>
-            p.contractorId === loggedInUser.id &&
+            p.contractorId === safeLoggedInUser.id &&
             ([t('statusInProgress'), t('statusWorkReady'), t('agreementPending'), t('statusInDispute')].includes(p.status))
         )
       ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
       let completedContracts = filterBySearch(
         allProjects.filter(
-          (p) => p.contractorId === loggedInUser.id && p.status === '完了'
+          (p) => p.contractorId === safeLoggedInUser.id && p.status === '完了'
         )
       );
 
