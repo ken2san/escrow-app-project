@@ -153,18 +153,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
               <span className="ml-3 text-sm">{t('projectOverview')}</span>
             )}
           </button>
-          <button
-            onClick={() => navigate('/project-flow-demo')}
-            className={`w-full flex items-center p-2.5 rounded-md hover:bg-teal-700 ${
-              window.location.pathname === '/project-flow-demo'
-                ? 'bg-teal-600 text-white shadow-lg'
-                : 'text-teal-200 hover:text-white'
-            } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : 'Project Flow Demo'}
-          >
-            <Briefcase className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-3 text-sm">Project Flow Demo</span>}
-          </button>
           {/* 仕事管理ページ（WorkManagementPage）ボタン */}
           <button
             onClick={() => navigate('/work-management')}

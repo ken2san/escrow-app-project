@@ -1,9 +1,35 @@
-import EmptyDropzone from '../components/common/EmptyDropzone';
-
 import React, { useState, useRef } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import NewProjectModal from '../components/modals/NewProjectModal';
+import { initialProjects as initialProjectsData } from '../utils/initialData';
+
+import EmptyDropzone from '../components/common/EmptyDropzone';
+
+// 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
+function getInitialProjects() {
+        // milestones→cards変換（cardsがなければmilestonesをcardsとして返す）
+        return initialProjectsData.map(project => {
+            if (project.cards && Array.isArray(project.cards)) return project;
+            if (project.milestones && Array.isArray(project.milestones)) {
+                return {
+                    ...project,
+                    cards: project.milestones.map((m, idx) => ({
+                        id: m.id || `${project.id}-m${idx+1}`,
+                        projectId: project.id,
+                        title: m.name || m.title,
+                        status: m.status || 'unsent',
+                        reward: m.amount || 0,
+                        startDate: m.dueDate || '',
+                        duration: '',
+                        order: idx+1,
+                    })),
+                };
+            }
+            return { ...project, cards: [] };
+        });
+}
 
 const kanbanDnDStyles = `
 /* カード装飾 */
@@ -80,31 +106,41 @@ const kanbanDnDStyles = `
 `;
 
 export default function WorkManagementPage() {
-    // カードごとのrefを保持
+    // Ref for each card
+    // State for showing the new project modal
+    const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+    // Project/card id counters for unique ids
+    const [nextProjectId, setNextProjectId] = useState(4);
+    const [nextCardId, setNextCardId] = useState(7);
+    // State for projects (array, to match ProjectFlowDemoPage)
+    const [projects, setProjects] = useState(getInitialProjects());
+    // Handler to open the new project modal
+    const handleNewProject = () => setShowNewProjectModal(true);
+    const handleCloseNewProject = () => setShowNewProjectModal(false);
+    // Handler to confirm new project from modal
+    const handleConfirmNewProject = (newProject) => {
+        setProjects(prev => [...prev, newProject]);
+        // 新規プロジェクトのカードもcardsに追加
+        if (newProject.cards && newProject.cards.length > 0) {
+            setCards(prev => [...prev, ...newProject.cards]);
+        }
+        setNextProjectId(prev => prev + 1);
+        setNextCardId(prev => prev + (newProject.cards?.length || 0));
+        setShowNewProjectModal(false);
+    };
+    // ...existing code...
     const cardRefs = useRef({});
-    // DnD用: ドラッグ中/オーバー状態管理
+    // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
-    // --- DnD安定化のため、Undo・トースト・保存トーストは一時的に無効化 ---
+    // --- For DnD stability, Undo/Toast/Save Toast temporarily disabled ---
     // const [undoStack, setUndoStack] = useState([]); // {prevCards, message, id}
     // const [undoToastList, setUndoToastList] = useState([]); // [{id, message, visible}]
     // const [successToastOpen, setSuccessToastOpen] = useState(false);
-    // 初期データ
-    const [projects] = useState({
-        'P-1': { name: 'Eコマースサイト構築', client: 'NextGen Mart', deadline: '2025-09-30' },
-        'P-2': { name: '新規ブランド立ち上げ', client: 'Creative Studio', deadline: '2025-08-31' },
-        'P-3': { name: '秋のセールスプロモーション', client: 'Growth Hackers', deadline: '2025-10-15' },
-    });
-    const [cards, setCards] = useState([
-        { id: 1, projectId: 'P-1', title: 'UI/UXデザイン設計', status: 'approved', reward: 150000, startDate: '2025-08-11', duration: 10, order: 1 },
-        { id: 2, projectId: 'P-1', title: 'フロントエンド開発', status: 'awaiting_approval', reward: 300000, startDate: '2025-08-25', duration: 15, order: 2 },
-        { id: 3, projectId: 'P-1', title: 'バックエンド開発', status: 'edited', reward: 400000, startDate: '2025-09-15', duration: 15, order: 3 },
-        { id: 4, projectId: 'P-2', title: 'ロゴデザイン', status: 'approved', reward: 80000, startDate: '2025-08-12', duration: 8, order: 1 },
-        { id: 5, projectId: 'P-2', title: 'LP制作', status: 'revision_needed', reward: 120000, startDate: '2025-08-22', duration: 5, order: 2 },
-    { id: 6, projectId: 'P-3', title: 'SNSキャンペーン企画', status: 'unsent', reward: 100000, startDate: '', duration: '', order: 1 },
-    ]);
+    // cards state is initialized from all cards in initialProjects
+    const [cards, setCards] = useState(getInitialProjects().flatMap(p => p.cards || []));
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
 
-    // グループ化・並べ替え・レイアウト切り替えハンドラ
+    // Handlers for grouping, sorting, and layout switching
     const handleGroupByChange = (e) => {
         setViewSettings(v => ({ ...v, groupBy: e.target.value }));
     };
@@ -116,10 +152,10 @@ export default function WorkManagementPage() {
         // ボードビュー時のgroupBy強制は廃止（ユーザー選択を尊重）
     };
 
-    // --- HTML版に厳密に合わせたグループ化・並べ替え ---
+    // --- Grouping and sorting strictly matching the HTML version ---
     let groupedCards = {};
     const filteredCards = cards;
-    // 日付カテゴリ分け関数
+    // Function to categorize by due date
     function getDueDateCategory(dueDateStr) {
         if (!dueDateStr) return '期日未設定';
         const today = new Date(); today.setHours(0,0,0,0);
@@ -128,7 +164,7 @@ export default function WorkManagementPage() {
         if (dueDate.getTime() === today.getTime()) return '今日が期日';
         return '今後';
     }
-    // カードにdueDateを付与
+    // Add dueDate to card
     function getCardWithDueDate(card) {
     if (!card.startDate || !card.duration) return { ...card, dueDate: null };
     const date = new Date(card.startDate);
@@ -138,11 +174,11 @@ export default function WorkManagementPage() {
     return { ...card, dueDate: date.toISOString().split('T')[0] };
     }
     if (viewSettings.groupBy === 'project') {
-        Object.entries(projects).forEach(([projectId, project]) => {
-            groupedCards[projectId] = filteredCards.filter(card => card.projectId === projectId);
+        projects.forEach((project) => {
+            groupedCards[project.id] = filteredCards.filter(card => Number(card.projectId) === Number(project.id));
         });
     } else if (viewSettings.groupBy === 'status') {
-        // ステータスは日本語ラベル順でグループ化
+    // Group by status in the order of Japanese labels (for legacy compatibility)
         const statusOrder = [
             { key: 'unsent', label: '未編集' },
             { key: 'edited', label: '編集済' },
@@ -154,7 +190,7 @@ export default function WorkManagementPage() {
             groupedCards[key] = filteredCards.filter(card => card.status === key);
         });
     } else if (viewSettings.groupBy === 'dueDate') {
-        // 期日は「期限切れ」「今日が期日」「今後」「期日未設定」の順でグループ化
+    // Group due dates in the order: Expired, Due Today, Upcoming, No Due Date
         const dueDateCategories = ['期限切れ', '今日が期日', '今後', '期日未設定'];
         const tempGroups = { '期限切れ': [], '今日が期日': [], '今後': [], '期日未設定': [] };
         filteredCards.forEach(card => {
@@ -166,7 +202,7 @@ export default function WorkManagementPage() {
             groupedCards[cat] = tempGroups[cat];
         });
     }
-    // 並べ替え（未設定値の扱い・日付比較も厳密化）
+    // Sorting (handle unset values and strict date comparison)
     Object.keys(groupedCards).forEach(key => {
         if (viewSettings.sortBy === 'startDate') {
             groupedCards[key].sort((a, b) => {
@@ -179,20 +215,20 @@ export default function WorkManagementPage() {
         }
     });
 
-    // --- 編集・Undo・トースト等を復元 ---
+    // --- Restore edit, undo, toast, etc. ---
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingCard, setEditingCard] = useState(null);
     const [editErrors, setEditErrors] = useState({});
     const [undoStack, setUndoStack] = useState([]); // {prevCards, message, id}
     const [undoToast, setUndoToast] = useState({ open: false, message: '', id: null });
 
-    // ドラッグ中のカードID
+    // ID of the card being dragged
     const [activeId, setActiveId] = useState(null);
-    // ドラッグ中のカード情報を取得
-    const activeCard = activeId != null ? cards.find(card => card.id === activeId) : null;
+    // Get info of the card being dragged
+    const activeCard = activeId != null ? cards.find(card => Number(card.id) === Number(activeId)) : null;
 
     const handleEditClick = (card) => {
-        setEditingCard({ ...card }); // 編集用にコピー
+        setEditingCard({ ...card }); // Copy for editing
         setEditErrors({});
         setEditModalOpen(true);
     };
@@ -243,6 +279,14 @@ export default function WorkManagementPage() {
 
     return (
         <div className="flex h-screen overflow-hidden">
+            {/* New Project Modal (ProjectFlowDemo style) */}
+            <NewProjectModal
+                open={showNewProjectModal}
+                onClose={handleCloseNewProject}
+                onConfirm={handleConfirmNewProject}
+                nextProjectId={nextProjectId}
+                nextCardId={nextCardId}
+            />
             {/* Undo Toast Notification */}
             {undoToast.open && (
                 <div className="fixed bottom-8 right-8 bg-slate-800 text-white py-3 px-5 rounded-lg shadow-lg flex items-center gap-4 z-50">
@@ -250,7 +294,7 @@ export default function WorkManagementPage() {
                     <button className="text-sm font-bold text-indigo-400 hover:text-indigo-300" onClick={() => handleUndo(undoToast.id)}>元に戻す</button>
                 </div>
             )}
-            {/* 編集モーダル */}
+            {/* Edit Modal */}
             {editModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg m-8 max-h-[90vh] flex flex-col">
@@ -289,8 +333,15 @@ export default function WorkManagementPage() {
             <main className="flex-1 flex flex-col">
                     <header className="bg-white/80 backdrop-blur-sm z-10 border-b border-slate-200">
                         <div className="flex items-center justify-between h-16 px-4 md:px-8">
-                            <h2 className="text-2xl font-bold text-slate-800">マイダッシュボード</h2>
+                            <h2 className="text-2xl font-bold text-slate-800">プロジェクト管理</h2>
                             <div className="flex items-center space-x-4">
+                                {/* 新規プロジェクトボタン */}
+                                <button
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+                                    onClick={handleNewProject}
+                                >
+                                    ＋ 新規プロジェクト
+                                </button>
                                 <img src="https://placehold.co/40x40/E0E7FF/4F46E5?text=A" alt="User Avatar" className="w-10 h-10 rounded-full border-2 border-white shadow" />
                             </div>
                         </div>
@@ -488,15 +539,35 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="view-area" className="flex flex-col gap-8">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        // --- グループタイトル・サブタイトル・警告 ---
+                                        // groupKeyは数値化
+                                        const numericGroupKey = Number(groupKey);
+                                        // --- Group title, subtitle, warning ---
                                         let groupTitle = groupKey;
                                         let subTitle = '';
                                         let warning = '';
+                                        let budgetDisplay = '';
+                                        let deadlineDisplay = '';
+                                        let durationDisplay = '';
                                         if (viewSettings.groupBy === 'project') {
-                                            const project = projects[groupKey];
+                                            const project = projects.find(p => Number(p.id) === numericGroupKey);
                                             groupTitle = project?.name || groupKey;
                                             subTitle = project?.client ? `（${project.client}）` : '';
                                             if (project) {
+                                                if (project.totalBudget && Number(project.totalBudget) > 0) {
+                                                    budgetDisplay = `予算: ¥${Number(project.totalBudget).toLocaleString()}`;
+                                                } else {
+                                                    budgetDisplay = '予算未設定';
+                                                }
+                                                if (project.deadline) {
+                                                    deadlineDisplay = `期日: ${project.deadline}`;
+                                                } else {
+                                                    deadlineDisplay = '期日未設定';
+                                                }
+                                                if (project.duration && Number(project.duration) > 0) {
+                                                    durationDisplay = `期間: ${project.duration}日`;
+                                                } else {
+                                                    durationDisplay = '期間未設定';
+                                                }
                                                 const lastDueDate = groupCards.map(card => {
                                                     if (!card.startDate || !card.duration) return '';
                                                     const d = new Date(card.startDate);
@@ -529,22 +600,30 @@ export default function WorkManagementPage() {
                                         return (
                                             <div key={groupKey} className={`mb-8 ${dragOverInfo.groupKey === groupKey ? 'drag-over' : ''}`}>
                                                 <div className="p-4 pb-2">
-                                                    <h3 className="text-lg font-bold text-slate-700">
+                                                    <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
                                                         {groupTitle}
                                                         {subTitle && <span className="text-xs text-slate-400 ml-2">{subTitle}</span>}
                                                     </h3>
+                                                    {/* プロジェクト属性表示 */}
+                                                    {viewSettings.groupBy === 'project' && (
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            <span className="text-xs text-green-700 bg-green-100 rounded px-2 py-0.5">{budgetDisplay}</span>
+                                                            <span className="text-xs text-blue-700 bg-blue-100 rounded px-2 py-0.5">{deadlineDisplay}</span>
+                                                            <span className="text-xs text-purple-700 bg-purple-100 rounded px-2 py-0.5">{durationDisplay}</span>
+                                                        </div>
+                                                    )}
                                                     {viewSettings.groupBy === 'project' && projects[groupKey]?.deadline && (
                                                         <p className="text-sm text-slate-500">プロジェクト期日: {projects[groupKey].deadline}</p>
                                                     )}
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
                                                 </div>
-                                                <SortableContext
-                                                    items={isEmpty ? [`empty-dropzone-${groupKey}`] : groupCards.map(card => card.id)}
-                                                    strategy={verticalListSortingStrategy}
-                                                >
+                                                    <SortableContext
+                                                        items={isEmpty ? [`empty-dropzone-${numericGroupKey}`] : groupCards.map(card => card.id)}
+                                                        strategy={verticalListSortingStrategy}
+                                                    >
                                                     <div className="space-y-0">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? <EmptyDropzone id={`empty-dropzone-${numericGroupKey}`} />
                                                             : groupCards.map((card, idx) => (
                                                                 <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
                                                             ))}
@@ -557,7 +636,7 @@ export default function WorkManagementPage() {
                             </DndContext>
                             </>
                         ) : (
-                            // ボードビュー: HTML版に近いカンバンUI
+                            // Board view: Kanban UI similar to HTML version
                             <>
                             <style>{kanbanDnDStyles}</style>
                             <DndContext
@@ -711,12 +790,34 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="board-area" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        // カラムタイトル
+                                        const numericGroupKey = Number(groupKey);
+                                        // Column title and project attributes
                                         let groupTitle = groupKey;
                                         let subTitle = '';
+                                        let budgetDisplay = '';
+                                        let deadlineDisplay = '';
+                                        let durationDisplay = '';
                                         if (viewSettings.groupBy === 'project') {
-                                            groupTitle = projects[groupKey]?.name || groupKey;
-                                            subTitle = projects[groupKey]?.client ? `（${projects[groupKey].client}）` : '';
+                                            const project = projects.find(p => Number(p.id) === numericGroupKey);
+                                            groupTitle = project?.name || groupKey;
+                                            subTitle = project?.client ? `（${project.client}）` : '';
+                                            if (project) {
+                                                if (project.totalBudget && Number(project.totalBudget) > 0) {
+                                                    budgetDisplay = `予算: ¥${Number(project.totalBudget).toLocaleString()}`;
+                                                } else {
+                                                    budgetDisplay = '予算未設定';
+                                                }
+                                                if (project.deadline) {
+                                                    deadlineDisplay = `期日: ${project.deadline}`;
+                                                } else {
+                                                    deadlineDisplay = '期日未設定';
+                                                }
+                                                if (project.duration && Number(project.duration) > 0) {
+                                                    durationDisplay = `期間: ${project.duration}日`;
+                                                } else {
+                                                    durationDisplay = '期間未設定';
+                                                }
+                                            }
                                         } else if (viewSettings.groupBy === 'status') {
                                             const statusLabels = {
                                                 unsent: '未編集',
@@ -757,17 +858,26 @@ export default function WorkManagementPage() {
                                                 className={`bg-slate-200 rounded-xl p-3 kanban-column flex flex-col min-h-[400px] ${dragOverInfo.groupKey === groupKey ? 'drag-over' : ''}`}
                                                 style={{ boxSizing: 'border-box' }}
                                             >
-                                                <div className="flex items-center justify-between mb-4 px-1">
-                                                    <h3 className="font-bold text-slate-700 text-base tracking-wide">{groupTitle} <span className="text-xs text-slate-400 font-normal">{subTitle}</span></h3>
-                                                    <span className="text-sm font-semibold text-slate-500 bg-slate-300 px-2 py-1 rounded-md">{groupCards.length}</span>
+                                                <div className="flex flex-col gap-1 mb-4 px-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <h3 className="font-bold text-slate-700 text-base tracking-wide">{groupTitle} <span className="text-xs text-slate-400 font-normal">{subTitle}</span></h3>
+                                                        <span className="text-sm font-semibold text-slate-500 bg-slate-300 px-2 py-1 rounded-md">{groupCards.length}</span>
+                                                    </div>
+                                                    {viewSettings.groupBy === 'project' && (
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            <span className="text-xs text-green-700 bg-green-100 rounded px-2 py-0.5">{budgetDisplay}</span>
+                                                            <span className="text-xs text-blue-700 bg-blue-100 rounded px-2 py-0.5">{deadlineDisplay}</span>
+                                                            <span className="text-xs text-purple-700 bg-purple-100 rounded px-2 py-0.5">{durationDisplay}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <SortableContext
-                                                    items={isEmpty ? [`empty-dropzone-${groupKey}`] : displayCards.map(card => card.id)}
+                                                    items={isEmpty ? [`empty-dropzone-${numericGroupKey}`] : displayCards.map(card => card.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
                                                     <div className="space-y-3 card-list-container flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 pr-1">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? <EmptyDropzone id={`empty-dropzone-${numericGroupKey}`} />
                                                             : displayCards.map((card) => (
                                                                 <SortableCard
                                                                     key={card.id}
@@ -805,7 +915,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         setNodeRef(node);
         if (externalSetNodeRef) externalSetNodeRef(node);
     };
-    // KanbanCard.jsのDnD安定化ロジックを取り入れつつ、見た目は現状維持
+    // Incorporate KanbanCard.js DnD stability logic, keep current appearance
     const style = {
         background: '#fff',
         borderRadius: '0.75rem',
@@ -821,7 +931,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         minHeight: '48px',
         willChange: 'transform',
     };
-    // ステータスバッジ
+    // Status badge
     const statusInfo = {
         unsent: { label: '未編集', bg: 'bg-slate-200', text: 'text-slate-600' },
         edited: { label: '編集済', bg: 'bg-blue-100', text: 'text-blue-700' },
@@ -829,7 +939,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         revision_needed: { label: '要修正', bg: 'bg-red-100', text: 'text-red-700' },
         approved: { label: '承認済', bg: 'bg-green-100', text: 'text-green-700' },
     }[card.status] || { label: card.status, bg: 'bg-slate-200', text: 'text-slate-600' };
-    // アクションアイコン
+    // Action icon
     const actionIcon = (card.status === 'unsent' || card.status === 'revision_needed') ? (
         <button title="編集する" className="text-slate-400 hover:text-indigo-600" onClick={e => { e.stopPropagation(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
@@ -839,9 +949,9 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.949a.75.75 0 00.95.826L11.25 8.25l-5.607-1.752a.75.75 0 00-.95-.826z" /><path d="M15 6.75a.75.75 0 00-.75-.75h-3.5a.75.75 0 000 1.5h3.5a.75.75 0 00.75-.75zM15 9.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM15 12.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM4.832 15.312a.75.75 0 00.95-.826l-1.414-4.95a.75.75 0 00-.95-.826L.5 11.25l5.607 1.752a.75.75 0 00.95.826z" /></svg>
         </button>
     ) : null;
-    // プロジェクト名
+    // Project name
     const projectName = projects && projects[card.projectId]?.name;
-    // 期日
+    // Due date
     const dueDate = (() => {
         if (!card.startDate || !card.duration) return '';
         const date = new Date(card.startDate);
@@ -883,4 +993,4 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     );
 }
 
-// ドロップターゲットの高さをカードに合わせるコンポーネント
+    // Component to match drop target height to card

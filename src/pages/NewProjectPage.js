@@ -136,6 +136,40 @@ const NewProjectPage = ({
             placeholder={t('projectCategoryPlaceholder')}
           />
         </div>
+        <div>
+          <label
+            htmlFor="client"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            {t('clientName') || 'Client Name'}
+          </label>
+          <input
+            type="text"
+            name="client"
+            id="client"
+            value={newProjectData.client || ''}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder={t('clientNamePlaceholder') || 'e.g. ACME Corp.'}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="deadline"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            {t('deadline') || 'Deadline'}
+          </label>
+          <input
+            type="date"
+            name="deadline"
+            id="deadline"
+            value={newProjectData.deadline || ''}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder={t('deadlinePlaceholder') || 'YYYY-MM-DD'}
+          />
+        </div>
 
         <div className="border-t border-gray-200 pt-6 space-y-6">
           <div>

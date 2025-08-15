@@ -13,7 +13,6 @@ import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
 import WorkManagementPage from './pages/WorkManagementPage';
 import MarketCommandUIPage from './pages/MarketCommandUIPage';
-import ProjectFlowDemoPage from './pages/ProjectFlowDemoPage';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -297,7 +296,6 @@ export default function App() {
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
             <Route path="/work-management" element={<WorkManagementPage />} />
-            <Route path="/project-flow-demo" element={<ProjectFlowDemoPage />} />
             <Route path="/command-ui" element={<MarketCommandUIPage />} />
           </Routes>
         </main>
