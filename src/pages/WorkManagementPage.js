@@ -79,7 +79,7 @@ const kanbanDnDStyles = `
 }
 `;
 
-export default function DashboardSample2Page() {
+export default function WorkManagementPage() {
     // カードごとのrefを保持
     const cardRefs = useRef({});
     // DnD用: ドラッグ中/オーバー状態管理

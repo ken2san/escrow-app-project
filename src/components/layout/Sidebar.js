@@ -165,18 +165,31 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
             <Briefcase className="h-5 w-5" />
             {isSidebarOpen && <span className="ml-3 text-sm">Project Flow Demo</span>}
           </button>
-          {/* サンプル（DashboardSample2Page）ボタン */}
+          {/* 仕事管理ページ（WorkManagementPage）ボタン */}
           <button
-            onClick={() => navigate('/dashboard-sample2')}
+            onClick={() => navigate('/work-management')}
             className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
-              window.location.pathname === '/dashboard-sample2'
+              window.location.pathname === '/work-management'
                 ? 'bg-indigo-600 text-white shadow-lg'
                 : 'text-indigo-200 hover:text-white'
             } ${!isSidebarOpen ? 'justify-center' : ''}`}
-            title={isSidebarOpen ? '' : 'Dashboard Sample 2'}
+            title={isSidebarOpen ? '' : '仕事管理'}
           >
             <Layout className="h-5 w-5" />
-            {isSidebarOpen && <span className="ml-3 text-sm">Dashboard Sample 2</span>}
+            {isSidebarOpen && <span className="ml-3 text-sm">仕事管理</span>}
+          </button>
+          {/* コマンドUIページへのボタン追加 */}
+          <button
+            onClick={() => navigate('/command-ui')}
+            className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+              window.location.pathname === '/command-ui'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-indigo-200 hover:text-white'
+            } ${!isSidebarOpen ? 'justify-center' : ''}`}
+            title={isSidebarOpen ? '' : 'コマンドUI'}
+          >
+            <Layout className="h-5 w-5" />
+            {isSidebarOpen && <span className="ml-3 text-sm">コマンドUI</span>}
           </button>
         </div>
       </div> {/* ←div閉じタグ追加 */}

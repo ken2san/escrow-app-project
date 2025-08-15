@@ -11,8 +11,8 @@ import NewProjectPage from './pages/NewProjectPage';
 import ContractReviewPage from './pages/ContractReviewPage';
 import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
-import ProjectBoardPage from './pages/ProjectBoardPage';
-import DashboardSample2Page from './pages/DashboardSample2Page';
+import WorkManagementPage from './pages/WorkManagementPage';
+import MarketCommandUIPage from './pages/MarketCommandUIPage';
 import ProjectFlowDemoPage from './pages/ProjectFlowDemoPage';
 
 // Modals
@@ -296,9 +296,9 @@ export default function App() {
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
-            <Route path="/project-board" element={<ProjectBoardPage />} />
-            <Route path="/dashboard-sample2" element={<DashboardSample2Page />} />
+            <Route path="/work-management" element={<WorkManagementPage />} />
             <Route path="/project-flow-demo" element={<ProjectFlowDemoPage />} />
+            <Route path="/command-ui" element={<MarketCommandUIPage />} />
           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />
