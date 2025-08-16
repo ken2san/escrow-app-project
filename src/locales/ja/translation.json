@@ -95,5 +95,7 @@
   "fullDescription": "詳細説明",
   "noTitle": "タイトル未設定",
   "proposalsReceived": "{{count}} 件の提案あり",
-  "viewProposalDetails": "提案詳細を見る"
+  "viewProposalDetails": "提案詳細を見る",
+  "workManagement": "仕事管理",
+  "commandUI": "コマンドUI"
 }

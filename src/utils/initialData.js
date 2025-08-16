@@ -1,3 +1,10 @@
+// Dummy data for MarketCommandUIPage
+export const marketCommandItems = [
+  { type: 'request', id: 1, title: 'バックエンド開発', by: 'NextGen Mart', value: 400000, nature: 0.9, reward: 400000, popularity: 8, description: 'Eコマースサイトのバックエンド開発をお願いします。Node.jsとGraphQLの経験者を募集しています。' },
+  { type: 'offer', id: 2, title: '高品質なロゴを3案作成します', by: 'Sato Design', value: 50000, nature: 0.2, reward: 50000, popularity: 9, description: 'あなたのビジネスの顔となるロゴを、ヒアリングに基づき3つの異なる方向性で提案します。' },
+  { type: 'request', id: 3, title: 'SNSキャンペーン企画', by: 'Growth Hackers', value: 100000, nature: 0.6, reward: 100000, popularity: 5, description: '秋のセールスプロモーションに向けたSNSキャンペーンの企画と運用をお願いします。' },
+  { type: 'offer', id: 4, title: '朝採れ有機野菜セット (M)', by: 'Suzuki Farms', value: 3500, nature: 0.1, reward: 3500, popularity: 10, description: '旬の有機野菜を8〜10種類詰め合わせたセットです。新鮮な味をお楽しみください。' },
+];
 export const loggedInUserDataGlobal = {
   id: 'user555',
   name: '田中 さとし',
@@ -1148,89 +1155,9 @@ export const dashboardProjects = dashboardAllProjects.filter(p => [
   'job101', 'job103', 1, 4, 'job_dispute_01'
 ].includes(p.id));
 
-// Work Management (仕事管理): ユーザーが受託/発注した仕事
-// jobs配列は今後使わず、workManagementProjectsのみをエクスポート・利用してください。
-/*
-export const jobs = [
-  {
-    id: 'nextgenmart',
-    projectName: 'Eコマースサイト構築（NextGen Mart）',
-    projectDue: '2025-09-30',
-    tasks: [
-      {
-        id: 'frontend-dev',
-        name: 'フロントエンド開発',
-        status: '承認待ち',
-        amount: 300000,
-        due: '2025-09-05',
-        duration: 15,
-        assignee: 'Assignee',
-      },
-      {
-        id: 'uiux-design',
-        name: 'UI/UXデザイン設計',
-        status: '承認済',
-        amount: 150000,
-        due: '2025-09-15',
-        duration: 10,
-        assignee: 'Assignee',
-      },
-      {
-        id: 'backend-dev',
-        name: 'バックエンド開発',
-        status: '編集済',
-        amount: 400000,
-        due: '2025-09-30',
-        duration: 15,
-        assignee: 'Assignee',
-      },
-    ],
-  },
-  {
-    id: 'creative-studio',
-    projectName: '新規ブランド立ち上げ（Creative Studio）',
-    projectDue: '2025-08-31',
-    tasks: [
-      {
-        id: 'logo-design',
-        name: 'ロゴデザイン',
-        status: '承認済',
-        amount: 80000,
-        due: '2025-08-20',
-        duration: 8,
-        assignee: 'Assignee',
-      },
-      {
-        id: 'lp-production',
-        name: 'LP制作',
-        status: '要修正',
-        amount: 120000,
-        due: '2025-08-27',
-        duration: 5,
-        assignee: 'Assignee',
-      },
-    ],
-  },
-  {
-    id: 'growth-hackers',
-    projectName: '秋のセールスプロモーション（Growth Hackers）',
-    projectDue: '2025-10-15',
-    tasks: [
-      {
-        id: 'sns-campaign',
-        name: 'SNSキャンペーン企画',
-        status: '未編集',
-        amount: 100000,
-        due: null,
-        duration: null,
-        assignee: 'Assignee',
-      },
-    ],
-  },
-];
-*/
 
-// Command UI: コマンドUI用の案件
-export const commandUIProjects = dashboardAllProjects.filter(p => [
-  'job106'
-].includes(p.id));
+
+// // Command UI: コマンドUI用の案件
+// export const commandUIProjects = dashboardAllProjects.filter(p => [
+//   'job106'
+// ].includes(p.id));

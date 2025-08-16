@@ -40,21 +40,21 @@ const NewProjectPage = ({
   };
 
 
-  // 必須項目チェック
+  // Check required fields
   const isRequiredFieldsFilled = () => {
     return newProjectData.title && newProjectData.description;
   };
 
-  // マイルストーン案生成→仕事カード自動生成デモへ遷移
+  // Generate milestone suggestions and navigate to job card auto-generation demo
   const handleGenerateMilestonesAndGo = async (e) => {
-    // ブラウザのバリデーションを発火
+  // Trigger browser validation
     const form = e?.target?.form;
     if (form && !form.checkValidity()) {
       form.reportValidity();
       return;
     }
     await onGenerateMilestones();
-    // 案件タイトル・詳細説明をstateで渡して遷移
+  // Pass project title and description via state and navigate
     navigate('/new-contract-project', {
       state: {
         projectTitle: newProjectData.title,
@@ -95,7 +95,7 @@ const NewProjectPage = ({
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
   {t('newProjectRegistration')}
       </h2>
-      {/* フロー用ナビゲーションリンク */}
+  {/* Navigation links for the flow */}
       <div className="mb-6 flex flex-wrap gap-4 text-sm">
         <Link to="/new-contract-project" className="text-blue-600 underline hover:text-blue-800">仕事カード自動生成デモへ</Link>
   <Link to="/contract-board-mock" className="text-blue-600 underline hover:text-blue-800">案件ボードで確認する</Link>

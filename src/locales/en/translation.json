@@ -80,6 +80,8 @@
   "depositFunds": "Deposit Funds",
   "fullDescription": "Full Description",
   "noTitle": "No Title",
-  "proposalsReceived": "{{count}} proposals received"
-  ,"viewProposalDetails": "View Proposal Details"
+  "proposalsReceived": "{{count}} proposals received",
+  "viewProposalDetails": "View Proposal Details",
+  "workManagement": "Work Management",
+  "commandUI": "Command UI"
 }

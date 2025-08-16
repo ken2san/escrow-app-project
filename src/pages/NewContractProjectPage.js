@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// ダミーカード生成関数
+// Dummy card generation function
 const getDummyCards = () => [
   { id: 'd1', title: '要件ヒアリング', description: 'クライアントと要件を確認', status: 'open' },
   { id: 'd2', title: '設計・準備', description: '仕様・設計・準備作業', status: 'open' },
   { id: 'd3', title: '実装', description: 'コーディング・テスト', status: 'open' },
 ];
 
-// シンプルなテキスト→プロジェクトJSON変換（ルールベース例）
+// Simple text to project JSON conversion (rule-based example)
 function simpleTextToProjectJson(input) {
-  // 例: 「◯◯を作りたい。要件は◯◯、◯◯、◯◯」→タイトル・説明・カード配列
+  // Example: "I want to create XX. Requirements are XX, XX, XX" → title, description, card array
   const lines = input.split(/\n|。/).map(l => l.trim()).filter(Boolean);
   const title = lines[0] || 'Untitled Project';
   const description = lines.slice(1).join(' ');
-  // 2行目以降の「要件」や「作業」などをカード化（単純分割）
+  // Convert lines after the first into cards (simple split)
   const cards = lines.slice(1).map((l, i) => ({ id: `auto${i+1}`, title: l.slice(0, 16) || `Task ${i+1}`, description: l, status: 'open' }));
   return { title, description, cards: cards.length ? cards : getDummyCards() };
 }
@@ -28,7 +28,7 @@ export default function NewContractProjectPage() {
   const [cardTitle, setCardTitle] = useState('');
   const [cardDesc, setCardDesc] = useState('');
 
-  // 画面遷移時にstateからタイトル・説明を受け取る
+  // Receive title and description from state on page transition
   useEffect(() => {
     if (location.state && (location.state.projectTitle || location.state.projectDesc)) {
       if (location.state.projectTitle) setProjectTitle(location.state.projectTitle);
@@ -36,25 +36,25 @@ export default function NewContractProjectPage() {
     }
   }, [location.state]);
 
-  // プロジェクト説明→プロジェクト自動生成
+  // Generate project automatically from project description
   const generateProjectFromDesc = () => {
     if (!projectDesc) return alert('プロジェクト説明を入力してください');
     const { title, /* description, */ cards } = simpleTextToProjectJson(projectDesc);
     setProjectTitle(title);
-    // setProjectDesc(description); // 説明は上書きしない
+  // setProjectDesc(description); // Do not overwrite description
     setCards(cards);
   };
 
-  // プロジェクト登録（モック: ログ出力のみ）
+  // Register project (mock: log output only)
   const registerProject = () => {
     if (!projectTitle) return alert('プロジェクト名を入力してください');
     if (cards.length === 0) return alert('最低1つの仕事カードを追加してください');
-    // 本来はAPI送信等
+  // Normally, send to API, etc.
     console.log({ projectTitle, projectDesc, cards });
     alert('プロジェクト登録（モック）: コンソールを確認');
   };
 
-  // 案件ボード（モック）へ遷移
+  // Navigate to project board (mock)
   const goToBoard = () => {
     if (!projectTitle || cards.length === 0) {
       alert('プロジェクト名と仕事カードが必要です');
@@ -69,7 +69,7 @@ export default function NewContractProjectPage() {
     });
   };
 
-  // カード追加
+  // Add card
   const addCard = () => {
     if (!cardTitle) return;
     setCards([

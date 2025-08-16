@@ -107,7 +107,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : '仕事管理'}
       >
         <Layout className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">仕事管理</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
       </button>
     </li>
     {/* コマンドUI */}
@@ -122,7 +122,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : 'コマンドUI'}
       >
         <Layout className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">コマンドUI</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
       </button>
     </li>
     {/* メッセージ */}
