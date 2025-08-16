@@ -85,7 +85,7 @@ export default function App() {
   const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] = useState(false);
   const [proposalForDetails, setProposalForDetails] = useState(null);
 
-  // ContractReviewページ用: 選択中プロジェクトを明示的に保持
+  // For ContractReview page: explicitly keep the selected project
   const [projectForContractReview, setProjectForContractReview] = useState(null);
   const selectedProjectForReview = projectForContractReview || projects.find((p) => p.id === selectedProjectId);
 
@@ -112,7 +112,7 @@ export default function App() {
     navigate('dashboard');
     setSelectedProjectId(null);
     setSearchTerm('');
-    // setDisputeSummary(''); // Not defined, commented out
+  // setDisputeSummary(''); // Not defined, commented out
     resetNewProjectForm();
   };
 
@@ -170,7 +170,7 @@ export default function App() {
     }));
     if (projectToNavigate) {
       setSelectedProjectId(projectToNavigate.id);
-      // alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName)); // 不要な警告を削除
+  // alert(t.proposalSelectedMsg.replace('{contractorName}', proposal.contractorName)); // Unnecessary alert removed
       navigateToContractReview(projectToNavigate);
       closeProposalDetailsModal();
     }
@@ -183,7 +183,7 @@ export default function App() {
 
   const handleFinalizeContract = (projectId) => {
   setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t('statusWorkReady') } : p));
-  // alert(t.contractFinalizedMessage); // 不要な警告を削除
+  // alert(t.contractFinalizedMessage); // Unnecessary alert removed
   navigate('dashboard');
   };
 
@@ -194,7 +194,7 @@ export default function App() {
     }
     setUserPoints(prev => prev - amount);
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t.statusInProgress, fundsDeposited: p.fundsDeposited + amount } : p));
-    // 履歴追加（本来はsetState管理推奨だが、今回はmockTransactionsにpush）
+  // Add to transaction history (ideally should be managed by setState, but here we push to mockTransactions)
     mockTransactions.push({
       id: `tx_${Date.now()}`,
       type: 'deposit',
@@ -218,7 +218,7 @@ export default function App() {
           updatedFundsReleased += m.amount;
           updatedFundsDeposited -= m.amount;
           newMilestone.paidDate = new Date().toISOString().split('T')[0];
-          // 履歴追加
+          // Add to transaction history
           mockTransactions.push({
             id: `tx_${Date.now()}`,
             type: 'release',
@@ -286,7 +286,7 @@ export default function App() {
         <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
+            <Route path="/" element={<MarketCommandUIPage />} />
             <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={async () => {}} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
             <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />

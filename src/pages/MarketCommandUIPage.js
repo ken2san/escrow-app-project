@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
-import { marketCommandItems } from '../utils/initialData';
+import React, { useState, useRef, useEffect } from 'react';
+import { marketCommandItems as initialMarketCommandItems } from '../utils/initialData';
+import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
 
 
 const MarketCommandUIPage = () => {
@@ -12,59 +13,142 @@ const MarketCommandUIPage = () => {
   const [showSuggest, setShowSuggest] = useState(false);
   const [suggestIdx, setSuggestIdx] = useState(0);
 
-  // Suggestion candidates
+  // Suggestion candidates (English only)
   const suggestItems = [
-    { cmd: '/タイムライン', desc: 'タイムライン表示' },
-    { cmd: '/マップ', desc: 'マップ表示' },
-    { cmd: '/お気に入り', desc: 'お気に入りだけ表示' },
-    { cmd: '/タスク', desc: 'タスクダッシュボード表示' },
+    { cmd: '/timeline', desc: 'Show timeline' },
+    { cmd: '/map', desc: 'Show map' },
+    { cmd: '/favorite', desc: 'Show only favorites' },
+    { cmd: '/task', desc: 'Show task dashboard' },
+    { cmd: '/setlocation', desc: 'Set your location (e.g. /setlocation Tokyo)' },
   ];
 
-  // Command execution
+  // User location state
+  const [userLocation, setUserLocation] = useState('');
+
+  // Command execution (English only)
   const handleCommand = (valRaw) => {
     let val = valRaw.replace(/[Ａ-Ｚａ-ｚ＠]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).toLowerCase();
     if (val.startsWith('/')) {
-      if (valRaw.includes('タスク')) {
-  // Task dashboard (not implemented: fallback to timeline)
-        setMarketView('timeline');
-      } else if (val.includes('map') || valRaw.includes('マップ')) {
+      if (val.startsWith('/task')) {
+        setMarketView('timeline'); // fallback
+      } else if (val.startsWith('/map')) {
         setMarketView('map');
-      } else if (val.includes('timeline') || valRaw.includes('タイムライン') || valRaw.includes('一覧')) {
+      } else if (val.startsWith('/timeline')) {
         setMarketView('timeline');
-      } else if (valRaw.includes('お気に入り') || val.includes('favorite') || val.includes('fav')) {
-  // Show only favorites (not implemented: fallback to timeline)
-        setMarketView('timeline');
+      } else if (val.startsWith('/favorite') || val.startsWith('/fav')) {
+        setMarketView('timeline'); // fallback
+      } else if (val.startsWith('/setlocation')) {
+        // /setlocation <address>
+        const loc = valRaw.replace(/^\/setlocation\s*/i, '').trim();
+        if (loc) {
+          setUserLocation(loc);
+          alert('Location set to: ' + loc);
+        } else {
+          alert('Usage: /setlocation <your address>');
+        }
       }
     }
   };
 
-  // Timeline cards
+  // Timeline cards with vertical snap and infinite scroll
+  const [marketItems, setMarketItems] = useState([...initialMarketCommandItems]);
+  // Track archived (favorited) item ids
+  const [archivedIds, setArchivedIds] = useState([]);
+  const timelineRef = useRef(null);
+  const loadingRef = useRef(false);
+
+  // Infinite scroll: add more dummy cards when near bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current || loadingRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = timelineRef.current;
+      if (scrollHeight - scrollTop - clientHeight < 200) {
+        loadingRef.current = true;
+        setTimeout(() => {
+          setMarketItems(prev => [
+            ...prev,
+            ...prev.slice(0, 4).map((item, idx) => ({
+              ...item,
+              id: prev.length + idx + 1,
+              title: item.title + ' (おすすめ)',
+              nature: Math.random(),
+              popularity: Math.floor(Math.random() * 10) + 1,
+            }))
+          ]);
+          loadingRef.current = false;
+        }, 600);
+      }
+    };
+    const el = timelineRef.current;
+    if (el) el.addEventListener('scroll', handleScroll);
+    return () => { if (el) el.removeEventListener('scroll', handleScroll); };
+  }, []);
+
+
+  const handleViewDetails = (item) => {
+    alert(`View details for: ${item.title}`);
+  };
+
+  // Remove card from timeline when favorited
+  const handleFavorite = (item) => {
+    setArchivedIds(ids => [...ids, item.id]);
+  };
+
   const renderTimeline = () => (
-    <div>
+    <div className="relative">
       <h3 className="text-xl font-semibold text-gray-700 mb-4">タイムライン</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {marketCommandItems.map(item => (
-          <div key={item.id} className="bg-white rounded-lg shadow-sm border p-4 flex flex-col">
-            <div className="flex-1">
-              <div className="flex justify-between items-start">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${item.type === 'request' ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}`}>{item.type === 'request' ? 'REQUEST' : 'OFFER'}</span>
-                <span className={`text-sm font-bold ${item.type === 'request' ? 'text-green-600' : 'text-orange-700'}`}>{item.type === 'request' ? '+ ' : '- '}¥{item.value.toLocaleString()}</span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-800 mt-2">{item.title}</h3>
-              <p className="text-sm text-slate-500">{item.type === 'request' ? '依頼者' : '提供者'}: {item.by}</p>
-              <p className="text-sm text-slate-600 mt-3 line-clamp-3">{item.description}</p>
-            </div>
-            <div className="w-full mt-4 flex gap-2 items-center">
-              {/* Favorite/Proposal/Purchase buttons to be implemented later */}
-              <button
-                className={`flex-1 font-semibold py-2 rounded-lg transition-colors text-sm
-                  ${item.type === 'request'
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                    : 'bg-orange-600 text-white hover:bg-orange-700'}`}
-              >{item.type === 'request' ? '応募' : '購入'}</button>
-            </div>
-          </div>
-        ))}
+      {/* Mobile: vertical snap, Desktop: grid */}
+      <div
+        ref={timelineRef}
+        className="w-full gap-6 overflow-y-auto"
+        style={{
+          height: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Mobile only: snap scroll */}
+        <div
+          className="block md:hidden"
+          style={{
+            height: '100%',
+            overflowY: 'auto',
+            scrollSnapType: 'y mandatory',
+            flex: 1,
+          }}
+        >
+          {marketItems
+            .filter(item => !archivedIds.includes(item.id))
+            .sort((a, b) => b.nature - a.nature)
+            .map((item, idx) => (
+              <MarketCommandCardWrapper
+                key={item.id}
+                item={item}
+                onAction={handleViewDetails}
+                onFavorite={handleFavorite}
+                minHeight={item.nature > 0.8 ? '80vh' : item.nature > 0.6 ? '65vh' : '50vh'}
+                scrollSnapAlign="start"
+                size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
+              />
+          ))}
+          <div className="text-center text-gray-400 py-4">Loading more...</div>
+        </div>
+        {/* Desktop: grid */}
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {marketItems
+            .filter(item => !archivedIds.includes(item.id))
+            .sort((a, b) => b.nature - a.nature)
+            .map((item, idx) => (
+              <MarketCommandCardWrapper
+                key={item.id}
+                item={item}
+                onAction={handleViewDetails}
+                onFavorite={handleFavorite}
+                size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
+              />
+          ))}
+import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
+        </div>
       </div>
     </div>
   );

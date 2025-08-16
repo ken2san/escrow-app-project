@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History, Layout } from 'lucide-react';
+import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History, Layout, Search } from 'lucide-react';
 import WalletInfo from '../common/WalletInfo';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
@@ -95,6 +95,21 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
       <nav className="flex-grow">
   <div className="bg-gray-800/80 rounded-2xl shadow-lg border border-gray-700 px-2 py-4 mb-4">
   <ul>
+    {/* コマンドUI（ホーム・検索アイコン） */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/command-ui')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+          window.location.pathname === '/command-ui'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-indigo-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : 'コマンドUI'}
+      >
+        <Search className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
+      </button>
+    </li>
     {/* 仕事管理 */}
     <li className="mb-1">
       <button
@@ -107,22 +122,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : '仕事管理'}
       >
         <Layout className="h-5 w-5" />
-  {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
-      </button>
-    </li>
-    {/* コマンドUI */}
-    <li className="mb-1">
-      <button
-        onClick={() => navigate('/command-ui')}
-        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
-          window.location.pathname === '/command-ui'
-            ? 'bg-indigo-600 text-white shadow-lg'
-            : 'text-indigo-200 hover:text-white'
-        } ${!isSidebarOpen ? 'justify-center' : ''}`}
-        title={isSidebarOpen ? '' : 'コマンドUI'}
-      >
-        <Layout className="h-5 w-5" />
-  {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
       </button>
     </li>
     {/* メッセージ */}
