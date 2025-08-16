@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ProjectCard from '../components/dashboard/ProjectCard';
-import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History } from 'lucide-react';
+import { Search, Filter, PlusCircle, Briefcase, Zap, ListChecks, History, Repeat } from 'lucide-react';
 import TabButton from '../components/common/TabButton';
 
 import { dashboardAllProjects } from '../utils/initialData';
@@ -16,6 +16,9 @@ const DashboardPage = ({
   handleProjectClick,
   selectedProjectId,
   setActivePage,
+  toggleViewMode,
+  currentLanguage,
+  toggleLanguage,
   ...props
 }) => {
   const { t } = useTranslation();
@@ -165,6 +168,9 @@ const DashboardPage = ({
     </div>
   );
 
+  const roleSwitchButtonText =
+    currentViewMode === 'client' ? t('viewAsContractor') : t('viewAsClient');
+
   return (
     <div>
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -179,6 +185,21 @@ const DashboardPage = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         </div>
         <div className="flex items-center space-x-2">
+          <button
+            onClick={toggleViewMode}
+            className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm whitespace-nowrap"
+            title={t('roleSwitchButton')}
+          >
+            <Repeat size={16} className="mr-1 sm:mr-1.5 flex-shrink-0" />
+            {roleSwitchButtonText}
+          </button>
+          <button
+            onClick={toggleLanguage}
+            className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm"
+          >
+            {/* Language switch button for convenience, can be removed if not needed */}
+            {currentLanguage === 'ja' ? 'English' : '日本語'}
+          </button>
           <button className="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm shadow-sm">
             <Filter size={16} className="mr-2" />
             {t('filter')}

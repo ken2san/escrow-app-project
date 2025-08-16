@@ -1,5 +1,5 @@
 import React from 'react';
-import { Repeat, Globe, Bell } from 'lucide-react';
+import { Globe, Bell } from 'lucide-react';
 
 const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode, toggleLanguage, currentLanguage }) => {
   let pageTitle = '';
@@ -17,8 +17,6 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
   } else if (activePage === 'settings') {
     pageTitle = t('settings');
   }
-  const roleSwitchButtonText =
-    currentViewMode === 'client' ? t('viewAsContractor') : t('viewAsClient');
 
   return (
     <header
@@ -36,14 +34,7 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
         </h2>
       </div>
       <div className="flex items-center space-x-2 md:space-x-3">
-        <button
-          onClick={toggleViewMode}
-          className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm whitespace-nowrap"
-          title={t('roleSwitchButton')}
-        >
-          <Repeat size={16} className="mr-1 sm:mr-1.5 flex-shrink-0" />
-          {roleSwitchButtonText}
-        </button>
+  {/* View mode switch button moved to DashboardPage */}
         <button
           onClick={toggleLanguage}
           className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm"

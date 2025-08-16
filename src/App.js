@@ -61,7 +61,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const activePage = location.pathname.replace('/', '') || 'dashboard';
+  const activePage = location.pathname === '/' ? 'command-ui' : location.pathname.replace('/', '');
   const [activeProjectDetailTab, setActiveProjectDetailTab] = useState('details');
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
