@@ -23,8 +23,7 @@ const MarketCommandUIPage = () => {
     { cmd: '/my', desc: 'Show only my cards (dummy)' },
   ];
 
-  // User location state
-  const [userLocation, setUserLocation] = useState('');
+
 
   // スラッシュ検索用 state
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -49,7 +48,7 @@ const MarketCommandUIPage = () => {
         // /setlocation <address>
         const loc = valRaw.replace(/^\/setlocation\s*/i, '').trim();
         if (loc) {
-          setUserLocation(loc);
+          // setUserLocation(loc); // removed
           alert('Location set to: ' + loc);
         } else {
           alert('Usage: /setlocation <your address>');
@@ -80,6 +79,8 @@ const MarketCommandUIPage = () => {
   const [archivedIds, setArchivedIds] = useState([]);
   const timelineRef = useRef(null);
   const loadingRef = useRef(false);
+  // コメントいいね・わるいね状態を全体で管理
+  const [commentLikesMap, setCommentLikesMap] = useState({});
 
   // Infinite scroll: add more dummy cards when near bottom
   useEffect(() => {
@@ -122,6 +123,9 @@ const MarketCommandUIPage = () => {
     setArchivedIds(ids => [...ids, item.id]);
   };
 
+  // 各タイムラインアイテムごとに「もっと見る」状態を管理
+  const [showAllComments, setShowAllComments] = useState({});
+
   const renderTimeline = () => {
     // --- 検索キーワードがあればフィルタ ---
     let filteredMarketItems;
@@ -137,59 +141,92 @@ const MarketCommandUIPage = () => {
       filteredMarketItems = marketItems;
     }
 
+    const timelineItems = filteredMarketItems.filter(item => !archivedIds.includes(item.id));
+    const handleLike = (itemId, cidx, type) => {
+      setCommentLikesMap(prev => {
+        const arr = prev[itemId] ? [...prev[itemId]] : [];
+        if (!arr[cidx]) arr[cidx] = { likes: 0, dislikes: 0 };
+        arr[cidx] = { ...arr[cidx], [type]: arr[cidx][type] + 1 };
+        return { ...prev, [itemId]: arr };
+      });
+    };
     return (
-      <div className="relative">
-        <h3 className="text-xl font-semibold text-gray-700 mb-4">タイムライン</h3>
-        {/* Mobile: vertical snap, Desktop: grid */}
-        <div
-          ref={timelineRef}
-          className="w-full gap-6 overflow-y-auto"
-          style={{
-            height: '80vh',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          {/* Mobile only: snap scroll */}
-          <div
-            className="block md:hidden"
-            style={{
-              height: '100%',
-              overflowY: 'auto',
-              scrollSnapType: 'y mandatory',
-              flex: 1,
-            }}
-          >
-            {filteredMarketItems
-              .filter(item => !archivedIds.includes(item.id))
-              .sort((a, b) => b.nature - a.nature)
-              .map((item, idx) => (
-                <MarketCommandCardWrapper
-                  key={item.id}
-                  item={item}
-                  onAction={handleViewDetails}
-                  onFavorite={handleFavorite}
-                  minHeight={item.nature > 0.8 ? '80vh' : item.nature > 0.6 ? '65vh' : '50vh'}
-                  scrollSnapAlign="start"
-                  size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
-                />
-            ))}
-            <div className="text-center text-gray-400 py-4">Loading more...</div>
-          </div>
-          {/* Desktop: grid */}
-          <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredMarketItems
-              .filter(item => !archivedIds.includes(item.id))
-              .sort((a, b) => b.nature - a.nature)
-              .map((item, idx) => (
-                <MarketCommandCardWrapper
-                  key={item.id}
-                  item={item}
-                  onAction={handleViewDetails}
-                  onFavorite={handleFavorite}
-                  size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
-                />
-            ))}
+      <div className="relative py-12 px-2 md:px-0 bg-gradient-to-b from-indigo-50 via-white to-indigo-100 min-h-[100vh]">
+        <h3 className="text-2xl font-bold text-indigo-700 mb-12 text-center tracking-wide drop-shadow-sm">Timeline</h3>
+        <div className="relative max-w-3xl mx-auto">
+          {/* 中心ライン */}
+          <div className="hidden md:block absolute left-1/2 top-0 h-full w-1 bg-gradient-to-b from-indigo-200 via-indigo-300 to-indigo-200 -translate-x-1/2 z-0 rounded-full" />
+          <div className="flex flex-col gap-20">
+            {timelineItems.map((item, idx) => {
+              const isLeft = idx % 2 === 0;
+              return (
+                <div key={item.id} className="relative flex items-center min-h-[140px]">
+                  {/* 枝ライン */}
+                  <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-10 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
+                    style={{transform: 'translateY(-50%)'}} />
+                  {/* タイムラインノード */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-20">
+                    <span className="text-indigo-400 text-lg">★</span>
+                  </div>
+                  {/* カード本体（左右交互, ラッパー最小化） */}
+                  <div className={`z-20 w-full md:w-[340px] max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}
+                    style={{marginTop: isLeft ? '0' : '40px', marginBottom: isLeft ? '40px' : '0'}}>
+                    <MarketCommandCardWrapper
+                      item={item}
+                      onAction={handleViewDetails}
+                      onFavorite={handleFavorite}
+                      size="sm"
+                    />
+                  </div>
+                  {/* コメントバブル群（左右交互, opposite to card, FIXED） */}
+                  <div
+                    className={`absolute top-1/2 ${!isLeft ? 'right-[calc(50%+80px)]' : 'left-[calc(50%+80px)]'} w-[360px] max-w-[600px] z-30 animate-fadein`}
+                    style={{transform: 'translateY(-50%)'}}
+                  >
+                    <div className="flex flex-col gap-4">
+                      {Array.isArray(item.userComments) && item.userComments.length > 0 ? (
+                        (() => {
+                          // いいね順でソート
+                          const commentsWithLikes = item.userComments.map((comment, cidx) => ({
+                            comment,
+                            cidx,
+                            likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
+                            dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
+                          }));
+                          commentsWithLikes.sort((a, b) => b.likes - a.likes);
+                          const showAll = !!showAllComments[item.id];
+                          const displayComments = showAll ? commentsWithLikes : commentsWithLikes.slice(0, 5);
+                          return <>
+                            {displayComments.map(({ comment, cidx, likes, dislikes }) => (
+                              <div key={cidx} className="relative">
+                                <div className={`bubble-paper ${!isLeft ? 'left' : 'right'} flex items-center gap-2 px-3 py-2`}>
+                                  <span className="italic text-indigo-700 flex-1">{comment}</span>
+                                  <button className="text-green-500 hover:text-green-700 px-1" title="いいね" onClick={() => handleLike(item.id, cidx, 'likes')}>
+                                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" className="inline-block align-middle"><path d="M2 10.75C2 9.784 2.784 9 3.75 9H7V5.5A2.5 2.5 0 019.5 3c.828 0 1.5.672 1.5 1.5V9h4.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0115.25 18H5.75A1.75 1.75 0 014 16.25v-5.5z"/></svg>
+                                    <span className="text-xs ml-0.5">{likes}</span>
+                                  </button>
+                                  <button className="text-red-400 hover:text-red-600 px-1" title="わるいね" onClick={() => handleLike(item.id, cidx, 'dislikes')}>
+                                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" className="inline-block align-middle"><path d="M18 9.25c0 .966-.784 1.75-1.75 1.75H13V14.5A2.5 2.5 0 0110.5 17c-.828 0-1.5-.672-1.5-1.5V11H4.75A1.75 1.75 0 013 9.25v-5.5C3 2.784 3.784 2 4.75 2h9.5A1.75 1.75 0 0116 3.75v5.5z"/></svg>
+                                    <span className="text-xs ml-0.5">{dislikes}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            {commentsWithLikes.length > 5 && !showAll && (
+                              <button className="mt-2 text-indigo-500 hover:underline text-sm" onClick={() => setShowAllComments(prev => ({ ...prev, [item.id]: true }))}>
+                                もっと見る
+                              </button>
+                            )}
+                          </>;
+                        })()
+                      ) : (
+                        <span className="text-gray-400">最初のフィードバックをどうぞ！</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -277,13 +314,16 @@ const MarketCommandUIPage = () => {
                     setPrompt(item.cmd);
                     setShowSuggest(false);
                   }}
-                >{item.cmd}: {item.desc}</div>
+                >
+                  {item.cmd}: {item.desc}
+                </div>
               ))}
             </div>
           )}
           <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l.34 2.27.28 1.84a2 2 0 0 0 1.95 1.54l1.84.28 2.27.34-1.64 1.64-.8.8a2 2 0 0 0 0 2.82l.8.8 1.64 1.64-2.27.34-1.84.28a2 2 0 0 0-1.95 1.54l-.28 1.84-.34 2.27-1.64-1.64-.8-.8a2 2 0 0 0-2.82 0l-.8.8-1.64 1.64.34-2.27.28-1.84a2 2 0 0 0-1.95-1.54l-1.84-.28-2.27-.34 1.64-1.64.8-.8a2 2 0 0 0 0-2.82l-.8-.8L2.69 12l2.27-.34 1.84-.28a2 2 0 0 0 1.95-1.54l.28-1.84.34-2.27L12 2.69z"/></svg>
         </div>
         {/* Main View */}
+
         {renderMainView()}
       </div>
     </div>

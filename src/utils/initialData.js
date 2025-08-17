@@ -18,18 +18,39 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
 }
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [
-  { type: 'request', id: 1, title: 'バックエンド開発', by: 'NextGen Mart', value: 400000, nature: 0.9, reward: 400000, popularity: 8, description: 'Eコマースサイトのバックエンド開発をお願いします。Node.jsとGraphQLの経験者を募集しています。', workImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80' },
-  { type: 'offer', id: 2, title: '高品質なロゴを3案作成します', by: 'Sato Design', value: 50000, nature: 0.2, reward: 50000, popularity: 9, description: 'あなたのビジネスの顔となるロゴを、ヒアリングに基づき3つの異なる方向性で提案します。', workImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80' },
-  { type: 'request', id: 3, title: 'SNSキャンペーン企画', by: 'Growth Hackers', value: 100000, nature: 0.6, reward: 100000, popularity: 5, description: '秋のセールスプロモーションに向けたSNSキャンペーンの企画と運用をお願いします。', workImage: '' },
-  { type: 'offer', id: 4, title: '朝採れ有機野菜セット (M)', by: 'Suzuki Farms', value: 3500, nature: 0.1, reward: 3500, popularity: 10, description: '旬の有機野菜を8〜10種類詰め合わせたセットです。新鮮な味をお楽しみください。', workImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80' },
-  { type: 'request', id: 5, title: 'Webサイト翻訳（英→日）', by: 'Global Bridge', value: 80000, nature: 0.7, reward: 80000, popularity: 7, description: '企業Webサイトの英語から日本語への翻訳。IT用語に強い方歓迎。', workImage: '' },
-  { type: 'offer', id: 6, title: 'プロカメラマンによる商品撮影', by: 'PhotoPro', value: 30000, nature: 0.5, reward: 30000, popularity: 6, description: 'ECサイト用の商品写真をプロが撮影・レタッチまで対応します。', workImage: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80' },
-  { type: 'request', id: 7, title: 'YouTube動画編集', by: 'Yamada Channel', value: 20000, nature: 0.8, reward: 20000, popularity: 8, description: 'YouTube用の動画編集。カット・テロップ・BGM挿入など。', workImage: '' },
-  { type: 'offer', id: 8, title: 'SEO記事執筆（1本）', by: 'Content Works', value: 12000, nature: 0.3, reward: 12000, popularity: 5, description: 'SEOを意識したWeb記事を1本執筆します。ジャンル相談可。', workImage: '' },
-  { type: 'request', id: 9, title: 'アプリUIデザイン', by: 'AppStart', value: 60000, nature: 0.85, reward: 60000, popularity: 9, description: '新規スマホアプリのUIデザイン案を3パターン提案してほしい。', workImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80' },
-  { type: 'offer', id: 10, title: 'オンライン英会話レッスン', by: 'English Now', value: 2500, nature: 0.4, reward: 2500, popularity: 7, description: 'ネイティブ講師によるマンツーマン英会話レッスン（1回25分）。', workImage: '' },
-  { type: 'request', id: 11, title: 'クラウド会計導入サポート', by: 'SmartBiz', value: 40000, nature: 0.65, reward: 40000, popularity: 6, description: 'freeeやマネーフォワードなどクラウド会計ソフトの導入支援。', workImage: '' },
-  { type: 'offer', id: 12, title: 'イラストアイコン作成', by: 'Miki Art', value: 5000, nature: 0.2, reward: 5000, popularity: 8, description: 'SNSやブログ用のオリジナルイラストアイコンを作成します。', workImage: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80' },
+  { type: 'request', id: 1, title: 'バックエンド開発', by: 'NextGen Mart', value: 400000, nature: 0.9, reward: 400000, popularity: 8, description: 'Eコマースサイトのバックエンド開発をお願いします。Node.jsとGraphQLの経験者を募集しています。', workImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80', userComments: [
+    'この値段で受ける人いる？',
+    '要件もう少し詳しく！',
+    '面白そうな案件ですね。',
+    'この案件は要件が曖昧すぎて、もう少し詳細な仕様や納期、報酬の支払い条件などを明記してもらえると応募しやすいです。',
+    'Node.jsとGraphQLの経験者限定とのことですが、具体的なバージョンや開発環境についても教えてください。',
+    '短納期で高額案件、興味あります！'
+  ] },
+  { type: 'offer', id: 2, title: '高品質なロゴを3案作成します', by: 'Sato Design', value: 50000, nature: 0.2, reward: 50000, popularity: 9, description: 'あなたのビジネスの顔となるロゴを、ヒアリングに基づき3つの異なる方向性で提案します。', workImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80', userComments: [
+    'もう少し安くなりませんか？',
+    'サンプル見せてほしい',
+    'デザインの方向性は？',
+    'ロゴの納品形式（AI, PNG, SVGなど）や修正回数についても事前に知りたいです。',
+    'ヒアリングの方法や納期の目安も教えてください。',
+    '実績や過去の制作例があれば見たいです！'
+  ] },
+  { type: 'request', id: 3, title: 'SNSキャンペーン企画', by: 'Growth Hackers', value: 100000, nature: 0.6, reward: 100000, popularity: 5, description: '秋のセールスプロモーションに向けたSNSキャンペーンの企画と運用をお願いします。', workImage: '', userComments: [
+    'ターゲット層は？',
+    'SNSの種類は？',
+    '実績が知りたい',
+    'キャンペーンのKPIやゴール設定についても明記してほしいです。',
+    '過去の成功事例や失敗事例があれば参考にしたいです。',
+    '広告予算や運用体制についても教えてください。'
+  ] },
+  { type: 'offer', id: 4, title: '朝採れ有機野菜セット (M)', by: 'Suzuki Farms', value: 3500, nature: 0.1, reward: 3500, popularity: 10, description: '旬の有機野菜を8〜10種類詰め合わせたセットです。新鮮な味をお楽しみください。', workImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80', userComments: [] },
+  { type: 'request', id: 5, title: 'Webサイト翻訳（英→日）', by: 'Global Bridge', value: 80000, nature: 0.7, reward: 80000, popularity: 7, description: '企業Webサイトの英語から日本語への翻訳。IT用語に強い方歓迎。', workImage: '', userComments: [] },
+  { type: 'offer', id: 6, title: 'プロカメラマンによる商品撮影', by: 'PhotoPro', value: 30000, nature: 0.5, reward: 30000, popularity: 6, description: 'ECサイト用の商品写真をプロが撮影・レタッチまで対応します。', workImage: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80', userComments: [] },
+  { type: 'request', id: 7, title: 'YouTube動画編集', by: 'Yamada Channel', value: 20000, nature: 0.8, reward: 20000, popularity: 8, description: 'YouTube用の動画編集。カット・テロップ・BGM挿入など。', workImage: '', userComments: [] },
+  { type: 'offer', id: 8, title: 'SEO記事執筆（1本）', by: 'Content Works', value: 12000, nature: 0.3, reward: 12000, popularity: 5, description: 'SEOを意識したWeb記事を1本執筆します。ジャンル相談可。', workImage: '', userComments: [] },
+  { type: 'request', id: 9, title: 'アプリUIデザイン', by: 'AppStart', value: 60000, nature: 0.85, reward: 60000, popularity: 9, description: '新規スマホアプリのUIデザイン案を3パターン提案してほしい。', workImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80', userComments: [] },
+  { type: 'offer', id: 10, title: 'オンライン英会話レッスン', by: 'English Now', value: 2500, nature: 0.4, reward: 2500, popularity: 7, description: 'ネイティブ講師によるマンツーマン英会話レッスン（1回25分）。', workImage: '', userComments: [] },
+  { type: 'request', id: 11, title: 'クラウド会計導入サポート', by: 'SmartBiz', value: 40000, nature: 0.65, reward: 40000, popularity: 6, description: 'freeeやマネーフォワードなどクラウド会計ソフトの導入支援。', workImage: '', userComments: [] },
+  { type: 'offer', id: 12, title: 'イラストアイコン作成', by: 'Miki Art', value: 5000, nature: 0.2, reward: 5000, popularity: 8, description: 'SNSやブログ用のオリジナルイラストアイコンを作成します。', workImage: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80', userComments: [] }
 ];
 export const loggedInUserDataGlobal = {
   id: 'user555',
@@ -684,7 +705,7 @@ export const dashboardAllProjects = [
         description_en: 'Complete integration testing for all features, assist with production deployment, and deliver final assets.'
       }
     ]
-  }
+  },
 ];
 
 // --- Exports for each app section (after dashboardAllProjects definition) ---
