@@ -1,6 +1,6 @@
 // src/hooks/useProjects.js
 import { useState, useEffect } from 'react';
-import { initialProjects, loggedInUserDataGlobal } from '../utils/initialData';
+import { dashboardProjects } from '../utils/initialData';
 import { translations } from '../utils/translations';
 
 // LocalStorage用のキー
@@ -10,10 +10,10 @@ const STORAGE_KEY = 'escrow_app_projects';
 const getStoredProjects = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : initialProjects;
+  return stored ? JSON.parse(stored) : dashboardProjects;
   } catch (error) {
     console.error('Failed to load projects from localStorage:', error);
-    return initialProjects;
+  return dashboardProjects;
   }
 };
 

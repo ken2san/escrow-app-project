@@ -194,6 +194,15 @@ const DashboardPage = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         </div>
         <div className="flex items-center space-x-2">
+          {currentViewMode === 'client' && (
+            <button
+              onClick={() => navigate('/newProject')}
+              className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
+            >
+              <PlusCircle size={16} className="mr-2" />
+              {t('registerNewProject')}
+            </button>
+          )}
           <button
             onClick={handleModeSwitch}
             className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm whitespace-nowrap"
@@ -206,15 +215,6 @@ const DashboardPage = ({
             <Filter size={16} className="mr-2" />
             {t('filter')}
           </button>
-          {currentViewMode === 'client' && (
-            <button
-              onClick={() => navigate('/newProject')}
-              className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
-            >
-              <PlusCircle size={16} className="mr-2" />
-              {t('registerNewProject')}
-            </button>
-          )}
         </div>
       </div>
       {currentViewMode === 'contractor' ? (
