@@ -102,5 +102,6 @@
   "statusInProgress": "作業中",
   "statusWorkReady": "作業開始待ち",
   "agreementPending": "協議中",
-  "statusInDispute": "協議中"
+  "statusInDispute": "協議中",
+  "projectOverview": "プロジェクト概要"
 }

@@ -80,7 +80,6 @@ export const workManagementProjects = [
     ],
   },
 ];
-// --- Main project data array for dashboard and all project references ---
 export const dashboardAllProjects = [
   // job101
   // id: job1（完了済みロゴリニューアル案件）
@@ -628,42 +627,8 @@ export const dashboardAllProjects = [
         // ...other milestone properties as needed...
       },
     ],
-    proposals: [],
   },
   // ...existing code...
-  {
-    id: 'job105',
-    name: '簡単なデータ入力作業',
-    name_en: 'Simple Data Entry Task',
-    clientName: '株式会社データサービス',
-    clientName_en: 'Data Service Inc.',
-    clientId: 'clientXYZ',
-    contractorName: null,
-    contractorId: null,
-    totalAmount: 20000,
-    status: '募集中',
-    dueDate: '2025-07-20',
-    description: '指定されたフォーマットへのデータ入力作業です。正確性が求められます。週に10時間程度の作業を想定しています。',
-    description_en: 'Enter data into a specified format. Accuracy is required. Expected workload: about 10 hours per week.',
-    requiredSkills: ['データ入力', 'Excel', '注意力'],
-    requiredSkills_en: ['Data Entry', 'Excel', 'Attention to Detail'],
-    clientRating: { averageScore: 4.0, totalReviews: 3 },
-    allowSubcontracting: false,
-    aiRecommendationScore: 0.2,
-    proposals: [],
-    milestones: [
-      {
-        id: 'job105-m1',
-        name: 'データ入力完了',
-        name_en: 'Data Entry Completion',
-        amount: 20000,
-        status: 'pending',
-        dueDate: '2025-07-20',
-        description: '全データ入力完了',
-        description_en: 'All data entry completed.'
-      }
-    ],
-  },
   {
     id: 'job106',
     name: 'ECサイト新機能開発',
