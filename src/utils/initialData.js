@@ -1,3 +1,21 @@
+// ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
+export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
+  return dashboardAllProjects
+    .filter(p => p.clientId === userId || p.contractorId === userId)
+    .map(p => ({
+      id: p.id,
+      title: p.name,
+      by: p.clientId === userId ? p.clientName : p.contractorName,
+      value: p.totalAmount,
+      nature: p.aiRecommendationScore || 0.7,
+      reward: p.totalAmount,
+      popularity: p.clientRating?.averageScore || 5,
+      description: p.description,
+      workImage: p.imageUrl || '',
+      type: p.clientId === userId ? 'request' : 'offer',
+      isMyProject: true,
+    }));
+}
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [
   { type: 'request', id: 1, title: 'バックエンド開発', by: 'NextGen Mart', value: 400000, nature: 0.9, reward: 400000, popularity: 8, description: 'Eコマースサイトのバックエンド開発をお願いします。Node.jsとGraphQLの経験者を募集しています。', workImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80' },

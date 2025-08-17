@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { marketCommandItems as initialMarketCommandItems } from '../utils/initialData';
+import { marketCommandItems as initialMarketCommandItems, getMyProjectCards, loggedInUserDataGlobal } from '../utils/initialData';
 import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
 
 
@@ -20,10 +20,14 @@ const MarketCommandUIPage = () => {
     { cmd: '/favorite', desc: 'Show only favorites' },
     { cmd: '/task', desc: 'Show task dashboard' },
     { cmd: '/setlocation', desc: 'Set your location (e.g. /setlocation Tokyo)' },
+    { cmd: '/my', desc: 'Show only my cards (dummy)' },
   ];
 
   // User location state
   const [userLocation, setUserLocation] = useState('');
+
+  // スラッシュ検索用 state
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   // Command execution (English only)
   const handleCommand = (valRaw) => {
@@ -31,12 +35,16 @@ const MarketCommandUIPage = () => {
     if (val.startsWith('/')) {
       if (val.startsWith('/task')) {
         setMarketView('timeline'); // fallback
+        setSearchKeyword('');
       } else if (val.startsWith('/map')) {
         setMarketView('map');
+        setSearchKeyword('');
       } else if (val.startsWith('/timeline')) {
         setMarketView('timeline');
+        setSearchKeyword('');
       } else if (val.startsWith('/favorite') || val.startsWith('/fav')) {
         setMarketView('timeline'); // fallback
+        setSearchKeyword('');
       } else if (val.startsWith('/setlocation')) {
         // /setlocation <address>
         const loc = valRaw.replace(/^\/setlocation\s*/i, '').trim();
@@ -46,12 +54,28 @@ const MarketCommandUIPage = () => {
         } else {
           alert('Usage: /setlocation <your address>');
         }
+        setSearchKeyword('');
+      } else if (val.startsWith('/my')) {
+        // Show only my cards (dummy)
+        setSearchKeyword('__MY_CARDS_ONLY__');
+        setMarketView('timeline');
+      } else {
+        // --- スラッシュ検索: /<keyword> で検索 ---
+        const keyword = valRaw.replace(/^\//, '').trim();
+        setSearchKeyword(keyword);
+        setMarketView('timeline');
       }
+    } else {
+      setSearchKeyword('');
     }
   };
 
   // Timeline cards with vertical snap and infinite scroll
-  const [marketItems, setMarketItems] = useState([...initialMarketCommandItems]);
+  // Ensure unique keys: prefix user cards with 'my-'
+  const [marketItems, setMarketItems] = useState([
+    ...initialMarketCommandItems,
+    ...getMyProjectCards(loggedInUserDataGlobal.id).map(item => ({ ...item, id: `my-${item.id}` }))
+  ]);
   // Track archived (favorited) item ids
   const [archivedIds, setArchivedIds] = useState([]);
   const timelineRef = useRef(null);
@@ -65,16 +89,20 @@ const MarketCommandUIPage = () => {
       if (scrollHeight - scrollTop - clientHeight < 200) {
         loadingRef.current = true;
         setTimeout(() => {
-          setMarketItems(prev => [
-            ...prev,
-            ...prev.slice(0, 4).map((item, idx) => ({
-              ...item,
-              id: prev.length + idx + 1,
-              title: item.title + ' (おすすめ)',
-              nature: Math.random(),
-              popularity: Math.floor(Math.random() * 10) + 1,
-            }))
-          ]);
+          setMarketItems(prev => {
+            // Generate unique ids for new dummy cards
+            const nextIdx = prev.length;
+            return [
+              ...prev,
+              ...prev.slice(0, 4).map((item, idx) => ({
+                ...item,
+                id: `dummy-${nextIdx + idx + 1}`,
+                title: item.title + ' (おすすめ)',
+                nature: Math.random(),
+                popularity: Math.floor(Math.random() * 10) + 1,
+              }))
+            ];
+          });
           loadingRef.current = false;
         }, 600);
       }
@@ -94,64 +122,79 @@ const MarketCommandUIPage = () => {
     setArchivedIds(ids => [...ids, item.id]);
   };
 
-  const renderTimeline = () => (
-    <div className="relative">
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">タイムライン</h3>
-      {/* Mobile: vertical snap, Desktop: grid */}
-      <div
-        ref={timelineRef}
-        className="w-full gap-6 overflow-y-auto"
-        style={{
-          height: '80vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Mobile only: snap scroll */}
+  const renderTimeline = () => {
+    // --- 検索キーワードがあればフィルタ ---
+    let filteredMarketItems;
+    if (searchKeyword === '__MY_CARDS_ONLY__') {
+      // Dummy: filter to only my cards (by userId, with 'my-' prefix)
+      filteredMarketItems = marketItems.filter(item => String(item.id).startsWith('my-'));
+    } else if (searchKeyword) {
+      filteredMarketItems = marketItems.filter(item =>
+        (item.title && item.title.toLowerCase().includes(searchKeyword.toLowerCase())) ||
+        (item.description && item.description.toLowerCase().includes(searchKeyword.toLowerCase()))
+      );
+    } else {
+      filteredMarketItems = marketItems;
+    }
+
+    return (
+      <div className="relative">
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">タイムライン</h3>
+        {/* Mobile: vertical snap, Desktop: grid */}
         <div
-          className="block md:hidden"
+          ref={timelineRef}
+          className="w-full gap-6 overflow-y-auto"
           style={{
-            height: '100%',
-            overflowY: 'auto',
-            scrollSnapType: 'y mandatory',
-            flex: 1,
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {marketItems
-            .filter(item => !archivedIds.includes(item.id))
-            .sort((a, b) => b.nature - a.nature)
-            .map((item, idx) => (
-              <MarketCommandCardWrapper
-                key={item.id}
-                item={item}
-                onAction={handleViewDetails}
-                onFavorite={handleFavorite}
-                minHeight={item.nature > 0.8 ? '80vh' : item.nature > 0.6 ? '65vh' : '50vh'}
-                scrollSnapAlign="start"
-                size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
-              />
-          ))}
-          <div className="text-center text-gray-400 py-4">Loading more...</div>
-        </div>
-        {/* Desktop: grid */}
-        <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {marketItems
-            .filter(item => !archivedIds.includes(item.id))
-            .sort((a, b) => b.nature - a.nature)
-            .map((item, idx) => (
-              <MarketCommandCardWrapper
-                key={item.id}
-                item={item}
-                onAction={handleViewDetails}
-                onFavorite={handleFavorite}
-                size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
-              />
-          ))}
-import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
+          {/* Mobile only: snap scroll */}
+          <div
+            className="block md:hidden"
+            style={{
+              height: '100%',
+              overflowY: 'auto',
+              scrollSnapType: 'y mandatory',
+              flex: 1,
+            }}
+          >
+            {filteredMarketItems
+              .filter(item => !archivedIds.includes(item.id))
+              .sort((a, b) => b.nature - a.nature)
+              .map((item, idx) => (
+                <MarketCommandCardWrapper
+                  key={item.id}
+                  item={item}
+                  onAction={handleViewDetails}
+                  onFavorite={handleFavorite}
+                  minHeight={item.nature > 0.8 ? '80vh' : item.nature > 0.6 ? '65vh' : '50vh'}
+                  scrollSnapAlign="start"
+                  size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
+                />
+            ))}
+            <div className="text-center text-gray-400 py-4">Loading more...</div>
+          </div>
+          {/* Desktop: grid */}
+          <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredMarketItems
+              .filter(item => !archivedIds.includes(item.id))
+              .sort((a, b) => b.nature - a.nature)
+              .map((item, idx) => (
+                <MarketCommandCardWrapper
+                  key={item.id}
+                  item={item}
+                  onAction={handleViewDetails}
+                  onFavorite={handleFavorite}
+                  size={item.nature > 0.8 ? 'xl' : item.nature > 0.6 ? 'lg' : 'md'}
+                />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Map view (dummy)
   const renderMapView = () => (
