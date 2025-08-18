@@ -167,7 +167,7 @@ const MarketCommandUIPage = () => {
             {timelineItems.map((item, idx) => {
               const isLeft = idx % 2 === 0;
               return (
-                <div key={item.id} className="relative flex items-center min-h-[140px]">
+                <div key={item.id} className="relative min-h-[140px]">
                   {/* 枝ライン */}
                   <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-10 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
                     style={{transform: 'translateY(-50%)'}} />
@@ -175,63 +175,58 @@ const MarketCommandUIPage = () => {
                   <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-20">
                     <span className="text-indigo-400 text-lg">★</span>
                   </div>
-                  {/* カード本体（左右交互, ラッパー最小化） */}
-                  <div className={`z-20 w-full md:w-[340px] max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}
-                    style={{marginTop: isLeft ? '0' : '40px', marginBottom: isLeft ? '40px' : '0'}}>
-                    {/* カード上部に日付表示 */}
-                    {item.date && (
-                      <div className="text-xs text-gray-400 mb-1 ml-1">{formatDate(item.date)}</div>
-                    )}
-                    {/* 案件ユーザー名・アイコン */}
-                    <div className="flex items-center gap-2 mb-1 ml-1">
-                      {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
-                      <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
+                  {/* ジグザグレイアウト: flex-rowで左右分岐 */}
+                  <div className={`flex flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'flex-row-reverse'}`}>
+                    {/* カード本体 */}
+                    <div className="z-20 w-full md:w-[340px] max-w-md">
+                      {/* カード上部に日付表示 */}
+                      {item.date && (
+                        <div className="text-xs text-gray-400 mb-1 ml-1">{formatDate(item.date)}</div>
+                      )}
+                      {/* 案件ユーザー名・アイコン */}
+                      <div className="flex items-center gap-2 mb-1 ml-1">
+                        {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
+                        <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
+                      </div>
+                      <MarketCommandCardWrapper
+                        item={item}
+                        onAction={handleViewDetails}
+                        onFavorite={handleFavorite}
+                        size="sm"
+                      />
                     </div>
-                    <MarketCommandCardWrapper
-                      item={item}
-                      onAction={handleViewDetails}
-                      onFavorite={handleFavorite}
-                      size="sm"
-                    />
-                  </div>
-                  {/* コメントバブル群（左右交互, opposite to card, FIXED） */}
-                  <div
-                    className={`absolute top-1/2 ${!isLeft ? 'right-[calc(50%+80px)]' : 'left-[calc(50%+80px)]'} w-[360px] max-w-[600px] z-30 animate-fadein`}
-                    style={{transform: 'translateY(-50%)'}}
-                  >
-                    <div className="flex flex-col gap-4">
-                      {Array.isArray(item.userComments) && item.userComments.length > 0 ? (
-                        (() => {
-                          // いいね順でソート
-                          const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
-                            // 文字列→オブジェクト変換対応
-                            let comment = commentObj;
-                            let date = undefined;
-                            let userIcon = undefined;
-                            let userName = undefined;
-                            if (typeof commentObj === 'object' && commentObj !== null) {
-                              comment = commentObj.text || commentObj.comment || '';
-                              date = commentObj.date;
-                              userIcon = commentObj.userIcon;
-                              userName = commentObj.userName;
-                            }
-                            return {
-                              comment,
-                              date,
-                              userIcon,
-                              userName,
-                              cidx,
-                              likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
-                              dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
-                            };
-                          });
-                          commentsWithLikes.sort((a, b) => b.likes - a.likes);
-                          const showAll = !!showAllComments[item.id];
-                          const displayComments = showAll ? commentsWithLikes : commentsWithLikes.slice(0, 5);
-                          return <>
+                    {/* コメントバブル群 */}
+                    <div className={`flex flex-col gap-4 mt-2 w-[360px] max-w-[600px] animate-fadein ${isLeft ? 'ml-12 md:ml-20' : 'mr-12 md:mr-20'}`}> 
+                      {Array.isArray(item.userComments) && item.userComments.length > 0 ? (() => {
+                        // いいね順でソート
+                        const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
+                          let comment = commentObj;
+                          let date = undefined;
+                          let userIcon = undefined;
+                          let userName = undefined;
+                          if (typeof commentObj === 'object' && commentObj !== null) {
+                            comment = commentObj.text || commentObj.comment || '';
+                            date = commentObj.date;
+                            userIcon = commentObj.userIcon;
+                            userName = commentObj.userName;
+                          }
+                          return {
+                            comment,
+                            date,
+                            userIcon,
+                            userName,
+                            cidx,
+                            likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
+                            dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
+                          };
+                        });
+                        commentsWithLikes.sort((a, b) => b.likes - a.likes);
+                        const showAll = !!showAllComments[item.id];
+                        const displayComments = showAll ? commentsWithLikes : commentsWithLikes.slice(0, 5);
+                        return (
+                          <div>
                             {displayComments.map(({ comment, date, cidx, likes, dislikes, userIcon, userName }) => (
                               <div key={cidx} className="relative">
-                                {/* コメントユーザー名・アイコンをバブル直上に配置 */}
                                 {(userIcon || userName) && (
                                   <div className={`flex items-center gap-1 mb-0.5 ml-2 ${!isLeft ? 'justify-end' : 'justify-start'}`}>
                                     {userIcon && <span className="text-base mr-1">{userIcon}</span>}
@@ -260,9 +255,9 @@ const MarketCommandUIPage = () => {
                                 もっと見る
                               </button>
                             )}
-                          </>;
-                        })()
-                      ) : (
+                          </div>
+                        );
+                      })() : (
                         <span className="text-gray-400">最初のフィードバックをどうぞ！</span>
                       )}
                     </div>
