@@ -58,7 +58,14 @@ export default function App() {
   const [projects, setProjects] = useState(dashboardAllProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // モバイルなら初期状態でサイドバーを閉じる
+  const getInitialSidebarOpen = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768; // md: 768px
+    }
+    return true;
+  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarOpen());
   const location = useLocation();
   const navigate = useNavigate();
   const activePage = location.pathname === '/' ? 'command-ui' : location.pathname.replace('/', '');

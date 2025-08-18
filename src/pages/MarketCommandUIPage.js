@@ -172,13 +172,13 @@ const MarketCommandUIPage = () => {
                   <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-10 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
                     style={{transform: 'translateY(-50%)'}} />
                   {/* タイムラインノード */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-20">
+                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-20">
                     <span className="text-indigo-400 text-lg">★</span>
                   </div>
-                  {/* ジグザグレイアウト: flex-rowで左右分岐 */}
-                  <div className={`flex flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'flex-row-reverse'}`}>
+                  {/* ジグザグ: PCはflex-row, モバイルはflex-colで縦積み */}
+                  <div className={`flex flex-col md:flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'md:flex-row-reverse'}`}>
                     {/* カード本体 */}
-                    <div className="z-20 w-full md:w-[340px] max-w-md">
+                    <div className={`z-20 w-full max-w-xs md:w-[340px] md:max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}>
                       {/* 案件ユーザー名・アイコン・日付（バブルと同じ並び） */}
                       <div className="flex items-center gap-2 mb-1 ml-1">
                         {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
@@ -195,7 +195,7 @@ const MarketCommandUIPage = () => {
                       />
                     </div>
                     {/* コメントバブル群 */}
-                    <div className={`flex flex-col gap-4 mt-2 w-[360px] max-w-[600px] animate-fadein ${isLeft ? 'ml-12 md:ml-20' : 'mr-12 md:mr-20'}`}>
+                    <div className={`flex flex-col gap-4 mt-2 w-full max-w-xs md:w-[360px] md:max-w-[600px] animate-fadein ${isLeft ? 'md:ml-12 md:ml-20' : 'md:mr-12 md:mr-20'}`}>
                       {Array.isArray(item.userComments) && item.userComments.length > 0 ? (() => {
                         // いいね順でソート
                         const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
@@ -293,7 +293,7 @@ const MarketCommandUIPage = () => {
         </div>
       </header>
       <div className="relative px-4 md:px-8 py-6 flex flex-col gap-6 flex-1">
-  <div className="relative w-full max-w-3xl mx-auto">
+        <div className="relative w-full max-w-3xl mx-auto">
           <input
             type="text"
             placeholder="「@Sato Designにロゴ作成を依頼」のように、AIに話しかけてみてください..."

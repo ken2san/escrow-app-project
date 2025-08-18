@@ -107,7 +107,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : 'コマンドUI'}
       >
         <Search className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
       </button>
     </li>
     {/* 仕事管理 */}
@@ -122,7 +122,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : '仕事管理'}
       >
         <Layout className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
       </button>
     </li>
     {/* メッセージ */}
@@ -137,7 +137,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('messages')}
       >
         <MessageSquare className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('messages')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('messages')}</span>}
       </button>
     </li>
     {/* 協議中の案件 */}
@@ -152,7 +152,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('disputes')}
       >
         <AlertTriangle className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('disputes')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('disputes')}</span>}
       </button>
     </li>
     {/* 設定 */}
@@ -167,7 +167,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('settings')}
       >
         <Settings className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('settings')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('settings')}</span>}
       </button>
     </li>
     {/* projectOverview */}
@@ -182,7 +182,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('projectOverview')}
       >
         <Briefcase className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('projectOverview')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('projectOverview')}</span>}
       </button>
     </li>
     {/* ダッシュボード */}
@@ -197,7 +197,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('dashboard')}
       >
         <Home className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboard')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboard')}</span>}
       </button>
     </li>
   </ul>
