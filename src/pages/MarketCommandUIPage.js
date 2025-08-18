@@ -179,14 +179,13 @@ const MarketCommandUIPage = () => {
                   <div className={`flex flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'flex-row-reverse'}`}>
                     {/* カード本体 */}
                     <div className="z-20 w-full md:w-[340px] max-w-md">
-                      {/* カード上部に日付表示 */}
-                      {item.date && (
-                        <div className="text-xs text-gray-400 mb-1 ml-1">{formatDate(item.date)}</div>
-                      )}
-                      {/* 案件ユーザー名・アイコン */}
+                      {/* 案件ユーザー名・アイコン・日付（バブルと同じ並び） */}
                       <div className="flex items-center gap-2 mb-1 ml-1">
                         {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
                         <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
+                        {item.date && (
+                          <span className="text-[11px] text-gray-400 ml-2">{formatDate(item.date)}</span>
+                        )}
                       </div>
                       <MarketCommandCardWrapper
                         item={item}
@@ -196,7 +195,7 @@ const MarketCommandUIPage = () => {
                       />
                     </div>
                     {/* コメントバブル群 */}
-                    <div className={`flex flex-col gap-4 mt-2 w-[360px] max-w-[600px] animate-fadein ${isLeft ? 'ml-12 md:ml-20' : 'mr-12 md:mr-20'}`}> 
+                    <div className={`flex flex-col gap-4 mt-2 w-[360px] max-w-[600px] animate-fadein ${isLeft ? 'ml-12 md:ml-20' : 'mr-12 md:mr-20'}`}>
                       {Array.isArray(item.userComments) && item.userComments.length > 0 ? (() => {
                         // いいね順でソート
                         const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
@@ -227,10 +226,13 @@ const MarketCommandUIPage = () => {
                           <div>
                             {displayComments.map(({ comment, date, cidx, likes, dislikes, userIcon, userName }) => (
                               <div key={cidx} className="relative">
-                                {(userIcon || userName) && (
+                                {(userIcon || userName || date) && (
                                   <div className={`flex items-center gap-1 mb-0.5 ml-2 ${!isLeft ? 'justify-end' : 'justify-start'}`}>
                                     {userIcon && <span className="text-base mr-1">{userIcon}</span>}
                                     {userName && <span className="text-xs text-gray-600 font-semibold">{userName}</span>}
+                                    {date && (
+                                      <span className="text-[11px] text-gray-400 ml-2">{formatDate(date)}</span>
+                                    )}
                                   </div>
                                 )}
                                 <div className={`bubble-paper ${!isLeft ? 'left' : 'right'} flex items-center gap-2 px-3 py-2`}>
@@ -244,10 +246,6 @@ const MarketCommandUIPage = () => {
                                     <span className="text-xs ml-0.5">{dislikes}</span>
                                   </button>
                                 </div>
-                                {/* コメント日付 */}
-                                {date && (
-                                  <div className="text-[11px] text-gray-400 ml-2 mt-0.5">{formatDate(date)}</div>
-                                )}
                               </div>
                             ))}
                             {commentsWithLikes.length > 5 && !showAll && (
