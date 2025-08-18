@@ -150,6 +150,13 @@ const MarketCommandUIPage = () => {
         return { ...prev, [itemId]: arr };
       });
     };
+    // 日付フォーマット関数
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d)) return '';
+      return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    };
     return (
       <div className="relative py-12 px-2 md:px-0 bg-gradient-to-b from-indigo-50 via-white to-indigo-100 min-h-[100vh]">
         <h3 className="text-2xl font-bold text-indigo-700 mb-12 text-center tracking-wide drop-shadow-sm">Timeline</h3>
@@ -171,6 +178,10 @@ const MarketCommandUIPage = () => {
                   {/* カード本体（左右交互, ラッパー最小化） */}
                   <div className={`z-20 w-full md:w-[340px] max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}
                     style={{marginTop: isLeft ? '0' : '40px', marginBottom: isLeft ? '40px' : '0'}}>
+                    {/* カード上部に日付表示 */}
+                    {item.date && (
+                      <div className="text-xs text-gray-400 mb-1 ml-1">{formatDate(item.date)}</div>
+                    )}
                     <MarketCommandCardWrapper
                       item={item}
                       onAction={handleViewDetails}
@@ -187,17 +198,27 @@ const MarketCommandUIPage = () => {
                       {Array.isArray(item.userComments) && item.userComments.length > 0 ? (
                         (() => {
                           // いいね順でソート
-                          const commentsWithLikes = item.userComments.map((comment, cidx) => ({
-                            comment,
-                            cidx,
-                            likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
-                            dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
-                          }));
+                          const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
+                            // 文字列→オブジェクト変換対応
+                            let comment = commentObj;
+                            let date = undefined;
+                            if (typeof commentObj === 'object' && commentObj !== null) {
+                              comment = commentObj.text || commentObj.comment || '';
+                              date = commentObj.date;
+                            }
+                            return {
+                              comment,
+                              date,
+                              cidx,
+                              likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
+                              dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
+                            };
+                          });
                           commentsWithLikes.sort((a, b) => b.likes - a.likes);
                           const showAll = !!showAllComments[item.id];
                           const displayComments = showAll ? commentsWithLikes : commentsWithLikes.slice(0, 5);
                           return <>
-                            {displayComments.map(({ comment, cidx, likes, dislikes }) => (
+                            {displayComments.map(({ comment, date, cidx, likes, dislikes }) => (
                               <div key={cidx} className="relative">
                                 <div className={`bubble-paper ${!isLeft ? 'left' : 'right'} flex items-center gap-2 px-3 py-2`}>
                                   <span className="italic text-indigo-700 flex-1">{comment}</span>
@@ -210,6 +231,10 @@ const MarketCommandUIPage = () => {
                                     <span className="text-xs ml-0.5">{dislikes}</span>
                                   </button>
                                 </div>
+                                {/* コメント日付 */}
+                                {date && (
+                                  <div className="text-[11px] text-gray-400 ml-2 mt-0.5">{formatDate(date)}</div>
+                                )}
                               </div>
                             ))}
                             {commentsWithLikes.length > 5 && !showAll && (
