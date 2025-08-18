@@ -290,7 +290,14 @@ export default function App() {
         t={t}
       />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
+        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} onNewProject={() => {
+          // WorkManagementPageの新規プロジェクトモーダルを開くためのイベントを発火
+          const main = document.querySelector('main');
+          if (main) {
+            const event = new CustomEvent('openNewProjectModal');
+            main.dispatchEvent(event);
+          }
+        }} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
             <Route path="/" element={<MarketCommandUIPage />} />

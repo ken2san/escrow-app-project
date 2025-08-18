@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -106,6 +106,30 @@ const kanbanDnDStyles = `
 `;
 
 export default function WorkManagementPage() {
+    // Headerからの新規プロジェクトボタン押下イベントを受け取る
+    useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main) return;
+        const handler = () => setShowNewProjectModal(true);
+        main.addEventListener('openNewProjectModal', handler);
+        return () => main.removeEventListener('openNewProjectModal', handler);
+    }, []);
+    // Headerからの新規プロジェクトボタン押下イベントを受け取る
+    React.useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main) return;
+        const handler = () => setShowNewProjectModal(true);
+        main.addEventListener('openNewProjectModal', handler);
+        return () => main.removeEventListener('openNewProjectModal', handler);
+    }, []);
+    // Headerからの新規プロジェクトボタン押下イベントを受け取る
+    React.useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main) return;
+        const handler = () => setShowNewProjectModal(true);
+        main.addEventListener('openNewProjectModal', handler);
+        return () => main.removeEventListener('openNewProjectModal', handler);
+    }, []);
     // Ref for each card
     // State for showing the new project modal
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -114,8 +138,6 @@ export default function WorkManagementPage() {
     const [nextCardId, setNextCardId] = useState(7);
     // State for projects (array, to match ProjectFlowDemoPage)
     const [projects, setProjects] = useState(getInitialProjects());
-    // Handler to open the new project modal
-    const handleNewProject = () => setShowNewProjectModal(true);
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     // Handler to confirm new project from modal
     const handleConfirmNewProject = (newProject) => {
@@ -277,6 +299,15 @@ export default function WorkManagementPage() {
     };
 
 
+    // Headerからの新規プロジェクトボタン押下イベントを受け取る
+    useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main) return;
+        const handler = () => setShowNewProjectModal(true);
+        main.addEventListener('openNewProjectModal', handler);
+        return () => main.removeEventListener('openNewProjectModal', handler);
+    }, []);
+
     return (
         <div className="flex h-screen overflow-hidden">
             {/* New Project Modal (ProjectFlowDemo style) */}
@@ -330,22 +361,9 @@ export default function WorkManagementPage() {
                 </div>
             )}
             {/* Main Content */}
+
+
             <main className="flex-1 flex flex-col">
-                    <header className="bg-white/80 backdrop-blur-sm z-10 border-b border-slate-200">
-                        <div className="flex items-center justify-between h-16 px-4 md:px-8">
-                            <h2 className="text-2xl font-bold text-slate-800">プロジェクト管理</h2>
-                            <div className="flex items-center space-x-4">
-                                {/* 新規プロジェクトボタン */}
-                                <button
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
-                                    onClick={handleNewProject}
-                                >
-                                    ＋ 新規プロジェクト
-                                </button>
-                                <img src="https://placehold.co/40x40/E0E7FF/4F46E5?text=A" alt="User Avatar" className="w-10 h-10 rounded-full border-2 border-white shadow" />
-                            </div>
-                        </div>
-                    </header>
                     <div className="flex-1 overflow-y-auto p-4 md:p-8">
                         {/* View Settings Panel */}
                         <div className="flex flex-row flex-wrap items-center gap-3 mb-6">

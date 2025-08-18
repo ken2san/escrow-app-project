@@ -1,7 +1,7 @@
 import React from 'react';
 import { Globe, Bell } from 'lucide-react';
 
-const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode, toggleLanguage, currentLanguage }) => {
+const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode, toggleLanguage, currentLanguage, onNewProject }) => {
   let pageTitle = '';
   if (activePage === 'dashboard') {
     pageTitle =
@@ -16,6 +16,10 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
     pageTitle = t('disputes');
   } else if (activePage === 'settings') {
     pageTitle = t('settings');
+  } else if (activePage === 'command-ui' || activePage === '') {
+    pageTitle = 'Command UI';
+  } else if (activePage === 'work-management') {
+    pageTitle = t('workManagement') || (currentLanguage === 'ja' ? '仕事管理' : 'Work Management');
   }
 
   return (
@@ -34,6 +38,15 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
         </h2>
       </div>
       <div className="flex items-center space-x-2 md:space-x-3">
+        {/* 新規プロジェクトボタン: work-managementページのみ */}
+        {activePage === 'work-management' && (
+          <button
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+            onClick={onNewProject}
+          >
+            ＋ {t('newProject') || '新規プロジェクト'}
+          </button>
+        )}
   {/* View mode switch button moved to DashboardPage */}
         <button
           onClick={toggleLanguage}

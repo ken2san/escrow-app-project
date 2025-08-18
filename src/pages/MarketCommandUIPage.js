@@ -169,16 +169,16 @@ const MarketCommandUIPage = () => {
               return (
                 <div key={item.id} className="relative min-h-[140px]">
                   {/* 枝ライン */}
-                  <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-10 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
+                  <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-0 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
                     style={{transform: 'translateY(-50%)'}} />
                   {/* タイムラインノード */}
-                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-20">
+                  <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-0">
                     <span className="text-indigo-400 text-lg">★</span>
                   </div>
                   {/* ジグザグ: PCはflex-row, モバイルはflex-colで縦積み */}
                   <div className={`flex flex-col md:flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'md:flex-row-reverse'}`}>
                     {/* カード本体 */}
-                    <div className={`z-20 w-full max-w-xs md:w-[340px] md:max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}>
+                    <div className={`z-0 w-full max-w-xs md:w-[340px] md:max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}>
                       {/* 案件ユーザー名・アイコン・日付（バブルと同じ並び） */}
                       <div className="flex items-center gap-2 mb-1 ml-1">
                         {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
@@ -287,11 +287,6 @@ const MarketCommandUIPage = () => {
   // Removed custom Sidebar logic; now uses App-wide Sidebar only
   return (
     <div className="flex flex-col h-full min-h-screen">
-      <header className="bg-white/80 backdrop-blur-sm z-10 border-b border-slate-200">
-        <div className="flex items-center justify-between h-16 px-4 md:px-8">
-          <h2 className="text-2xl font-bold text-slate-800">マーケット</h2>
-        </div>
-      </header>
       <div className="relative px-4 md:px-8 py-6 flex flex-col gap-6 flex-1">
         <div className="relative w-full max-w-3xl mx-auto">
           <input
