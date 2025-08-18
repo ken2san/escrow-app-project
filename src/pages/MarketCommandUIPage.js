@@ -182,6 +182,11 @@ const MarketCommandUIPage = () => {
                     {item.date && (
                       <div className="text-xs text-gray-400 mb-1 ml-1">{formatDate(item.date)}</div>
                     )}
+                    {/* 案件ユーザー名・アイコン */}
+                    <div className="flex items-center gap-2 mb-1 ml-1">
+                      {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
+                      <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
+                    </div>
                     <MarketCommandCardWrapper
                       item={item}
                       onAction={handleViewDetails}
@@ -202,13 +207,19 @@ const MarketCommandUIPage = () => {
                             // 文字列→オブジェクト変換対応
                             let comment = commentObj;
                             let date = undefined;
+                            let userIcon = undefined;
+                            let userName = undefined;
                             if (typeof commentObj === 'object' && commentObj !== null) {
                               comment = commentObj.text || commentObj.comment || '';
                               date = commentObj.date;
+                              userIcon = commentObj.userIcon;
+                              userName = commentObj.userName;
                             }
                             return {
                               comment,
                               date,
+                              userIcon,
+                              userName,
                               cidx,
                               likes: commentLikesMap[item.id]?.[cidx]?.likes || 0,
                               dislikes: commentLikesMap[item.id]?.[cidx]?.dislikes || 0
@@ -218,8 +229,15 @@ const MarketCommandUIPage = () => {
                           const showAll = !!showAllComments[item.id];
                           const displayComments = showAll ? commentsWithLikes : commentsWithLikes.slice(0, 5);
                           return <>
-                            {displayComments.map(({ comment, date, cidx, likes, dislikes }) => (
+                            {displayComments.map(({ comment, date, cidx, likes, dislikes, userIcon, userName }) => (
                               <div key={cidx} className="relative">
+                                {/* コメントユーザー名・アイコンをバブル直上に配置 */}
+                                {(userIcon || userName) && (
+                                  <div className={`flex items-center gap-1 mb-0.5 ml-2 ${!isLeft ? 'justify-end' : 'justify-start'}`}>
+                                    {userIcon && <span className="text-base mr-1">{userIcon}</span>}
+                                    {userName && <span className="text-xs text-gray-600 font-semibold">{userName}</span>}
+                                  </div>
+                                )}
                                 <div className={`bubble-paper ${!isLeft ? 'left' : 'right'} flex items-center gap-2 px-3 py-2`}>
                                   <span className="italic text-indigo-700 flex-1">{comment}</span>
                                   <button className="text-green-500 hover:text-green-700 px-1" title="いいね" onClick={() => handleLike(item.id, cidx, 'likes')}>
