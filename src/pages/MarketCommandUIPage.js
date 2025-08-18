@@ -288,7 +288,7 @@ const MarketCommandUIPage = () => {
   return (
     <div className="flex flex-col h-full min-h-screen">
       <div className="relative px-4 md:px-8 py-6 flex flex-col gap-6 flex-1">
-        <div className="relative w-full max-w-3xl mx-auto">
+  <div className="sticky top-0 z-20 bg-slate-100 w-full max-w-3xl mx-auto rounded-full overflow-hidden">
           <input
             type="text"
             placeholder="「@Sato Designにロゴ作成を依頼」のように、AIに話しかけてみてください..."

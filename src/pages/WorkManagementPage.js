@@ -366,36 +366,45 @@ export default function WorkManagementPage() {
             <main className="flex-1 flex flex-col">
                     <div className="flex-1 overflow-y-auto p-4 md:p-8">
                         {/* View Settings Panel */}
-                        <div className="flex flex-row flex-wrap items-center gap-3 mb-6">
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-semibold text-slate-500">レイアウト:</span>
-                                <div className="inline-flex rounded-md shadow-sm bg-white p-1">
-                                    <button
-                                        className={`view-control-btn px-2 py-1 text-sm font-semibold text-slate-600 rounded-md ${viewSettings.layout === 'list' ? 'bg-indigo-50' : ''}`}
-                                        onClick={() => handleLayoutChange('list')}
-                                    >リスト</button>
-                                    <button
-                                        className={`view-control-btn px-2 py-1 text-sm font-semibold text-slate-600 rounded-md ${viewSettings.layout === 'board' ? 'bg-indigo-50' : ''}`}
-                                        onClick={() => handleLayoutChange('board')}
-                                    >ボード</button>
+                        <div className="flex flex-row justify-between items-center gap-3 mb-0 sticky top-12 z-20 bg-slate-100 py-1" style={{marginLeft: '-2rem', marginRight: '-2rem', paddingLeft: '2rem', paddingRight: '2rem'}}>
+                            <div className="flex flex-row flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-semibold text-slate-500">レイアウト:</span>
+                                    <div className="inline-flex rounded-md shadow-sm bg-transparent p-1">
+                                        <button
+                                            className={`view-control-btn px-2 py-1 text-sm font-semibold text-slate-600 rounded-md ${viewSettings.layout === 'list' ? 'bg-indigo-100' : ''}`}
+                                            onClick={() => handleLayoutChange('list')}
+                                        >リスト</button>
+                                        <button
+                                            className={`view-control-btn px-2 py-1 text-sm font-semibold text-slate-600 rounded-md ${viewSettings.layout === 'board' ? 'bg-indigo-100' : ''}`}
+                                            onClick={() => handleLayoutChange('board')}
+                                        >ボード</button>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-semibold text-slate-500">グループ化:</span>
+                                    <select id="group-by-select" value={viewSettings.groupBy} onChange={handleGroupByChange} className="bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="project">プロジェクト</option>
+                                        <option value="status">ステータス</option>
+                                        <option value="dueDate">期日</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-semibold text-slate-500">並べ替え:</span>
+                                    <select id="sort-by-select" value={viewSettings.sortBy} onChange={handleSortByChange} className="bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="startDate">開始日 (昇順)</option>
+                                        <option value="reward">報酬額 (降順)</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-semibold text-slate-500">グループ化:</span>
-                                <select id="group-by-select" value={viewSettings.groupBy} onChange={handleGroupByChange} className="bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="project">プロジェクト</option>
-                                    <option value="status">ステータス</option>
-                                    <option value="dueDate">期日</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-semibold text-slate-500">並べ替え:</span>
-                                <select id="sort-by-select" value={viewSettings.sortBy} onChange={handleSortByChange} className="bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="startDate">開始日 (昇順)</option>
-                                    <option value="reward">報酬額 (降順)</option>
-                                </select>
-                            </div>
+                            <button
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+                                onClick={() => setShowNewProjectModal(true)}
+                            >
+                                ＋ 新規案件登録
+                            </button>
                         </div>
+                        <div className="h-16"></div>
                         {/* View Area: レイアウト切り替え */}
                         {viewSettings.layout === 'list' ? (
                             <>
