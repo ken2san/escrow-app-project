@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -31,82 +32,14 @@ function getInitialProjects() {
         });
 }
 
-const kanbanDnDStyles = `
-/* カード装飾 */
-.kanban-card {
-    background: #fff;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border: 1.5px solid #e5e7eb;
-    transition: box-shadow 0.2s, border 0.2s;
-    margin-bottom: 0;
-}
-.kanban-card:hover {
-    box-shadow: 0 4px 16px rgba(99,102,241,0.10);
-    border-color: #6366f1;
-}
-.kanban-card.dragging {
-    opacity: 0.5;
-    cursor: grabbing;
-    transform: scale(1.05);
-    box-shadow: 0 8px 24px rgba(99,102,241,0.18);
-    border-color: #6366f1;
-    background: #f1f5f9;
-}
-.drag-over {
-    background-color: #e0e7ff !important;
-    border-radius: 0.75rem;
-    box-shadow: 0 0 0 2px #6366f1;
-}
-.drop-placeholder {
-    background-color: #c7d2fe;
-    border-radius: 0.75rem;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    border: 2px dashed #6366f1;
-    margin: 2px 0;
-    min-height: 48px;
-    height: auto;
-    padding: 1rem;
-    width: auto;
-    max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    flex: none;
-    align-self: stretch;
-    box-sizing: border-box;
-    opacity: 0.5;
-    transition: all 0.15s cubic-bezier(0.4,0,0.2,1);
-    pointer-events: none;
-}
-/* カラム装飾 */
-.kanban-column {
-    background: #f8fafc;
-    border-radius: 1rem;
-    border: 1.5px solid #e5e7eb;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    padding: 1.2rem 1rem 1rem 1rem;
-    margin-bottom: 1.5rem;
-    transition: box-shadow 0.2s, border 0.2s;
-}
-.kanban-column:hover {
-    box-shadow: 0 4px 16px rgba(99,102,241,0.08);
-    border-color: #6366f1;
-}
-/* スクロールバー装飾 */
-.card-list-container::-webkit-scrollbar {
-    width: 8px;
-}
-.card-list-container::-webkit-scrollbar-thumb {
-    background: #e0e7ff;
-    border-radius: 4px;
-}
-.card-list-container::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-`;
+// styles moved to src/pages/workmanagement.css
 
 export default function WorkManagementPage() {
-    // Headerからの新規プロジェクトボタン押下イベントを受け取る
+
+    // Ref for each card
+    // State for showing the new project modal
+    const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+    // Single event listener for Header->openNewProjectModal
     useEffect(() => {
         const main = document.querySelector('main');
         if (!main) return;
@@ -114,30 +47,13 @@ export default function WorkManagementPage() {
         main.addEventListener('openNewProjectModal', handler);
         return () => main.removeEventListener('openNewProjectModal', handler);
     }, []);
-    // Headerからの新規プロジェクトボタン押下イベントを受け取る
-    React.useEffect(() => {
-        const main = document.querySelector('main');
-        if (!main) return;
-        const handler = () => setShowNewProjectModal(true);
-        main.addEventListener('openNewProjectModal', handler);
-        return () => main.removeEventListener('openNewProjectModal', handler);
-    }, []);
-    // Headerからの新規プロジェクトボタン押下イベントを受け取る
-    React.useEffect(() => {
-        const main = document.querySelector('main');
-        if (!main) return;
-        const handler = () => setShowNewProjectModal(true);
-        main.addEventListener('openNewProjectModal', handler);
-        return () => main.removeEventListener('openNewProjectModal', handler);
-    }, []);
-    // Ref for each card
-    // State for showing the new project modal
-    const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     // Project/card id counters for unique ids
     const [nextProjectId, setNextProjectId] = useState(4);
     const [nextCardId, setNextCardId] = useState(7);
+    // Compute initial projects once to avoid duplicate work
+    const initialProjects = useMemo(() => getInitialProjects(), []);
     // State for projects (array, to match ProjectFlowDemoPage)
-    const [projects, setProjects] = useState(getInitialProjects());
+    const [projects, setProjects] = useState(initialProjects);
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     // Handler to confirm new project from modal
     const handleConfirmNewProject = (newProject) => {
@@ -159,7 +75,7 @@ export default function WorkManagementPage() {
     // const [undoToastList, setUndoToastList] = useState([]); // [{id, message, visible}]
     // const [successToastOpen, setSuccessToastOpen] = useState(false);
     // cards state is initialized from all cards in initialProjects
-    const [cards, setCards] = useState(getInitialProjects().flatMap(p => p.cards || []));
+    const [cards, setCards] = useState(initialProjects.flatMap(p => p.cards || []));
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
 
     // Handlers for grouping, sorting, and layout switching
@@ -174,68 +90,11 @@ export default function WorkManagementPage() {
         // ボードビュー時のgroupBy強制は廃止（ユーザー選択を尊重）
     };
 
-    // --- Grouping and sorting strictly matching the HTML version ---
-    let groupedCards = {};
-    const filteredCards = cards;
-    // Function to categorize by due date
-    function getDueDateCategory(dueDateStr) {
-        if (!dueDateStr) return '期日未設定';
-        const today = new Date(); today.setHours(0,0,0,0);
-        const dueDate = new Date(dueDateStr);
-        if (dueDate < today) return '期限切れ';
-        if (dueDate.getTime() === today.getTime()) return '今日が期日';
-        return '今後';
-    }
-    // Add dueDate to card
-    function getCardWithDueDate(card) {
-    if (!card.startDate || !card.duration) return { ...card, dueDate: null };
-    const date = new Date(card.startDate);
-    if (isNaN(date.getTime())) return { ...card, dueDate: null };
-    date.setDate(date.getDate() + Number(card.duration));
-    if (isNaN(date.getTime())) return { ...card, dueDate: null };
-    return { ...card, dueDate: date.toISOString().split('T')[0] };
-    }
-    if (viewSettings.groupBy === 'project') {
-        projects.forEach((project) => {
-            groupedCards[project.id] = filteredCards.filter(card => String(card.projectId) === String(project.id));
-        });
-    } else if (viewSettings.groupBy === 'status') {
-    // Group by status in the order of Japanese labels (for legacy compatibility)
-        const statusOrder = [
-            { key: 'unsent', label: '未編集' },
-            { key: 'edited', label: '編集済' },
-            { key: 'awaiting_approval', label: '承認待ち' },
-            { key: 'revision_needed', label: '要修正' },
-            { key: 'approved', label: '承認済' },
-        ];
-        statusOrder.forEach(({ key }) => {
-            groupedCards[key] = filteredCards.filter(card => card.status === key);
-        });
-    } else if (viewSettings.groupBy === 'dueDate') {
-    // Group due dates in the order: Expired, Due Today, Upcoming, No Due Date
-        const dueDateCategories = ['期限切れ', '今日が期日', '今後', '期日未設定'];
-        const tempGroups = { '期限切れ': [], '今日が期日': [], '今後': [], '期日未設定': [] };
-        filteredCards.forEach(card => {
-            const cardWithDue = getCardWithDueDate(card);
-            const key = getDueDateCategory(cardWithDue.dueDate);
-            tempGroups[key].push(cardWithDue);
-        });
-        dueDateCategories.forEach(cat => {
-            groupedCards[cat] = tempGroups[cat];
-        });
-    }
-    // Sorting (handle unset values and strict date comparison)
-    Object.keys(groupedCards).forEach(key => {
-        if (viewSettings.sortBy === 'startDate') {
-            groupedCards[key].sort((a, b) => {
-                if (!a.startDate) return 1;
-                if (!b.startDate) return -1;
-                return new Date(a.startDate) - new Date(b.startDate);
-            });
-        } else if (viewSettings.sortBy === 'reward') {
-            groupedCards[key].sort((a, b) => b.reward - a.reward);
-        }
-    });
+    // Use shared util for grouping/sorting for testability and reuse
+    const groupedCards = useMemo(() => {
+        const { default: groupUtil } = require('../utils/groupCards');
+        return groupUtil(cards, viewSettings, projects);
+    }, [cards, viewSettings, projects]);
 
     // --- Restore edit, undo, toast, etc. ---
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -276,7 +135,7 @@ export default function WorkManagementPage() {
 
     const handleSaveEdit = () => {
         if (!validateEdit(editingCard)) return;
-        setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを編集しました', id: Date.now() }]);
+    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
         setUndoToast({ open: true, message: 'カードを編集しました', id: Date.now() });
         setCards(prev => prev.map(card => card.id === editingCard.id ? { ...editingCard, status: 'edited' } : card));
         setEditModalOpen(false);
@@ -292,21 +151,14 @@ export default function WorkManagementPage() {
     const handleUndo = (undoId) => {
         const undoItem = undoStack.find(u => u.id === undoId);
         if (undoItem) {
-            setCards(undoItem.prevCards);
+            setCards(undoItem.prevCards.map(c => ({ ...c })));
             setUndoStack(stack => stack.filter(u => u.id !== undoId));
             setUndoToast({ open: false, message: '', id: null });
         }
     };
 
 
-    // Headerからの新規プロジェクトボタン押下イベントを受け取る
-    useEffect(() => {
-        const main = document.querySelector('main');
-        if (!main) return;
-        const handler = () => setShowNewProjectModal(true);
-        main.addEventListener('openNewProjectModal', handler);
-        return () => main.removeEventListener('openNewProjectModal', handler);
-    }, []);
+    // (listener consolidated earlier) — no-op here
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -408,7 +260,6 @@ export default function WorkManagementPage() {
                         {/* View Area: レイアウト切り替え */}
                         {viewSettings.layout === 'list' ? (
                             <>
-                            <style>{kanbanDnDStyles}</style>
                             <DndContext
                                 collisionDetection={closestCenter}
                                 onDragStart={e => setActiveId(e.active.id)}
@@ -468,10 +319,10 @@ export default function WorkManagementPage() {
                                     }
                                     // const targetCards = groupedCards[targetGroupKey];
                                     // overIndex: 空リストDnD時は0、通常DnD時は既存カードのindex
-                                    setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを移動しました', id: Date.now() }]);
+                                    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを移動しました', id: Date.now() }]);
                                     setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
                                     setCards(prev => {
-                                        let updated = prev;
+                                        let updated = [...prev];
                                         if (viewSettings.groupBy === 'project') {
                                             updated = prev.map(card =>
                                                 card.id === movingCard.id ? { ...card, projectId: targetGroupKey } : card
@@ -664,7 +515,6 @@ export default function WorkManagementPage() {
                         ) : (
                             // Board view: Kanban UI similar to HTML version
                             <>
-                            <style>{kanbanDnDStyles}</style>
                             <DndContext
                                 collisionDetection={closestCenter}
                                 onDragStart={e => setActiveId(e.active.id)}
@@ -711,10 +561,10 @@ export default function WorkManagementPage() {
                                     if (!movingCard) return;
                                     // overIndex: 空カラムDnD時は0、通常DnD時は既存カードのindex
                                     // Undo保存
-                                    setUndoStack(prev => [...prev, { prevCards: cards, message: 'カードを移動しました', id: Date.now() }]);
+                                    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを移動しました', id: Date.now() }]);
                                     setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
                                     setCards(prev => {
-                                        let updated = prev;
+                                        let updated = [...prev];
                                         if (viewSettings.groupBy === 'project' || viewSettings.groupBy === 'dueDate') {
                                             // プロジェクト or 期日グループDnDは同じロジックで処理
                                             if (viewSettings.groupBy === 'project') {

@@ -108,9 +108,9 @@ const MarketCommandUIPage = () => {
         }, 600);
       }
     };
-    const el = timelineRef.current;
-    if (el) el.addEventListener('scroll', handleScroll);
-    return () => { if (el) el.removeEventListener('scroll', handleScroll); };
+  const el = timelineRef.current;
+  if (el) el.addEventListener('scroll', handleScroll, { passive: true });
+  return () => { if (el) el.removeEventListener('scroll', handleScroll); };
   }, []);
 
 
