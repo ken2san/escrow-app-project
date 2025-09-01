@@ -39,10 +39,11 @@ export default function NewContractProjectPage() {
   // Generate project automatically from project description
   const generateProjectFromDesc = () => {
     if (!projectDesc) return alert('プロジェクト説明を入力してください');
-    const { title, /* description, */ cards } = simpleTextToProjectJson(projectDesc);
-    setProjectTitle(title);
+  const { title, /* description, */ cards: generatedCards } = simpleTextToProjectJson(projectDesc);
+  setProjectTitle(title);
   // setProjectDesc(description); // Do not overwrite description
-    setCards(cards);
+  // Use a fresh copy to avoid accidental shared references
+  setCards(() => generatedCards.map(c => ({ ...c })));
   };
 
   // Register project (mock: log output only)
@@ -72,8 +73,8 @@ export default function NewContractProjectPage() {
   // Add card
   const addCard = () => {
     if (!cardTitle) return;
-    setCards([
-      ...cards,
+    setCards(prev => [
+      ...prev,
       { id: String(Date.now()), title: cardTitle, description: cardDesc, status: 'open' },
     ]);
     setCardTitle('');
