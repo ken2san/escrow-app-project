@@ -39,18 +39,19 @@ export default function NewContractProjectPage() {
   // Generate project automatically from project description
   const generateProjectFromDesc = () => {
     if (!projectDesc) return alert('プロジェクト説明を入力してください');
-    const { title, /* description, */ cards } = simpleTextToProjectJson(projectDesc);
-    setProjectTitle(title);
+  const { title, /* description, */ cards: generatedCards } = simpleTextToProjectJson(projectDesc);
+  setProjectTitle(title);
   // setProjectDesc(description); // Do not overwrite description
-    setCards(cards);
+  // Use a fresh copy to avoid accidental shared references
+  setCards(() => generatedCards.map(c => ({ ...c })));
   };
 
-  // Register project (mock: log output only)
+  // Register project (mock)
   const registerProject = () => {
     if (!projectTitle) return alert('プロジェクト名を入力してください');
     if (cards.length === 0) return alert('最低1つの仕事カードを追加してください');
   // Normally, send to API, etc.
-    console.log({ projectTitle, projectDesc, cards });
+    // TODO: integrate with API
     alert('プロジェクト登録（モック）: コンソールを確認');
   };
 
@@ -72,8 +73,8 @@ export default function NewContractProjectPage() {
   // Add card
   const addCard = () => {
     if (!cardTitle) return;
-    setCards([
-      ...cards,
+    setCards(prev => [
+      ...prev,
       { id: String(Date.now()), title: cardTitle, description: cardDesc, status: 'open' },
     ]);
     setCardTitle('');
@@ -81,53 +82,53 @@ export default function NewContractProjectPage() {
   };
 
   return (
-    <div style={{ padding: 32, maxWidth: 600 }}>
-      <h2>新規案件登録（プロフェッショナルUI）</h2>
-      <div style={{ marginBottom: 16 }}>
-        <label>
-          プロジェクト名：<br />
-          <input value={projectTitle} onChange={e => setProjectTitle(e.target.value)} style={{ width: '100%' }} />
+    <div className="p-8 max-w-2xl">
+      <h2 className="text-xl font-semibold mb-4">新規案件登録（プロフェッショナルUI）</h2>
+      <div className="mb-4">
+        <label className="block">
+          <div className="text-sm mb-1">プロジェクト名：</div>
+          <input value={projectTitle} onChange={e => setProjectTitle(e.target.value)} className="w-full border rounded px-3 py-2" />
         </label>
       </div>
-      <div style={{ marginBottom: 16 }}>
-        <label>
-          プロジェクト説明：<br />
-          <textarea value={projectDesc} onChange={e => setProjectDesc(e.target.value)} style={{ width: '100%' }} placeholder={"例: 新しいWebアプリを作りたい。要件はUI設計、API開発、テスト。"} />
+      <div className="mb-4">
+        <label className="block">
+          <div className="text-sm mb-1">プロジェクト説明：</div>
+          <textarea value={projectDesc} onChange={e => setProjectDesc(e.target.value)} className="w-full border rounded px-3 py-2" placeholder={"例: 新しいWebアプリを作りたい。要件はUI設計、API開発、テスト。"} />
         </label>
-        <button onClick={generateProjectFromDesc} style={{ marginTop: 8, marginLeft: 0, background: '#e0e7ff', color: '#3730a3', border: 'none', padding: '6px 14px', borderRadius: 4, fontWeight: 'bold' }}>
+        <button onClick={generateProjectFromDesc} className="mt-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded font-semibold">
           プロジェクト自動生成
         </button>
-        <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>説明を編集→何度でも自動生成を試せます</div>
+        <div className="text-xs text-gray-500 mt-1">説明を編集→何度でも自動生成を試せます</div>
       </div>
-      <div style={{ marginBottom: 16, border: '1px solid #eee', padding: 12 }}>
-        <h4>仕事カード追加</h4>
-        <input
-          placeholder="カードタイトル"
-          value={cardTitle}
-          onChange={e => setCardTitle(e.target.value)}
-          style={{ width: '40%', marginRight: 8 }}
-        />
-        <input
-          placeholder="カード説明"
-          value={cardDesc}
-          onChange={e => setCardDesc(e.target.value)}
-          style={{ width: '40%', marginRight: 8 }}
-        />
-        <button onClick={addCard}>追加</button>
-        <ul style={{ marginTop: 12 }}>
+      <div className="mb-4 border border-gray-200 p-3 rounded">
+        <h4 className="font-medium mb-2">仕事カード追加</h4>
+        <div className="flex gap-2 items-center mb-2">
+          <input
+            placeholder="カードタイトル"
+            value={cardTitle}
+            onChange={e => setCardTitle(e.target.value)}
+            className="w-2/5 border rounded px-2 py-1"
+          />
+          <input
+            placeholder="カード説明"
+            value={cardDesc}
+            onChange={e => setCardDesc(e.target.value)}
+            className="w-2/5 border rounded px-2 py-1"
+          />
+          <button onClick={addCard} className="bg-gray-100 px-3 py-1 rounded">追加</button>
+        </div>
+        <ul className="mt-3 space-y-2">
           {cards.map(card => (
-            <li key={card.id} style={{ border: '1px solid #ccc', margin: 4, padding: 4 }}>
+            <li key={card.id} className="border border-gray-200 p-2 rounded">
               <strong>{card.title}</strong> - {card.description}
             </li>
           ))}
         </ul>
       </div>
-      <button onClick={registerProject} style={{ marginTop: 24, fontWeight: 'bold', marginRight: 16 }}>
-        プロジェクト登録
-      </button>
-      <button onClick={goToBoard} style={{ marginTop: 24, fontWeight: 'bold', background: '#e0e7ff', color: '#3730a3', border: 'none', padding: '8px 16px', borderRadius: 4 }}>
-        案件ボードで確認する
-      </button>
+      <div className="flex items-center">
+        <button onClick={registerProject} className="font-semibold mr-4 px-4 py-2 rounded border">プロジェクト登録</button>
+        <button onClick={goToBoard} className="font-semibold px-4 py-2 rounded bg-indigo-100 text-indigo-800">案件ボードで確認する</button>
+      </div>
     </div>
   );
 }

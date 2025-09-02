@@ -38,9 +38,7 @@ const DashboardPage = ({
   // Fallback for loggedInUser and searchTerm
   const safeLoggedInUser = loggedInUser || { id: '', name: '' };
   const safeSearchTerm = typeof searchTerm === 'string' ? searchTerm : '';
-  // Debug: log which data is being used
-  console.log('DashboardPage: projects prop', projects);
-  console.log('DashboardPage: using projectsData', projects && Array.isArray(projects) ? 'props.projects' : 'dashboardAllProjects');
+  // Note: avoid debug logging in production UI
   const projectsData = projects && Array.isArray(projects) ? projects : dashboardAllProjects;
   const projectsToDisplay = (() => {
     const normalizedSearchTerm = safeSearchTerm.toLowerCase().trim();

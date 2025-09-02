@@ -1,6 +1,70 @@
+@keyframes fadein-bubble {
+	0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+	60% { opacity: 1; transform: translateY(-6px) scale(1.03); }
+	100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fadein-bubble {
+	animation: fadein-bubble 0.8s cubic-bezier(.4,1.4,.6,1) both;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- Paper Bubble (吹き出し) Style for Timeline --- */
+.bubble-paper {
+	background: linear-gradient(135deg, #FFF9E3 85%, #FFF7D6 100%);
+	border-radius: 1.3em 1.3em 1.3em 0.9em/1.2em 1.2em 1.2em 0.8em;
+	box-shadow: 0 4px 24px 0 rgba(180, 150, 80, 0.13);
+	border: 1.5px solid #F5E6B2;
+	padding: 1.1em 1.5em 1.2em 1.3em;
+	color: #6B4F1D;
+	font-family: 'Yuji Syuku', 'serif', 'Georgia', serif;
+	position: relative;
+	overflow: visible;
+	transition: box-shadow 0.2s, transform 0.2s;
+	max-width: 600px;
+	width: 100%;
+}
+.bubble-paper:hover {
+	box-shadow: 0 8px 32px 0 rgba(180, 150, 80, 0.18);
+	transform: rotate(-1.2deg) scale(1.025);
+}
+/* 吹き出し三角：左用（三角は右側＝中央寄り） */
+.bubble-paper.left::after {
+	content: "";
+	position: absolute;
+	right: -18px;
+	top: 32px;
+	width: 0;
+	height: 0;
+	border-top: 12px solid transparent;
+	border-bottom: 12px solid transparent;
+	border-left: 18px solid #FFF9E3;
+	filter: drop-shadow(0 1px 0 #F5E6B2);
+	z-index: 2;
+}
+/* 吹き出し三角：右用（三角は左側＝中央寄り） */
+.bubble-paper.right::after {
+	content: "";
+	position: absolute;
+	left: -18px;
+	top: 32px;
+	width: 0;
+	height: 0;
+	border-top: 12px solid transparent;
+	border-bottom: 12px solid transparent;
+	border-right: 18px solid #FFF9E3;
+	filter: drop-shadow(0 1px 0 #F5E6B2);
+	z-index: 2;
+}
+/* Optional: playful torn edge effect */
+/* ちぎり風エッジは一旦非表示（必要なら復活可） */
+/* Fun: subtle paper texture overlay */
+.bubble-paper {
+	background-image:
+		linear-gradient(135deg, #FFF9E3 85%, #FFF7D6 100%),
+		repeating-linear-gradient(120deg, rgba(245,230,178,0.08) 0 2px, transparent 2px 8px);
+}
 
 /* Make sure to process this file with Tailwind CSS using a build tool like PostCSS */
 

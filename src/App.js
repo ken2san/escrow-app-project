@@ -58,7 +58,14 @@ export default function App() {
   const [projects, setProjects] = useState(dashboardAllProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // モバイルなら初期状態でサイドバーを閉じる
+  const getInitialSidebarOpen = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768; // md: 768px
+    }
+    return true;
+  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarOpen());
   const location = useLocation();
   const navigate = useNavigate();
   const activePage = location.pathname === '/' ? 'command-ui' : location.pathname.replace('/', '');
@@ -283,7 +290,14 @@ export default function App() {
         t={t}
       />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} />
+        <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} onNewProject={() => {
+          // WorkManagementPageの新規プロジェクトモーダルを開くためのイベントを発火
+          const main = document.querySelector('main');
+          if (main) {
+            const event = new CustomEvent('openNewProjectModal');
+            main.dispatchEvent(event);
+          }
+        }} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
             <Route path="/" element={<MarketCommandUIPage />} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Globe, Bell } from 'lucide-react';
 
-const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode, toggleLanguage, currentLanguage }) => {
+const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode, toggleLanguage, currentLanguage, onNewProject }) => {
   let pageTitle = '';
   if (activePage === 'dashboard') {
     pageTitle =
@@ -16,6 +16,10 @@ const Header = ({ t, isSidebarOpen, activePage, currentViewMode, toggleViewMode,
     pageTitle = t('disputes');
   } else if (activePage === 'settings') {
     pageTitle = t('settings');
+  } else if (activePage === 'command-ui' || activePage === '') {
+    pageTitle = 'Command UI';
+  } else if (activePage === 'work-management') {
+    pageTitle = t('workManagement') || (currentLanguage === 'ja' ? '仕事管理' : 'Work Management');
   }
 
   return (
