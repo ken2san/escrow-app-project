@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { marketCommandItems as initialMarketCommandItems, getMyProjectCards, loggedInUserDataGlobal } from '../utils/initialData';
 import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
 import PriorityTaskCard from '../components/dashboard/PriorityTaskCard';
-import { getTodaysPriorityTask } from '../utils/priorityLogic';
+import PriorityTaskList from '../components/dashboard/PriorityTaskList';
+import { getTodaysPriorityTask, getAllTasksByPriority } from '../utils/priorityLogic';
 
 
 const MarketCommandUIPage = () => {
@@ -17,12 +18,12 @@ const MarketCommandUIPage = () => {
 
   // Suggestion candidates (English only)
   const suggestItems = [
-    { cmd: '/timeline', desc: 'Show timeline' },
-    { cmd: '/map', desc: 'Show map' },
-    { cmd: '/favorite', desc: 'Show only favorites' },
-    { cmd: '/task', desc: 'Show task dashboard' },
-    { cmd: '/setlocation', desc: 'Set your location (e.g. /setlocation Tokyo)' },
-    { cmd: '/my', desc: 'Show only my cards (dummy)' },
+    { cmd: '/timeline', desc: 'タイムラインを表示' },
+    { cmd: '/task', desc: '全タスクを優先度順に表示' },
+    { cmd: '/map', desc: '地図ビューを表示' },
+    { cmd: '/favorite', desc: 'お気に入りのみ表示' },
+    { cmd: '/my', desc: '自分の案件のみ表示' },
+    { cmd: '/setlocation', desc: '場所を設定（例: /setlocation Tokyo）' },
   ];
 
 
@@ -35,7 +36,7 @@ const MarketCommandUIPage = () => {
     let val = valRaw.replace(/[Ａ-Ｚａ-ｚ＠]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).toLowerCase();
     if (val.startsWith('/')) {
       if (val.startsWith('/task')) {
-        setMarketView('timeline'); // fallback
+        setMarketView('taskList');
         setSearchKeyword('');
       } else if (val.startsWith('/map')) {
         setMarketView('map');
@@ -279,10 +280,28 @@ const MarketCommandUIPage = () => {
     </div>
   );
 
+  // Task list view
+  const renderTaskListView = () => {
+    const allTasks = getAllTasksByPriority(
+      getMyProjectCards(loggedInUserDataGlobal.id),
+      loggedInUserDataGlobal.role,
+      loggedInUserDataGlobal.id
+    );
+
+    return (
+      <PriorityTaskList
+        projects={allTasks}
+        userRole={loggedInUserDataGlobal.role}
+        onTaskClick={handlePriorityTaskAction}
+      />
+    );
+  };
+
   // Main view switch
   const renderMainView = () => {
     if (marketView === 'timeline') return renderTimeline();
     if (marketView === 'map') return renderMapView();
+    if (marketView === 'taskList') return renderTaskListView();
     return null;
   };
 
@@ -369,7 +388,7 @@ const MarketCommandUIPage = () => {
           )}
           <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l.34 2.27.28 1.84a2 2 0 0 0 1.95 1.54l1.84.28 2.27.34-1.64 1.64-.8.8a2 2 0 0 0 0 2.82l.8.8 1.64 1.64-2.27.34-1.84.28a2 2 0 0 0-1.95 1.54l-.28 1.84-.34 2.27-1.64-1.64-.8-.8a2 2 0 0 0-2.82 0l-.8.8-1.64 1.64.34-2.27.28-1.84a2 2 0 0 0-1.95-1.54l-1.84-.28-2.27-.34 1.64-1.64.8-.8a2 2 0 0 0 0-2.82l-.8-.8L2.69 12l2.27-.34 1.84-.28a2 2 0 0 0 1.95-1.54l.28-1.84.34-2.27L12 2.69z"/></svg>
         </div>
-        
+
         {/* Today's Priority Task */}
         <div className="w-full max-w-3xl mx-auto">
           <PriorityTaskCard

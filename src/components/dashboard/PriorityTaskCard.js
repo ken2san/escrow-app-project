@@ -5,13 +5,13 @@ import { getUrgencyColor, getUrgencyEmoji } from '../../utils/priorityLogic';
 
 /**
  * PriorityTaskCard - Displays today's top priority task
- * 
+ *
  * Philosophy: Tell users exactly what to do next with minimal cognitive load.
  * Shows the single most important action they should take today.
  */
 const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
   const { t } = useTranslation();
-  
+
   if (!project) {
     return (
       <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-8 shadow-sm border border-indigo-100">
@@ -27,11 +27,11 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
       </div>
     );
   }
-  
+
   const { priority } = project;
   const urgencyColor = getUrgencyColor(priority.urgencyLevel);
   const urgencyEmoji = getUrgencyEmoji(priority.urgencyLevel);
-  
+
   // Determine action button text based on status
   const getActionText = () => {
     if (userRole === 'contractor') {
@@ -64,15 +64,15 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
       }
     }
   };
-  
+
   // Format due date display
   const formatDueDate = () => {
     if (!project.dueDate) return null;
-    
+
     const dueDate = new Date(project.dueDate);
     const now = new Date();
     const daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
-    
+
     if (daysUntil < 0) {
       return (
         <div className="flex items-center gap-2 text-red-700 font-semibold">
@@ -103,7 +103,7 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
       );
     }
   };
-  
+
   return (
     <div className={`rounded-2xl p-6 shadow-lg border-l-4 ${urgencyColor} transition-all hover:shadow-xl`}>
       {/* Header */}
@@ -132,12 +132,12 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Project Title */}
       <h2 className="text-2xl font-bold text-gray-800 mb-3 line-clamp-2">
         {project.title || t('noTitle', 'タイトル未設定')}
       </h2>
-      
+
       {/* Priority Reasons */}
       <div className="mb-4">
         <div className="flex flex-wrap gap-2">
@@ -151,7 +151,7 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
           ))}
         </div>
       </div>
-      
+
       {/* Project Info */}
       <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
         <div>
@@ -171,7 +171,7 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
           </div>
         )}
       </div>
-      
+
       {/* M-Score / S-Score Display (if available) */}
       {(project.mScore !== undefined || project.sScore !== undefined) && (
         <div className="flex gap-4 mb-4 p-3 bg-white bg-opacity-50 rounded-lg">
@@ -213,7 +213,7 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
           )}
         </div>
       )}
-      
+
       {/* Action Button */}
       <button
         onClick={() => onActionClick && onActionClick(project)}
@@ -222,7 +222,7 @@ const PriorityTaskCard = ({ project, userRole, onActionClick }) => {
         <span>{getActionText()}</span>
         <ArrowRight className="h-5 w-5" />
       </button>
-      
+
       {/* AI Suggestion (if low M-Score) */}
       {project.mScore !== undefined && project.mScore < 60 && (
         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">

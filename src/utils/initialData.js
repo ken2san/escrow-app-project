@@ -5,18 +5,18 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
     .map(p => {
       // Calculate unread messages (dummy: random for demo)
       const unreadMessages = Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0;
-      
+
       // Calculate M-Score and S-Score (dummy values based on project data)
       // M-Score: contract clarity, communication quality
       const mScore = p.deliverableDetails && p.acceptanceCriteriaDetails && p.scopeOfWork_included
         ? 85 + Math.floor(Math.random() * 10)
         : 45 + Math.floor(Math.random() * 30);
-      
+
       // S-Score: payment reliability, budget adequacy
       const sScore = p.fundsDeposited >= p.totalAmount
         ? 80 + Math.floor(Math.random() * 15)
         : 40 + Math.floor(Math.random() * 40);
-      
+
       // Map status to standard format
       let status = 'inProgress';
       if (p.status === '完了' || p.status === 'Completed') {
@@ -30,7 +30,7 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
       } else if (p.status === '協議中') {
         status = 'agreementPending';
       }
-      
+
       // Get due date from milestones or use project deadline
       let dueDate = null;
       if (p.milestones && p.milestones.length > 0) {
@@ -40,7 +40,7 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
           dueDate = nextMilestone.dueDate;
         }
       }
-      
+
       // Demo: Make some projects urgent by setting near deadlines
       if (p.id === 'job101') {
         // LP design - due in 2 days
@@ -52,12 +52,12 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
         // Completed logo project - needs evaluation
         status = 'completed';
       }
-      
+
       // Check if needs evaluation
-      const needsEvaluation = status === 'completed' && 
-        !p.contractorRating && 
+      const needsEvaluation = status === 'completed' &&
+        !p.contractorRating &&
         p.clientId === userId;
-      
+
       return {
         id: p.id,
         title: p.name,
