@@ -1,3 +1,5 @@
+import { calculateScores } from './scoreCalculation';
+
 // ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
 export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
   return dashboardAllProjects
@@ -6,16 +8,14 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
       // Calculate unread messages (dummy: random for demo)
       const unreadMessages = Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0;
 
-      // Calculate M-Score and S-Score (dummy values based on project data)
-      // M-Score: contract clarity, communication quality
-      const mScore = p.deliverableDetails && p.acceptanceCriteriaDetails && p.scopeOfWork_included
-        ? 85 + Math.floor(Math.random() * 10)
-        : 45 + Math.floor(Math.random() * 30);
-
-      // S-Score: payment reliability, budget adequacy
-      const sScore = p.fundsDeposited >= p.totalAmount
-        ? 80 + Math.floor(Math.random() * 15)
-        : 40 + Math.floor(Math.random() * 40);
+      // Calculate M-Score and S-Score using the calculation engine
+      const scores = calculateScores(p);
+      const mScore = scores.mScore.score;
+      const sScore = scores.sScore.score;
+      const scoreDetails = {
+        mScore: scores.mScore,
+        sScore: scores.sScore,
+      };
 
       // Map status to standard format
       let status = 'inProgress';
@@ -77,6 +77,7 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
         unreadMessages,
         mScore,
         sScore,
+        scoreDetails,
         needsEvaluation,
         proposals: p.proposals || [],
         postedAt: p.postedAt || new Date().toISOString(),
