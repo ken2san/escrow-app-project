@@ -2,19 +2,86 @@
 export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
   return dashboardAllProjects
     .filter(p => p.clientId === userId || p.contractorId === userId)
-    .map(p => ({
-      id: p.id,
-      title: p.name,
-      by: p.clientId === userId ? p.clientName : p.contractorName,
-      value: p.totalAmount,
-      nature: p.aiRecommendationScore || 0.7,
-      reward: p.totalAmount,
-      popularity: p.clientRating?.averageScore || 5,
-      description: p.description,
-      workImage: p.imageUrl || '',
-      type: p.clientId === userId ? 'request' : 'offer',
-      isMyProject: true,
-    }));
+    .map(p => {
+      // Calculate unread messages (dummy: random for demo)
+      const unreadMessages = Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0;
+      
+      // Calculate M-Score and S-Score (dummy values based on project data)
+      // M-Score: contract clarity, communication quality
+      const mScore = p.deliverableDetails && p.acceptanceCriteriaDetails && p.scopeOfWork_included
+        ? 85 + Math.floor(Math.random() * 10)
+        : 45 + Math.floor(Math.random() * 30);
+      
+      // S-Score: payment reliability, budget adequacy
+      const sScore = p.fundsDeposited >= p.totalAmount
+        ? 80 + Math.floor(Math.random() * 15)
+        : 40 + Math.floor(Math.random() * 40);
+      
+      // Map status to standard format
+      let status = 'inProgress';
+      if (p.status === '完了' || p.status === 'Completed') {
+        status = 'completed';
+      } else if (p.status === '募集中' || p.status === 'openForProposals') {
+        status = 'openForProposals';
+      } else if (p.status === '作業開始待ち') {
+        status = 'workReady';
+      } else if (p.status === '検収待ち') {
+        status = 'pendingAcceptance';
+      } else if (p.status === '協議中') {
+        status = 'agreementPending';
+      }
+      
+      // Get due date from milestones or use project deadline
+      let dueDate = null;
+      if (p.milestones && p.milestones.length > 0) {
+        // Find next incomplete milestone
+        const nextMilestone = p.milestones.find(m => m.status !== 'paid');
+        if (nextMilestone && nextMilestone.dueDate) {
+          dueDate = nextMilestone.dueDate;
+        }
+      }
+      
+      // Demo: Make some projects urgent by setting near deadlines
+      if (p.id === 'job101') {
+        // LP design - due in 2 days
+        const twoDaysLater = new Date();
+        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+        dueDate = twoDaysLater.toISOString().split('T')[0];
+        status = 'workReady'; // Ready to start work
+      } else if (p.id === 'job1') {
+        // Completed logo project - needs evaluation
+        status = 'completed';
+      }
+      
+      // Check if needs evaluation
+      const needsEvaluation = status === 'completed' && 
+        !p.contractorRating && 
+        p.clientId === userId;
+      
+      return {
+        id: p.id,
+        title: p.name,
+        by: p.clientId === userId ? p.clientName : p.contractorName,
+        value: p.totalAmount,
+        budget: p.totalAmount,
+        nature: p.aiRecommendationScore || 0.7,
+        reward: p.totalAmount,
+        popularity: p.clientRating?.averageScore || 5,
+        description: p.description,
+        workImage: p.imageUrl || '',
+        type: p.clientId === userId ? 'request' : 'offer',
+        isMyProject: true,
+        // Priority calculation fields
+        status,
+        dueDate,
+        unreadMessages,
+        mScore,
+        sScore,
+        needsEvaluation,
+        proposals: p.proposals || [],
+        postedAt: p.postedAt || new Date().toISOString(),
+      };
+    });
 }
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [
@@ -56,6 +123,7 @@ export const loggedInUserDataGlobal = {
   id: 'user555',
   name: '田中 さとし',
   name_en: 'Satoshi Tanaka',
+  role: 'contractor', // 'client' or 'contractor'
 };
 
 // --- ダミーデータ ---

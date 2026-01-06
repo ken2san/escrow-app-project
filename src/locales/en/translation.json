@@ -31,6 +31,7 @@
   "userRoleClient": "Client",
   "userRoleContractor": "Contractor",
   "dashboard": "Dashboard",
+  "dashboardLegacy": "Dashboard (Legacy)",
   "newProject": "New Project",
   "messages": "Messages",
   "disputes": "Ongoing Discussions",

@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { marketCommandItems as initialMarketCommandItems, getMyProjectCards, loggedInUserDataGlobal } from '../utils/initialData';
 import MarketCommandCardWrapper from '../components/market/MarketCommandCardWrapper';
+import PriorityTaskCard from '../components/dashboard/PriorityTaskCard';
+import { getTodaysPriorityTask } from '../utils/priorityLogic';
 
 
 const MarketCommandUIPage = () => {
@@ -284,19 +286,33 @@ const MarketCommandUIPage = () => {
     return null;
   };
 
+  // Calculate today's priority task
+  const priorityTask = getTodaysPriorityTask(
+    getMyProjectCards(loggedInUserDataGlobal.id),
+    loggedInUserDataGlobal.role,
+    loggedInUserDataGlobal.id
+  );
+
+  const handlePriorityTaskAction = (project) => {
+    // Navigate to project details or appropriate action
+    alert(`Action clicked for project: ${project.title}`);
+  };
+
   // Removed custom Sidebar logic; now uses App-wide Sidebar only
   return (
     <div className="flex flex-col h-full min-h-screen">
       <div className="relative px-4 md:px-8 py-6 flex flex-col gap-6 flex-1">
-  <div className="sticky top-0 z-20 bg-slate-100 w-full max-w-3xl mx-auto rounded-full overflow-hidden">
+  <div className="sticky top-0 z-20 bg-slate-100 w-full max-w-3xl mx-auto rounded-full">
           <input
             type="text"
             placeholder="「@Sato Designにロゴ作成を依頼」のように、AIに話しかけてみてください..."
             className="w-full pl-12 pr-4 py-4 text-lg border-2 border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition"
             value={prompt}
             onChange={e => {
-              setPrompt(e.target.value);
-              if (e.target.value.trim() === '/') {
+              const val = e.target.value;
+              setPrompt(val);
+              // Show suggestion list whenever a slash command is being typed
+              if (val.trim().startsWith('/')) {
                 setShowSuggest(true);
                 setSuggestIdx(0);
               } else {
@@ -353,6 +369,16 @@ const MarketCommandUIPage = () => {
           )}
           <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l.34 2.27.28 1.84a2 2 0 0 0 1.95 1.54l1.84.28 2.27.34-1.64 1.64-.8.8a2 2 0 0 0 0 2.82l.8.8 1.64 1.64-2.27.34-1.84.28a2 2 0 0 0-1.95 1.54l-.28 1.84-.34 2.27-1.64-1.64-.8-.8a2 2 0 0 0-2.82 0l-.8.8-1.64 1.64.34-2.27.28-1.84a2 2 0 0 0-1.95-1.54l-1.84-.28-2.27-.34 1.64-1.64.8-.8a2 2 0 0 0 0-2.82l-.8-.8L2.69 12l2.27-.34 1.84-.28a2 2 0 0 0 1.95-1.54l.28-1.84.34-2.27L12 2.69z"/></svg>
         </div>
+        
+        {/* Today's Priority Task */}
+        <div className="w-full max-w-3xl mx-auto">
+          <PriorityTaskCard
+            project={priorityTask}
+            userRole={loggedInUserDataGlobal.role}
+            onActionClick={handlePriorityTaskAction}
+          />
+        </div>
+
         {/* Main View */}
 
         {renderMainView()}

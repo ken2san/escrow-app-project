@@ -194,10 +194,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
             ? 'bg-indigo-600 text-white shadow-lg'
             : 'text-gray-300 hover:text-white'
         } ${!isSidebarOpen ? 'justify-center' : ''}`}
-        title={isSidebarOpen ? '' : t('dashboard')}
+        title={isSidebarOpen ? '' : t('dashboardLegacy')}
       >
         <Home className="h-5 w-5" />
-  {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboard')}</span>}
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboardLegacy')}</span>}
       </button>
     </li>
   </ul>
