@@ -27,6 +27,9 @@ export default function JobsSearchPage() {
   // Filter & Sort
   const filteredJobs = useMemo(() => {
     let result = allJobs.filter(job => {
+      // Only show jobs that are open for proposals (募集中)
+      if (job.status !== '募集中') return false;
+      
       const matchesSearch = job.title.toLowerCase().includes(filters.searchText.toLowerCase());
       const matchesMScore = job.mScore >= filters.mScoreMin;
       const matchesSScore = job.sScore >= filters.sScoreMin;
@@ -101,6 +104,9 @@ export default function JobsSearchPage() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-slate-900">{t('jobs.title', '仕事を探す')}</h1>
           <p className="text-slate-600 mt-2">{t('jobs.subtitle', '美味しい仕事を見つけよう')}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            💼 募集中の仕事のみ表示 | 受けた仕事は「仕事管理」で確認できます
+          </p>
         </div>
       </div>
 
