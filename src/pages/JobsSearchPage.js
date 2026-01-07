@@ -352,6 +352,11 @@ function JobCard({ job }) {
     }
   };
 
+  // First shift time badge for hourly jobs
+  const firstShift = job?.workType === 'hourly' && Array.isArray(job?.milestones)
+    ? job.milestones.find(m => m.start && m.end)
+    : null;
+
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       {/* AI Flag + Header */}
@@ -368,6 +373,11 @@ function JobCard({ job }) {
                 {job.locationType && (
                   <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                     {job.locationType === 'remote' ? 'リモート' : job.locationType === 'hybrid' ? 'ハイブリッド' : '現地'}
+                  </span>
+                )}
+                {firstShift && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                    {firstShift.start}–{firstShift.end}
                   </span>
                 )}
               <span className={getFlagStyle()}>
@@ -490,7 +500,7 @@ function JobCard({ job }) {
                 <p className="text-lg font-bold text-slate-900">¥{job.hourlyRate?.toLocaleString()}/h</p>
                 <p className="text-xs text-slate-500">目安合計: ¥{job.budget?.toLocaleString()}</p>
                 {job.milestones?.length > 0 && (
-                  <p className="text-xs text-slate-500">シフト予定: {job.milestones.length}日</p>
+                  <p className="text-xs text-slate-500">シフト予定: {job.milestones.length}日{firstShift ? ` ・ 初回 ${firstShift.start}–${firstShift.end}` : ''}</p>
                 )}
               </div>
             ) : (
@@ -682,24 +692,43 @@ function JobCard({ job }) {
             </div>
           )}
 
-          {/* Milestones */}
-          {job.milestones && job.milestones.length > 0 && (
+          {/* Milestones (project-type) */}
+          {job.workType !== 'hourly' && job.milestones && job.milestones.length > 0 && (
             <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
               <h4 className="font-semibold text-slate-900">マイルストーン</h4>
               <div className="space-y-3">
                 {job.milestones.map((milestone, idx) => (
                   <div key={idx} className="border-l-4 border-indigo-400 pl-3">
                     <div className="flex items-center justify-between">
-                      <p className="font-medium text-slate-900">{milestone.name}</p>
+                      <p className="font-medium text-slate-900">{milestone.name || milestone.title}</p>
                       <p className="text-sm font-bold text-slate-900">¥{milestone.amount?.toLocaleString()}</p>
                     </div>
-                    <p className="text-xs text-slate-500">期限: {new Date(milestone.dueDate).toLocaleDateString()}</p>
+                    {milestone.dueDate && (
+                      <p className="text-xs text-slate-500">期限: {new Date(milestone.dueDate).toLocaleDateString()}</p>
+                    )}
                     {milestone.description && (
                       <p className="text-sm text-slate-600 mt-1">{milestone.description}</p>
                     )}
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Shift schedule (hourly-type) */}
+          {job.workType === 'hourly' && job.milestones && job.milestones.length > 0 && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">シフト予定</h4>
+              <ul className="space-y-2">
+                {job.milestones
+                  .filter(m => m.date && m.start && m.end)
+                  .map((m) => (
+                    <li key={m.id} className="flex items-center justify-between">
+                      <span className="text-sm text-slate-900">{m.date} ・ {m.start}–{m.end}</span>
+                      <span className="text-xs text-slate-600">{m.title}</span>
+                    </li>
+                  ))}
+              </ul>
             </div>
           )}
 

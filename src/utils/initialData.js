@@ -1,14 +1,12 @@
 import { calculateScores, calculateRecommendationScore } from './scoreCalculation';
 import { calculateAmbiguityScore, detectSafetyWarnings, generateClarityChecklist } from './scoreCalculation';
 
-// ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
-export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
+// Function to get user's projects (mine)
+export function getProjectsForUser(userId) {
   return dashboardAllProjects
     .filter(p => p.clientId === userId || p.contractorId === userId)
     .map(p => {
-      // Calculate unread messages (dummy: random for demo)
-      const unreadMessages = Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0;
-
+      const unreadMessages = 0; // TODO: get from messaging service
       // Calculate M-Score and S-Score using the calculation engine
       const scores = calculateScores(p);
       const mScore = scores.mScore.score;
@@ -166,6 +164,26 @@ export function getAvailableJobsForDiscovery() {
         postedAt: p.postedAt || new Date().toISOString(),
       };
     });
+}
+
+// Get user's own project cards (my projects) for MarketCommandUI
+export function getMyProjectCards(userId) {
+  return getProjectsForUser(userId).map(p => ({
+    id: p.id,
+    title: p.title,
+    by: p.by,
+    value: p.value,
+    nature: p.nature,
+    reward: p.reward,
+    popularity: p.popularity,
+    description: p.description,
+    workImage: p.workImage,
+    type: p.type,
+    isMyProject: p.isMyProject,
+    status: p.status,
+    dueDate: p.dueDate,
+    unreadMessages: p.unreadMessages || 0,
+  }));
 }
 
 // In-memory proposals/drafts store (demo only)
@@ -392,88 +410,9 @@ export const dashboardAllProjects = [
     lastUpdate: '2024-08-19 11:00',
     hasDispute: false,
     milestones: [
-      {
-        id: 'm1-1',
-        name: 'ヒアリングと方向性提案',
-        name_en: 'Hearing and Direction Proposal',
-        amount: 30000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-07-05',
-        startDate: '2024-07-01',
-        duration: 4,
-        paidDate: '2024-07-06',
-        description: '詳細ヒアリング、3つのデザイン方向性を提案。',
-        description_en: 'Detailed hearing. Propose 3 design directions.',
-        submittedFiles: [
-          { name: 'direction_proposal.pdf', date: '2024-07-04' },
-        ],
-        feedbackHistory: [
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-07-05',
-            comment: 'B案でお願いします。',
-            comment_en: 'Please go with option B.',
-          },
-        ],
-      },
-      {
-        id: 'm1-2',
-        name: 'ロゴデザイン案（3種）提出と選定',
-        name_en: 'Logo Design Proposals (3 types) Submission and Selection',
-        amount: 70000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-07-25',
-        startDate: '2024-07-06',
-        duration: 19,
-        paidDate: '2024-07-28',
-        description: 'ロゴデザイン案3種作成。展開例も提示。',
-        description_en: 'Create 3 logo design proposals. Also present deployment examples.',
-        submittedFiles: [{ name: 'logo_drafts.zip', date: '2024-07-24' }],
-        feedbackHistory: [
-          {
-            type: 'feedback',
-            type_en: 'Feedback',
-            date: '2024-07-25',
-            comment: '案2が良いがフォント調整希望。',
-            comment_en: 'Option 2 is good, but please adjust the font.',
-          },
-          { type: 'submission', type_en: 'Submission', date: '2024-07-26', comment: '修正案提出。', comment_en: 'Submitted revised proposal.' },
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-07-27',
-            comment: 'フォントBで決定。',
-            comment_en: 'Font B is selected.',
-          },
-        ],
-      },
-      {
-        id: 'm1-3',
-        name: '最終納品',
-        name_en: 'Final Delivery',
-        amount: 60000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-08-18',
-        startDate: '2024-07-26',
-        duration: 23,
-        paidDate: '2024-08-18',
-        description: 'ロゴデータ、ブランドガイドライン、各種デザイン案データ。',
-        description_en: 'Logo data, brand guidelines, and various design proposal data.',
-        submittedFiles: [{ name: 'FINAL_ASSETS.zip', date: '2024-08-17' }],
-        feedbackHistory: [
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-08-18',
-            comment: '完璧です。ありがとうございました。',
-            comment_en: 'Perfect. Thank you very much.',
-          },
-        ],
-      },
+      { id: 'job1-m1', name: '要件定義', amount: 60000, status: 'completed', dueDate: '2024-07-10' },
+      { id: 'job1-m2', name: 'デザイン承認', amount: 60000, status: 'completed', dueDate: '2024-07-20' },
+      { id: 'job1-m3', name: '納品', amount: 60000, status: 'released', dueDate: '2024-08-01' },
     ],
     contractorRating: {
       averageScore: 5,
