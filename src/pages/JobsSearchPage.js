@@ -28,8 +28,8 @@ export default function JobsSearchPage() {
   const filteredJobs = useMemo(() => {
     let result = allJobs.filter(job => {
       // Only show jobs that are open for proposals (募集中)
-      if (job.status !== '募集中') return false;
-      
+      if (job.status !== 'openForProposals') return false;
+
       const matchesSearch = job.title.toLowerCase().includes(filters.searchText.toLowerCase());
       const matchesMScore = job.mScore >= filters.mScoreMin;
       const matchesSScore = job.sScore >= filters.sScoreMin;
@@ -398,7 +398,7 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
         </div>
 
         {/* Quick Details */}
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-4 gap-4 text-sm mb-4">
           <div>
             <p className="text-slate-600">報酬</p>
             <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
@@ -410,10 +410,30 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
             </p>
           </div>
           <div>
-            <p className="text-slate-600">ステータス</p>
-            <p className="text-lg font-bold text-slate-900 capitalize">{job.status}</p>
+            <p className="text-slate-600">依頼者</p>
+            <p className="text-lg font-bold text-slate-900 truncate">{job.by || 'クライアント'}</p>
+          </div>
+          <div>
+            <p className="text-slate-600">評価</p>
+            <p className="text-lg font-bold text-slate-900">
+              ⭐ {job.popularity?.toFixed(1) || 'N/A'} / {job.clientRating?.totalReviews || 0}件
+            </p>
           </div>
         </div>
+
+        {/* Required Skills */}
+        {job.requiredSkills && job.requiredSkills.length > 0 && (
+          <div className="mb-3">
+            <p className="text-xs font-medium text-slate-600 mb-2">必須スキル:</p>
+            <div className="flex flex-wrap gap-2">
+              {job.requiredSkills.map((skill, idx) => (
+                <span key={idx} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded font-medium">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Expand Indicator */}
         <div className="mt-4 flex items-center justify-center text-slate-400 hover:text-slate-600">
@@ -427,24 +447,132 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
       {/* Expanded Details */}
       {isExpanded && (
         <div className="bg-slate-50 p-6 border-t border-slate-200 space-y-6">
+          {/* Client Info */}
+          <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+            <h4 className="font-semibold text-slate-900">案件詳細</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-slate-600 font-medium">依頼者</p>
+                <p className="text-slate-900">{job.by || 'クライアント'}</p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">評価・レビュー</p>
+                <p className="text-slate-900">
+                  ⭐ {job.popularity?.toFixed(1) || 'N/A'} 点 ({job.clientRating?.totalReviews || 0}件)
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">予算</p>
+                <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">納期</p>
+                <p className="text-slate-900">
+                  {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Required Skills - Full */}
+          {job.requiredSkills && job.requiredSkills.length > 0 && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">必須スキル</h4>
+              <div className="flex flex-wrap gap-2">
+                {job.requiredSkills.map((skill, idx) => (
+                  <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Job Description */}
           {job.description && (
-            <div className="space-y-2">
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
               <h4 className="font-semibold text-slate-900">仕事内容</h4>
-              <p className="text-sm text-slate-700 bg-white p-3 rounded border border-slate-200 whitespace-pre-wrap">
+              <p className="text-sm text-slate-700 whitespace-pre-wrap">
                 {job.description}
               </p>
             </div>
           )}
+
+          {/* Deliverables */}
+          {job.deliverables && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">納品物</h4>
+              <p className="text-sm text-slate-700">{job.deliverables}</p>
+              {job.deliverableDetails && (
+                <p className="text-sm text-slate-600 mt-2">詳細: {job.deliverableDetails}</p>
+              )}
+            </div>
+          )}
+
+          {/* Scope of Work */}
+          {(job.scopeOfWork_included || job.scopeOfWork_excluded) && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">業務範囲</h4>
+              {job.scopeOfWork_included && (
+                <div>
+                  <p className="text-sm font-medium text-emerald-700 mb-1">✓ 含まれる作業</p>
+                  <p className="text-sm text-slate-600">{job.scopeOfWork_included}</p>
+                </div>
+              )}
+              {job.scopeOfWork_excluded && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-amber-700 mb-1">✗ 含まれない作業</p>
+                  <p className="text-sm text-slate-600">{job.scopeOfWork_excluded}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Acceptance Criteria */}
+          {job.acceptanceCriteria && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">受け入れ基準</h4>
+              <p className="text-sm text-slate-700">{job.acceptanceCriteria}</p>
+              {job.acceptanceCriteriaDetails && (
+                <p className="text-sm text-slate-600 mt-2">詳細: {job.acceptanceCriteriaDetails}</p>
+              )}
+            </div>
+          )}
+
+          {/* Milestones */}
+          {job.milestones && job.milestones.length > 0 && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">マイルストーン</h4>
+              <div className="space-y-3">
+                {job.milestones.map((milestone, idx) => (
+                  <div key={idx} className="border-l-4 border-indigo-400 pl-3">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-slate-900">{milestone.name}</p>
+                      <p className="text-sm font-bold text-slate-900">¥{milestone.amount?.toLocaleString()}</p>
+                    </div>
+                    <p className="text-xs text-slate-500">期限: {new Date(milestone.dueDate).toLocaleDateString()}</p>
+                    {milestone.description && (
+                      <p className="text-sm text-slate-600 mt-1">{milestone.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* M-Score Breakdown */}
-          <div className="space-y-3">
+          <div className="space-y-3 bg-white p-4 rounded border border-emerald-200">
             <div className="flex items-center gap-2">
               <Info size={18} className="text-emerald-600" />
               <h4 className="font-semibold text-slate-900">M-Score 詳細（契約の透明性）</h4>
             </div>
-            {job.scoreDetails?.mScoreDetails && (
-              <div className="bg-white p-3 rounded border border-emerald-200 space-y-2 text-sm">
-                {Object.entries(job.scoreDetails.mScoreDetails).map(([key, value]) => (
+            {job.scoreDetails?.mScore && (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">総合スコア:</span>
+                  <span className="font-bold text-emerald-700">{job.scoreDetails.mScore.score}/100</span>
+                </div>
+                {job.scoreDetails.mScore.breakdown && Object.entries(job.scoreDetails.mScore.breakdown).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
                     <span className="text-slate-600 capitalize">{key}:</span>
                     <span className="font-medium text-slate-900">{value} 点</span>
@@ -455,14 +583,18 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
           </div>
 
           {/* S-Score Breakdown */}
-          <div className="space-y-3">
+          <div className="space-y-3 bg-white p-4 rounded border border-blue-200">
             <div className="flex items-center gap-2">
               <Zap size={18} className="text-blue-600" />
               <h4 className="font-semibold text-slate-900">S-Score 詳細（支払い信頼性）</h4>
             </div>
-            {job.scoreDetails?.sScoreDetails && (
-              <div className="bg-white p-3 rounded border border-blue-200 space-y-2 text-sm">
-                {Object.entries(job.scoreDetails.sScoreDetails).map(([key, value]) => (
+            {job.scoreDetails?.sScore && (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">総合スコア:</span>
+                  <span className="font-bold text-blue-700">{job.scoreDetails.sScore.score}/100</span>
+                </div>
+                {job.scoreDetails.sScore.breakdown && Object.entries(job.scoreDetails.sScore.breakdown).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
                     <span className="text-slate-600 capitalize">{key}:</span>
                     <span className="font-medium text-slate-900">{value} 点</span>
@@ -472,35 +604,11 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
             )}
           </div>
 
-          {/* Warnings */}
-          {job.scoreDetails?.warnings && job.scoreDetails.warnings.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={18} className="text-amber-600" />
-                <h4 className="font-semibold text-slate-900">注意事項</h4>
-              </div>
-              <div className="bg-amber-50 border border-amber-200 rounded p-3 space-y-2">
-                {job.scoreDetails.warnings.map((warning, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm text-amber-900">
-                    <span className="text-amber-600 mt-0.5">•</span>
-                    <span>{warning}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recommendations */}
-          {job.scoreDetails?.mScoreRecommendations && job.scoreDetails.mScoreRecommendations.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="font-semibold text-slate-900">改善提案</h4>
-              <div className="bg-indigo-50 border border-indigo-200 rounded p-3 space-y-2">
-                {job.scoreDetails.mScoreRecommendations.map((rec, idx) => (
-                  <div key={idx} className="text-sm text-indigo-900">
-                    <p className="font-medium">• {rec}</p>
-                  </div>
-                ))}
-              </div>
+          {/* Additional Terms */}
+          {job.additionalWorkTerms && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">追加作業について</h4>
+              <p className="text-sm text-slate-700">{job.additionalWorkTerms}</p>
             </div>
           )}
         </div>
