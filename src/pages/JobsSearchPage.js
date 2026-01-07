@@ -164,7 +164,7 @@ export default function JobsSearchPage() {
                 >
                   {locationTypes.map(loc => (
                     <option key={loc} value={loc}>
-                      {loc === 'all' ? 'すべて' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '出社/現地'}
+                      {loc === 'all' ? 'すべて' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
                     </option>
                   ))}
                 </select>
@@ -326,6 +326,20 @@ function JobCard({ job }) {
   const mScoreColor = getScoreColor(job.mScore);
   const sScoreColor = getScoreColor(job.sScore);
 
+  const getCategoryBadgeStyle = (category) => {
+    const base = 'px-2 py-0.5 text-xs font-semibold rounded-full border';
+    switch (category) {
+      case '飲食':
+        return `${base} bg-emerald-50 text-emerald-700 border-emerald-200`;
+      case '物流':
+        return `${base} bg-indigo-50 text-indigo-700 border-indigo-200`;
+      case '小売':
+        return `${base} bg-orange-50 text-orange-700 border-orange-200`;
+      default:
+        return `${base} bg-slate-100 text-slate-700 border-slate-200`;
+    }
+  };
+
   // AI Flag styling
   const getFlagStyle = () => {
     const base = 'px-3 py-1 rounded-full font-bold text-sm';
@@ -347,7 +361,7 @@ function JobCard({ job }) {
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
               {job.category && (
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                <span className={getCategoryBadgeStyle(job.category)}>
                   {job.category}
                 </span>
               )}
@@ -475,6 +489,9 @@ function JobCard({ job }) {
               <div className="space-y-1">
                 <p className="text-lg font-bold text-slate-900">¥{job.hourlyRate?.toLocaleString()}/h</p>
                 <p className="text-xs text-slate-500">目安合計: ¥{job.budget?.toLocaleString()}</p>
+                {job.milestones?.length > 0 && (
+                  <p className="text-xs text-slate-500">シフト予定: {job.milestones.length}日</p>
+                )}
               </div>
             ) : (
               <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
