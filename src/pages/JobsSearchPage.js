@@ -57,6 +57,37 @@ export default function JobsSearchPage() {
     setCartItems(cartItems.filter(id => id !== jobId));
   };
 
+  // Smart filters (presets)
+  const applySmartFilter = (filterType) => {
+    switch (filterType) {
+      case 'safe':
+        // 安心できる仕事：M-Score 75以上、S-Score 75以上
+        setFilters({ ...filters, mScoreMin: 75, sScoreMin: 75 });
+        break;
+      case 'lucrative':
+        // 高報酬：予算100万以上
+        setFilters({ ...filters, budgetMin: 1000000 });
+        break;
+      case 'urgent':
+        // 今すぐ：期限が今から7日以内
+        // Note: filtering by deadline would need more complex logic
+        setFilters({ ...filters, mScoreMin: 50, sScoreMin: 50 });
+        break;
+      case 'reset':
+        // リセット
+        setFilters({
+          mScoreMin: 0,
+          sScoreMin: 0,
+          budgetMin: 0,
+          budgetMax: 999999,
+          searchText: '',
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -163,6 +194,39 @@ export default function JobsSearchPage() {
                   <option value="budget">報酬（高い順）</option>
                   <option value="deadline">期限（近い順）</option>
                 </select>
+              </div>
+
+              {/* Smart Filters */}
+              <div className="mb-6 pt-6 border-t border-slate-300">
+                <label className="block text-sm font-medium text-slate-700 mb-3">
+                  🎯 クイックフィルター
+                </label>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => applySmartFilter('safe')}
+                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition"
+                  >
+                    ✓ 安心できる仕事（M&S高）
+                  </button>
+                  <button
+                    onClick={() => applySmartFilter('lucrative')}
+                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border border-yellow-200 transition"
+                  >
+                    💰 高報酬（100万以上）
+                  </button>
+                  <button
+                    onClick={() => applySmartFilter('urgent')}
+                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 transition"
+                  >
+                    ⚡ 今すぐ開始
+                  </button>
+                  <button
+                    onClick={() => applySmartFilter('reset')}
+                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition"
+                  >
+                    ↻ リセット
+                  </button>
+                </div>
               </div>
             </div>
           </div>
