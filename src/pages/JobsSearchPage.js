@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, ShoppingCart, ChevronDown } from 'lucide-react';
+import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, Info, Zap } from 'lucide-react';
 import { getMyProjectCards } from '../utils/initialData';
 
 export default function JobsSearchPage() {
@@ -230,71 +230,171 @@ export default function JobsSearchPage() {
 
 /* Job Card Component */
 function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const getScoreColor = (score) => {
+    if (score >= 80) return { bg: 'bg-emerald-50', text: 'text-emerald-700', bar: 'bg-emerald-500' };
+    if (score >= 60) return { bg: 'bg-yellow-50', text: 'text-yellow-700', bar: 'bg-yellow-500' };
+    return { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500' };
+  };
+
+  const mScoreColor = getScoreColor(job.mScore);
+  const sScoreColor = getScoreColor(job.sScore);
+
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-md transition p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
-          <p className="text-sm text-slate-600 mt-1">{job.client || 'クライアント名'}</p>
-        </div>
-        <button
-          onClick={() => (isInCart ? onRemoveFromCart(job.id) : onAddToCart(job.id))}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
-            isInCart
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-              : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-          }`}
-        >
-          {isInCart ? 'カート内' : 'カートに入れる'}
-        </button>
-      </div>
-
-      {/* Scores */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 p-3 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-emerald-900">M-Score</span>
-            <span className="text-2xl font-bold text-emerald-600">{job.mScore}</span>
+    <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-slate-200" onClick={() => setIsExpanded(!isExpanded)} role="button">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
+            <p className="text-sm text-slate-600 mt-1">{job.client || 'クライアント名'}</p>
           </div>
-          <div className="w-full bg-emerald-200 rounded-full h-2 mt-2">
-            <div
-              className="bg-emerald-600 h-2 rounded-full"
-              style={{ width: `${job.mScore}%` }}
-            />
-          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              isInCart ? onRemoveFromCart(job.id) : onAddToCart(job.id);
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ml-4 ${
+              isInCart
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+            }`}
+          >
+            {isInCart ? 'カート内' : 'カートに入れる'}
+          </button>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-blue-900">S-Score</span>
-            <span className="text-2xl font-bold text-blue-600">{job.sScore}</span>
+        {/* Scores */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className={`${mScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700">M-Score</span>
+              <span className={`text-2xl font-bold ${mScoreColor.text}`}>{job.mScore}</span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
+              <div
+                className={`${mScoreColor.bar} h-2 rounded-full`}
+                style={{ width: `${job.mScore}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-600 mt-2">契約の透明性・公正性</p>
           </div>
-          <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full"
-              style={{ width: `${job.sScore}%` }}
-            />
+
+          <div className={`${sScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700">S-Score</span>
+              <span className={`text-2xl font-bold ${sScoreColor.text}`}>{job.sScore}</span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
+              <div
+                className={`${sScoreColor.bar} h-2 rounded-full`}
+                style={{ width: `${job.sScore}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-600 mt-2">支払い・予算の安全性</p>
           </div>
+        </div>
+
+        {/* Quick Details */}
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-slate-600">報酬</p>
+            <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-slate-600">期限</p>
+            <p className="text-lg font-bold text-slate-900">
+              {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
+            </p>
+          </div>
+          <div>
+            <p className="text-slate-600">ステータス</p>
+            <p className="text-lg font-bold text-slate-900 capitalize">{job.status}</p>
+          </div>
+        </div>
+
+        {/* Expand Indicator */}
+        <div className="mt-4 flex items-center justify-center text-slate-400 hover:text-slate-600">
+          <ChevronDown
+            size={20}
+            className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          />
         </div>
       </div>
 
-      {/* Details */}
-      <div className="grid grid-cols-3 gap-4 text-sm">
-        <div>
-          <p className="text-slate-600">報酬</p>
-          <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="bg-slate-50 p-6 border-t border-slate-200 space-y-6">
+          {/* M-Score Breakdown */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Info size={18} className="text-emerald-600" />
+              <h4 className="font-semibold text-slate-900">M-Score 詳細（契約の透明性）</h4>
+            </div>
+            {job.scoreDetails?.mScoreDetails && (
+              <div className="bg-white p-3 rounded border border-emerald-200 space-y-2 text-sm">
+                {Object.entries(job.scoreDetails.mScoreDetails).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-slate-600 capitalize">{key}:</span>
+                    <span className="font-medium text-slate-900">{value} 点</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* S-Score Breakdown */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Zap size={18} className="text-blue-600" />
+              <h4 className="font-semibold text-slate-900">S-Score 詳細（支払い信頼性）</h4>
+            </div>
+            {job.scoreDetails?.sScoreDetails && (
+              <div className="bg-white p-3 rounded border border-blue-200 space-y-2 text-sm">
+                {Object.entries(job.scoreDetails.sScoreDetails).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-slate-600 capitalize">{key}:</span>
+                    <span className="font-medium text-slate-900">{value} 点</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Warnings */}
+          {job.scoreDetails?.warnings && job.scoreDetails.warnings.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={18} className="text-amber-600" />
+                <h4 className="font-semibold text-slate-900">注意事項</h4>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded p-3 space-y-2">
+                {job.scoreDetails.warnings.map((warning, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-sm text-amber-900">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>{warning}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recommendations */}
+          {job.scoreDetails?.mScoreRecommendations && job.scoreDetails.mScoreRecommendations.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="font-semibold text-slate-900">改善提案</h4>
+              <div className="bg-indigo-50 border border-indigo-200 rounded p-3 space-y-2">
+                {job.scoreDetails.mScoreRecommendations.map((rec, idx) => (
+                  <div key={idx} className="text-sm text-indigo-900">
+                    <p className="font-medium">• {rec}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <div>
-          <p className="text-slate-600">期限</p>
-          <p className="text-lg font-bold text-slate-900">
-            {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
-          </p>
-        </div>
-        <div>
-          <p className="text-slate-600">ステータス</p>
-          <p className="text-lg font-bold text-slate-900 capitalize">{job.status}</p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
