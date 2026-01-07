@@ -166,21 +166,20 @@ export default function JobsSearchPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   {t('common.budget', '予算')} (¥)
                 </label>
-                <div className="flex gap-2">
+                <div className="space-y-2">
                   <input
                     type="number"
-                    placeholder="最小"
+                    placeholder="最小金額"
                     value={filters.budgetMin}
                     onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
-                    className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
                   />
-                  <span className="text-slate-400">-</span>
                   <input
                     type="number"
-                    placeholder="最大"
+                    placeholder="最大金額"
                     value={filters.budgetMax}
                     onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
-                    className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
                   />
                 </div>
               </div>
@@ -291,7 +290,7 @@ export default function JobsSearchPage() {
                 合計報酬: ¥{selectedJobs.reduce((sum, job) => sum + (job.budget || 0), 0).toLocaleString()}
               </span>
             </div>
-            <button 
+            <button
               onClick={() => setShowBatchProposalModal(true)}
               className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
             >
@@ -517,7 +516,7 @@ function BatchProposalModal({ jobs, onClose, onSubmit, t }) {
             <X size={20} className="text-slate-500" />
           </button>
         </div>
-        
+
         {/* Jobs Summary */}
         <div className="bg-slate-50 p-4 rounded-lg mb-6">
           <p className="text-sm text-slate-600 mb-3">対象の仕事:</p>
