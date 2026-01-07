@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, Info, Zap } from 'lucide-react';
+import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, Info, Zap, X } from 'lucide-react';
 import { getMyProjectCards } from '../utils/initialData';
 
 export default function JobsSearchPage() {
@@ -14,9 +14,15 @@ export default function JobsSearchPage() {
   });
   const [sortBy, setSortBy] = useState('mScore'); // mScore, sScore, budget, deadline
   const [cartItems, setCartItems] = useState([]);
+  const [showBatchProposalModal, setShowBatchProposalModal] = useState(false);
 
   // Get all available jobs
   const allJobs = useMemo(() => getMyProjectCards(), []);
+
+  // Get selected jobs in cart
+  const selectedJobs = useMemo(() => {
+    return allJobs.filter(job => cartItems.includes(job.id));
+  }, [allJobs, cartItems]);
 
   // Filter & Sort
   const filteredJobs = useMemo(() => {
@@ -281,12 +287,33 @@ export default function JobsSearchPage() {
               <span className="font-medium text-slate-900">
                 {cartItems.length} {t('jobs.selected', '件選択中')}
               </span>
+              <span className="text-sm text-slate-600">
+                合計報酬: ¥{selectedJobs.reduce((sum, job) => sum + (job.budget || 0), 0).toLocaleString()}
+              </span>
             </div>
-            <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
+            <button 
+              onClick={() => setShowBatchProposalModal(true)}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+            >
               {t('jobs.createProposals', '一括で提案作成')}
             </button>
           </div>
         </div>
+      )}
+
+      {/* Batch Proposal Modal */}
+      {showBatchProposalModal && (
+        <BatchProposalModal
+          jobs={selectedJobs}
+          onClose={() => setShowBatchProposalModal(false)}
+          onSubmit={(proposals) => {
+            // TODO: Submit proposals
+            console.log('Proposals:', proposals);
+            setCartItems([]);
+            setShowBatchProposalModal(false);
+          }}
+          t={t}
+        />
       )}
     </div>
   );
@@ -459,6 +486,106 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* Batch Proposal Modal Component */
+function BatchProposalModal({ jobs, onClose, onSubmit, t }) {
+  const [proposalMessage, setProposalMessage] = useState('');
+  const [estimatedDays, setEstimatedDays] = useState('7');
+
+  const handleSubmit = () => {
+    const proposals = jobs.map(job => ({
+      jobId: job.id,
+      message: proposalMessage,
+      estimatedDays: parseInt(estimatedDays),
+      timestamp: new Date().toISOString(),
+    }));
+    onSubmit(proposals);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-slate-900">一括提案作成</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-slate-100 rounded transition"
+          >
+            <X size={20} className="text-slate-500" />
+          </button>
+        </div>
+        
+        {/* Jobs Summary */}
+        <div className="bg-slate-50 p-4 rounded-lg mb-6">
+          <p className="text-sm text-slate-600 mb-3">対象の仕事:</p>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
+            {jobs.map(job => (
+              <div key={job.id} className="text-sm">
+                <p className="font-medium text-slate-900">{job.title}</p>
+                <p className="text-slate-500">報酬: ¥{job.budget?.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-200">
+            <p className="text-sm font-medium text-slate-900">
+              合計: {jobs.length}件 / ¥{jobs.reduce((sum, job) => sum + (job.budget || 0), 0).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              提案メッセージ
+            </label>
+            <textarea
+              value={proposalMessage}
+              onChange={(e) => setProposalMessage(e.target.value)}
+              placeholder="すべての仕事に共通のメッセージを記入（任意）"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 resize-none"
+              rows="4"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              標準納期（日数）
+            </label>
+            <input
+              type="number"
+              value={estimatedDays}
+              onChange={(e) => setEstimatedDays(e.target.value)}
+              min="1"
+              max="365"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition"
+          >
+            キャンセル
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+          >
+            {jobs.length}件に提案する
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-500 mt-4 text-center">
+          ※ 各仕事に同じメッセージで提案が送信されます
+        </p>
+      </div>
     </div>
   );
 }
