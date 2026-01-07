@@ -339,6 +339,11 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
           <div className="flex-1">
             <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
             <p className="text-sm text-slate-600 mt-1">{job.client || 'クライアント名'}</p>
+            {job.description && (
+              <p className="text-sm text-slate-600 mt-2 line-clamp-2">
+                {job.description.substring(0, 120)}{job.description.length > 120 ? '...' : ''}
+              </p>
+            )}
           </div>
           <button
             onClick={(e) => {
@@ -416,6 +421,15 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
       {/* Expanded Details */}
       {isExpanded && (
         <div className="bg-slate-50 p-6 border-t border-slate-200 space-y-6">
+          {/* Job Description */}
+          {job.description && (
+            <div className="space-y-2">
+              <h4 className="font-semibold text-slate-900">仕事内容</h4>
+              <p className="text-sm text-slate-700 bg-white p-3 rounded border border-slate-200 whitespace-pre-wrap">
+                {job.description}
+              </p>
+            </div>
+          )}
           {/* M-Score Breakdown */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
