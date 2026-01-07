@@ -1,4 +1,4 @@
-import { calculateScores } from './scoreCalculation';
+import { calculateScores, calculateRecommendationScore } from './scoreCalculation';
 import { calculateAmbiguityScore, detectSafetyWarnings, generateClarityChecklist } from './scoreCalculation';
 
 // ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
@@ -88,8 +88,9 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
 
 // Job Discovery用：すべての募集中の仕事を返す関数（ユーザー制限なし）
 export function getAvailableJobsForDiscovery() {
+  const seenIds = new Set();
   return dashboardAllProjects
-    .filter(p => p.status === '募集中') // Only show open/recruiting jobs
+    .filter(p => p.status === '募集中' && (!seenIds.has(p.id) && seenIds.add(p.id))) // dedupe by id
     .map(p => {
       // Calculate M-Score and S-Score using the calculation engine
       const scores = calculateScores(p);
@@ -104,6 +105,9 @@ export function getAvailableJobsForDiscovery() {
       const ambiguity = calculateAmbiguityScore(p);
       const safetyWarnings = detectSafetyWarnings(p);
       const clarityChecklist = generateClarityChecklist(p);
+
+      // Calculate AI Recommendation Score
+      const recommendation = calculateRecommendationScore(p);
 
       // Get due date from milestones or use project deadline
       let dueDate = p.dueDate || null;
@@ -148,7 +152,10 @@ export function getAvailableJobsForDiscovery() {
         milestones: p.milestones || [],
         aiRecommendationScore: p.aiRecommendationScore || 0,
         proposals: p.proposals || [],
-        // Trust & Safety Indicators
+        // AI Recommendation & Trust & Safety Indicators
+        recommendationScore: recommendation.score,
+        recommendationReason: recommendation.reason,
+        recommendationFlag: recommendation.flag, // 'green' | 'yellow' | 'red'
         ambiguityScore: ambiguity.score,
         claritychecklist: clarityChecklist,
         safetyWarnings,
@@ -156,6 +163,94 @@ export function getAvailableJobsForDiscovery() {
         postedAt: p.postedAt || new Date().toISOString(),
       };
     });
+}
+
+// In-memory proposals/drafts store (demo only)
+const _proposedProjectsByUser = {};
+const _draftProjectsByUser = {};
+
+// Normalize a dashboard project into WorkManagement-like project shape
+function _toWorkManagementProject(p) {
+  const projectId = p.id || `job-${Date.now()}`;
+  const cards = (p.milestones && Array.isArray(p.milestones) && p.milestones.length > 0)
+    ? p.milestones.map((m, idx) => ({
+        id: m.id || `${projectId}-m${idx + 1}`,
+        projectId: projectId,
+        title: m.name || m.title || `マイルストーン ${idx + 1}`,
+        status: 'unsent',
+        reward: m.amount || 0,
+        startDate: m.dueDate || '',
+        duration: '',
+        order: idx + 1,
+      }))
+    : [{ id: `${projectId}-m1`, projectId, title: p.name || '作業', status: 'unsent', reward: p.totalAmount || 0, startDate: p.dueDate || '', duration: '', order: 1 }];
+
+  return {
+    id: projectId,
+    name: p.name || p.title || '新規案件',
+    client: p.clientName || p.client || 'クライアント',
+    totalBudget: p.totalAmount || p.budget || 0,
+    deadline: p.dueDate || '',
+    duration: '',
+    description: p.description || '',
+    cards,
+  };
+}
+
+// Add proposals and materialize them as projects for Work Management view
+export function addProposals(proposals, userId = loggedInUserDataGlobal.id) {
+  if (!proposals || proposals.length === 0) return;
+  if (!_proposedProjectsByUser[userId]) _proposedProjectsByUser[userId] = [];
+
+  proposals.forEach((prop) => {
+    const job = dashboardAllProjects.find(j => j.id === prop.jobId);
+    if (job) {
+      const project = _toWorkManagementProject(job);
+      // Attach minimal proposal meta for reference
+      project._proposal = {
+        message: prop.message || '',
+        estimatedDays: prop.estimatedDays || '',
+        timestamp: prop.timestamp || new Date().toISOString(),
+      };
+      // If a draft exists, replace/upgrade it
+      if (_draftProjectsByUser[userId]) {
+        _draftProjectsByUser[userId] = _draftProjectsByUser[userId].filter(p => p.id !== project.id);
+      }
+      // Avoid duplicates by id
+      const exists = _proposedProjectsByUser[userId].some(p => p.id === project.id);
+      if (!exists) _proposedProjectsByUser[userId].push(project);
+    }
+  });
+}
+
+export function getProposedProjectsForUser(userId = loggedInUserDataGlobal.id) {
+  return _proposedProjectsByUser[userId] ? [..._proposedProjectsByUser[userId]] : [];
+}
+
+// Drafts API: cart selection → create draft work items immediately
+export function addDraftJobs(jobIds = [], userId = loggedInUserDataGlobal.id) {
+  if (!jobIds || jobIds.length === 0) return;
+  if (!_draftProjectsByUser[userId]) _draftProjectsByUser[userId] = [];
+  jobIds.forEach((jid) => {
+    const job = dashboardAllProjects.find(j => j.id === jid);
+    if (!job) return;
+    const project = _toWorkManagementProject(job);
+    project._draft = true;
+    project._status = '未編集';
+    // Avoid duplicates by id
+    const existsDraft = _draftProjectsByUser[userId].some(p => p.id === project.id);
+    const existsProposed = _proposedProjectsByUser[userId]?.some(p => p.id === project.id);
+    if (!existsDraft && !existsProposed) _draftProjectsByUser[userId].push(project);
+  });
+}
+
+export function removeDraftJob(jobId, userId = loggedInUserDataGlobal.id) {
+  if (!_draftProjectsByUser[userId]) return;
+  _draftProjectsByUser[userId] = _draftProjectsByUser[userId].filter(p => p.id !== jobId);
+}
+
+export function getDraftProjectsForUser(userId = loggedInUserDataGlobal.id) {
+  return _draftProjectsByUser[userId] ? [..._draftProjectsByUser[userId]] : [];
 }
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [

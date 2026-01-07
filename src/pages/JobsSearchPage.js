@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, X } from 'lucide-react';
-import { getAvailableJobsForDiscovery } from '../utils/initialData';
+import { Search, Filter, ChevronDown, AlertCircle } from 'lucide-react';
+import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal } from '../utils/initialData';
 
 export default function JobsSearchPage() {
   const { t } = useTranslation();
@@ -11,18 +12,13 @@ export default function JobsSearchPage() {
     budgetMin: 0,
     budgetMax: 999999,
     searchText: '',
+    excludeRisks: false, // New: exclude red-flag jobs
   });
-  const [sortBy, setSortBy] = useState('mScore'); // mScore, sScore, budget, deadline
-  const [cartItems, setCartItems] = useState([]);
-  const [showBatchProposalModal, setShowBatchProposalModal] = useState(false);
+  const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
+
 
   // Get all available jobs
   const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
-
-  // Get selected jobs in cart
-  const selectedJobs = useMemo(() => {
-    return allJobs.filter(job => cartItems.includes(job.id));
-  }, [allJobs, cartItems]);
 
   // Filter & Sort
   const filteredJobs = useMemo(() => {
@@ -31,20 +27,19 @@ export default function JobsSearchPage() {
       const matchesMScore = job.mScore >= filters.mScoreMin;
       const matchesSScore = job.sScore >= filters.sScoreMin;
       const matchesBudget = job.budget >= filters.budgetMin && job.budget <= filters.budgetMax;
-      return matchesSearch && matchesMScore && matchesSScore && matchesBudget;
+      const notRisky = !filters.excludeRisks || job.recommendationFlag !== 'red';
+      return matchesSearch && matchesMScore && matchesSScore && matchesBudget && notRisky;
     });
 
     // Sort
     result.sort((a, b) => {
       switch (sortBy) {
-        case 'mScore':
-          return b.mScore - a.mScore;
-        case 'sScore':
-          return b.sScore - a.sScore;
+        case 'recommendation':
+          return b.recommendationScore - a.recommendationScore;
+        case 'trust':
+          return (b.mScore + b.sScore) / 2 - (a.mScore + a.sScore) / 2;
         case 'budget':
           return b.budget - a.budget;
-        case 'deadline':
-          return new Date(a.dueDate) - new Date(b.dueDate);
         default:
           return 0;
       }
@@ -53,45 +48,30 @@ export default function JobsSearchPage() {
     return result;
   }, [allJobs, filters, sortBy]);
 
-  const handleAddToCart = (jobId) => {
-    if (!cartItems.includes(jobId)) {
-      setCartItems([...cartItems, jobId]);
-    }
+  // Smart filter: show only safe jobs
+  const applySafeJobsFilter = () => {
+    setFilters({
+      mScoreMin: 70,
+      sScoreMin: 70,
+      budgetMin: 0,
+      budgetMax: 999999,
+      searchText: '',
+      excludeRisks: true,
+    });
+    setSortBy('recommendation');
   };
 
-  const handleRemoveFromCart = (jobId) => {
-    setCartItems(cartItems.filter(id => id !== jobId));
-  };
-
-  // Smart filters (presets)
-  const applySmartFilter = (filterType) => {
-    switch (filterType) {
-      case 'safe':
-        // 安心できる仕事：M-Score 75以上、S-Score 75以上
-        setFilters({ ...filters, mScoreMin: 75, sScoreMin: 75 });
-        break;
-      case 'lucrative':
-        // 高報酬：予算100万以上
-        setFilters({ ...filters, budgetMin: 1000000 });
-        break;
-      case 'urgent':
-        // 今すぐ：期限が今から7日以内
-        // Note: filtering by deadline would need more complex logic
-        setFilters({ ...filters, mScoreMin: 50, sScoreMin: 50 });
-        break;
-      case 'reset':
-        // リセット
-        setFilters({
-          mScoreMin: 0,
-          sScoreMin: 0,
-          budgetMin: 0,
-          budgetMax: 999999,
-          searchText: '',
-        });
-        break;
-      default:
-        break;
-    }
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      mScoreMin: 0,
+      sScoreMin: 0,
+      budgetMin: 0,
+      budgetMax: 999999,
+      searchText: '',
+      excludeRisks: false,
+    });
+    setSortBy('recommendation');
   };
 
   return (
@@ -137,7 +117,7 @@ export default function JobsSearchPage() {
               {/* M-Score Filter */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  M-Score: {filters.mScoreMin}以上
+                  契約の透明性: {filters.mScoreMin}以上
                 </label>
                 <input
                   type="range"
@@ -152,7 +132,7 @@ export default function JobsSearchPage() {
               {/* S-Score Filter */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  S-Score: {filters.sScoreMin}以上
+                  支払い安全性: {filters.sScoreMin}以上
                 </label>
                 <input
                   type="range"
@@ -197,42 +177,42 @@ export default function JobsSearchPage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="mScore">M-Score（高い順）</option>
-                  <option value="sScore">S-Score（高い順）</option>
-                  <option value="budget">報酬（高い順）</option>
-                  <option value="deadline">期限（近い順）</option>
+                  <option value="recommendation">🤖 AI おすすめ度</option>
+                  <option value="trust">🛡️ 信頼度（M+S）</option>
+                  <option value="budget">💰 報酬（高い順）</option>
                 </select>
+              </div>
+
+              {/* Risk Filter */}
+              <div className="mb-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeRisks}
+                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-sm font-medium text-slate-700">リスク案件を除外</span>
+                </label>
               </div>
 
               {/* Smart Filters */}
               <div className="mb-6 pt-6 border-t border-slate-300">
                 <label className="block text-sm font-medium text-slate-700 mb-3">
-                  🎯 クイックフィルター
+                  🎯 クイックアクション
                 </label>
                 <div className="space-y-2">
                   <button
-                    onClick={() => applySmartFilter('safe')}
+                    onClick={() => applySafeJobsFilter()}
                     className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition"
                   >
-                    ✓ 安心できる仕事（M&S高）
+                    ✓ 安全な仕事のみ表示
                   </button>
                   <button
-                    onClick={() => applySmartFilter('lucrative')}
-                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border border-yellow-200 transition"
-                  >
-                    💰 高報酬（100万以上）
-                  </button>
-                  <button
-                    onClick={() => applySmartFilter('urgent')}
-                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 transition"
-                  >
-                    ⚡ 今すぐ開始
-                  </button>
-                  <button
-                    onClick={() => applySmartFilter('reset')}
+                    onClick={() => resetFilters()}
                     className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition"
                   >
-                    ↻ リセット
+                    ↻ 全てをリセット
                   </button>
                 </div>
               </div>
@@ -246,27 +226,14 @@ export default function JobsSearchPage() {
               <p className="text-slate-600">
                 {filteredJobs.length} {t('jobs.jobsFound', '件の仕事')}
               </p>
-              {cartItems.length > 0 && (
-                <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-lg">
-                  <ShoppingCart size={18} className="text-indigo-600" />
-                  <span className="font-medium text-indigo-900">
-                    {cartItems.length} {t('jobs.inCart', 'カート内')}
-                  </span>
-                </div>
-              )}
+
             </div>
 
             {/* Job Cards */}
             <div className="space-y-4">
               {filteredJobs.length > 0 ? (
                 filteredJobs.map(job => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    isInCart={cartItems.includes(job.id)}
-                    onAddToCart={handleAddToCart}
-                    onRemoveFromCart={handleRemoveFromCart}
-                  />
+                  <JobCard key={job.id} job={job} />
                 ))
               ) : (
                 <div className="bg-white rounded-lg shadow p-12 text-center">
@@ -279,51 +246,14 @@ export default function JobsSearchPage() {
           </div>
         </div>
       </div>
-
-      {/* Cart Footer */}
-      {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <ShoppingCart size={20} className="text-indigo-600" />
-              <span className="font-medium text-slate-900">
-                {cartItems.length} {t('jobs.selected', '件選択中')}
-              </span>
-              <span className="text-sm text-slate-600">
-                合計報酬: ¥{selectedJobs.reduce((sum, job) => sum + (job.budget || 0), 0).toLocaleString()}
-              </span>
-            </div>
-            <button
-              onClick={() => setShowBatchProposalModal(true)}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
-            >
-              {t('jobs.createProposals', '一括で提案作成')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Batch Proposal Modal */}
-      {showBatchProposalModal && (
-        <BatchProposalModal
-          jobs={selectedJobs}
-          onClose={() => setShowBatchProposalModal(false)}
-          onSubmit={(proposals) => {
-            // TODO: Submit proposals
-            console.log('Proposals:', proposals);
-            setCartItems([]);
-            setShowBatchProposalModal(false);
-          }}
-          t={t}
-        />
-      )}
     </div>
   );
 }
 
 /* Job Card Component */
-function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
+function JobCard({ job }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   const getScoreColor = (score) => {
     if (score >= 80) return { bg: 'bg-emerald-50', text: 'text-emerald-700', bar: 'bg-emerald-500' };
@@ -340,14 +270,33 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
   const mScoreColor = getScoreColor(job.mScore);
   const sScoreColor = getScoreColor(job.sScore);
 
+  // AI Flag styling
+  const getFlagStyle = () => {
+    const base = 'px-3 py-1 rounded-full font-bold text-sm';
+    if (job.recommendationFlag === 'green') {
+      return `${base} bg-emerald-100 text-emerald-700`;
+    } else if (job.recommendationFlag === 'red') {
+      return `${base} bg-red-100 text-red-700`;
+    } else {
+      return `${base} bg-yellow-100 text-yellow-700`;
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-      {/* Header */}
-      <div className="p-6 border-b border-slate-200" onClick={() => setIsExpanded(!isExpanded)} role="button">
-        <div className="flex items-start justify-between mb-4">
+      {/* AI Flag + Header */}
+      <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-200">
+        <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
-            <p className="text-sm text-slate-600 mt-1">{job.client || 'クライアント名'}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
+              <span className={getFlagStyle()}>
+                {job.recommendationFlag === 'green' ? '✓ おすすめ' :
+                 job.recommendationFlag === 'red' ? '⚠️ 要注意' :
+                 '⚡ 確認推奨'}
+              </span>
+            </div>
+            <p className="text-sm text-slate-600">{job.client || 'クライアント名'}</p>
             {job.description && (
               <p className="text-sm text-slate-600 mt-2 line-clamp-2">
                 {job.description.substring(0, 120)}{job.description.length > 120 ? '...' : ''}
@@ -357,23 +306,40 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              isInCart ? onRemoveFromCart(job.id) : onAddToCart(job.id);
+              addDraftJobs([job.id], loggedInUserDataGlobal.id);
+              // eslint-disable-next-line no-alert
+              alert('下書きを作成しました。仕事管理で編集できます。');
+              navigate('/work-management');
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ml-4 ${
-              isInCart
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+            className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
+              'bg-indigo-600 text-white hover:bg-indigo-700'
             }`}
           >
-            {isInCart ? 'カート内' : 'カートに入れる'}
+            管理で開く
           </button>
         </div>
 
+        {/* AI Recommendation */}
+        <div className="bg-white rounded p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-slate-600">🤖 AIおすすめ度</p>
+              <p className="text-2xl font-bold text-indigo-600">{job.recommendationScore}/100</p>
+            </div>
+            <div className="text-right text-xs text-slate-600">
+              <p className="line-clamp-3">{job.recommendationReason}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Clickable header for expansion */}
+      <div className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50" onClick={() => setIsExpanded(!isExpanded)} role="button">
         {/* Scores */}
         <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className={`${mScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+          <div className={`${mScoreColor.bg} p-3 rounded-lg`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-700">契約の透明性</span>
+              <span className="text-sm font-bold text-slate-900">契約の透明性</span>
               <span className={`text-2xl font-bold ${mScoreColor.text}`}>{job.mScore}</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
@@ -384,9 +350,9 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
             </div>
           </div>
 
-          <div className={`${sScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+          <div className={`${sScoreColor.bg} p-3 rounded-lg`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-700">支払い安全性</span>
+              <span className="text-sm font-bold text-slate-900">支払い安全性</span>
               <span className={`text-2xl font-bold ${sScoreColor.text}`}>{job.sScore}</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
@@ -397,9 +363,9 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
             </div>
           </div>
 
-          <div className={`${getAmbiguityColor(job.ambiguityScore).bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+          <div className={`${getAmbiguityColor(job.ambiguityScore).bg} p-3 rounded-lg`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-700">条件の明確さ</span>
+              <span className="text-sm font-bold text-slate-900">条件の明確さ</span>
               <span className={`text-2xl font-bold ${getAmbiguityColor(job.ambiguityScore).text}`}>{job.ambiguityScore}</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
@@ -658,106 +624,6 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-/* Batch Proposal Modal Component */
-function BatchProposalModal({ jobs, onClose, onSubmit, t }) {
-  const [proposalMessage, setProposalMessage] = useState('');
-  const [estimatedDays, setEstimatedDays] = useState('7');
-
-  const handleSubmit = () => {
-    const proposals = jobs.map(job => ({
-      jobId: job.id,
-      message: proposalMessage,
-      estimatedDays: parseInt(estimatedDays),
-      timestamp: new Date().toISOString(),
-    }));
-    onSubmit(proposals);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-slate-900">一括提案作成</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-slate-100 rounded transition"
-          >
-            <X size={20} className="text-slate-500" />
-          </button>
-        </div>
-
-        {/* Jobs Summary */}
-        <div className="bg-slate-50 p-4 rounded-lg mb-6">
-          <p className="text-sm text-slate-600 mb-3">対象の仕事:</p>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {jobs.map(job => (
-              <div key={job.id} className="text-sm">
-                <p className="font-medium text-slate-900">{job.title}</p>
-                <p className="text-slate-500">報酬: ¥{job.budget?.toLocaleString()}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-200">
-            <p className="text-sm font-medium text-slate-900">
-              合計: {jobs.length}件 / ¥{jobs.reduce((sum, job) => sum + (job.budget || 0), 0).toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              提案メッセージ
-            </label>
-            <textarea
-              value={proposalMessage}
-              onChange={(e) => setProposalMessage(e.target.value)}
-              placeholder="すべての仕事に共通のメッセージを記入（任意）"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 resize-none"
-              rows="4"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              標準納期（日数）
-            </label>
-            <input
-              type="number"
-              value={estimatedDays}
-              onChange={(e) => setEstimatedDays(e.target.value)}
-              min="1"
-              max="365"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition"
-          >
-            キャンセル
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
-          >
-            {jobs.length}件に提案する
-          </button>
-        </div>
-
-        <p className="text-xs text-slate-500 mt-4 text-center">
-          ※ 各仕事に同じメッセージで提案が送信されます
-        </p>
-      </div>
     </div>
   );
 }

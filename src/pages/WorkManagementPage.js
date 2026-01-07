@@ -4,14 +4,13 @@ import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { workManagementProjects as initialProjectsData } from '../utils/initialData';
+import { workManagementProjects as initialProjectsData, getProposedProjectsForUser, getDraftProjectsForUser, loggedInUserDataGlobal } from '../utils/initialData';
 
 import EmptyDropzone from '../components/common/EmptyDropzone';
 
 // 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
 function getInitialProjects() {
-        // milestones→cards変換（cardsがなければmilestonesをcardsとして返す）
-        return initialProjectsData.map(project => {
+        const base = initialProjectsData.map(project => {
             if (project.cards && Array.isArray(project.cards)) return project;
             if (project.milestones && Array.isArray(project.milestones)) {
                 return {
@@ -30,6 +29,10 @@ function getInitialProjects() {
             }
             return { ...project, cards: [] };
         });
+        // Merge proposed projects for current user
+        const proposed = getProposedProjectsForUser(loggedInUserDataGlobal.id);
+        const drafts = getDraftProjectsForUser(loggedInUserDataGlobal.id);
+        return [...base, ...drafts, ...proposed];
 }
 
 // styles moved to src/pages/workmanagement.css

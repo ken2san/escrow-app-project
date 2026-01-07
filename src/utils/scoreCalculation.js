@@ -524,3 +524,88 @@ export function calculateScores(project) {
     sScore: calculateSScore(project),
   };
 }
+
+/**
+ * Calculate AI Recommendation Score (0-100)
+ * Combines M-Score, S-Score, ambiguity, and AI judgment
+ *
+ * @param {Object} project - Project data
+ * @returns {Object} { score: number, reason: string, flag: 'green'|'yellow'|'red' }
+ */
+export function calculateRecommendationScore(project) {
+  const mScore = calculateMScore(project);
+  const sScore = calculateSScore(project);
+  const ambiguity = calculateAmbiguityScore(project);
+  const safetyWarnings = detectSafetyWarnings(project);
+
+  let baseScore = (mScore.score + sScore.score) / 2; // Average of M and S
+  let adjustments = 0;
+  let reasons = [];
+
+  // Ambiguity adjustment (up to +20 or -15)
+  if (ambiguity.score >= 80) {
+    adjustments += 20;
+    reasons.push('要件が明確');
+  } else if (ambiguity.score >= 60) {
+    adjustments += 10;
+    reasons.push('要件はまあまあ明確');
+  } else if (ambiguity.score < 40) {
+    adjustments -= 15;
+    reasons.push('要件が曖昧');
+  }
+
+  // Safety warnings adjustment
+  if (safetyWarnings && safetyWarnings.length > 0) {
+    adjustments -= Math.min(safetyWarnings.length * 5, 25);
+    reasons.push(`リスク${safetyWarnings.length}件検出`);
+  } else {
+    adjustments += 5;
+    reasons.push('リスクなし');
+  }
+
+  // Budget adequacy check: if budget < 50k, reduce recommendation (work is too low-value)
+  if (project.totalAmount && project.totalAmount < 50000) {
+    adjustments -= 10;
+    reasons.push('報酬が低い');
+  } else if (project.totalAmount && project.totalAmount >= 500000) {
+    adjustments += 5;
+    reasons.push('報酬が適切');
+  }
+
+  // Client rating: penalize if no rating or low rating
+  if (project.clientRating) {
+    if (project.clientRating.averageScore >= 4.5) {
+      adjustments += 10;
+      reasons.push('クライアント評価が高い');
+    } else if (project.clientRating.averageScore < 3) {
+      adjustments -= 15;
+      reasons.push('クライアント評価が低い');
+    }
+  } else {
+    // No rating history - slight penalty
+    adjustments -= 5;
+    reasons.push('クライアント評価がない');
+  }
+
+  // Milestone-based payment: bonus if well-defined
+  if (project.milestones && project.milestones.length >= 2) {
+    adjustments += 10;
+    reasons.push('マイルストーン型案件');
+  }
+
+  const finalScore = Math.max(0, Math.min(100, Math.round(baseScore + adjustments)));
+
+  // Determine flag
+  let flag = 'yellow';
+  if (finalScore >= 75 && (safetyWarnings?.length || 0) === 0) {
+    flag = 'green';
+  } else if (finalScore < 50 || (safetyWarnings?.length || 0) >= 2) {
+    flag = 'red';
+  }
+
+  return {
+    score: finalScore,
+    reason: reasons.join(' | '),
+    flag, // 'green' (recommended), 'yellow' (okay), 'red' (risky)
+  };
+}
