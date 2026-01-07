@@ -13,12 +13,28 @@ export default function JobsSearchPage() {
     budgetMax: 999999,
     searchText: '',
     excludeRisks: false, // New: exclude red-flag jobs
+    category: 'all', // New: category filter
+    locationType: 'all', // New: location filter
   });
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
 
 
   // Get all available jobs
   const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
+
+  // Category options derived from data
+  const categories = useMemo(() => {
+    const unique = new Set();
+    allJobs.forEach(job => unique.add(job.category || 'その他'));
+    return ['all', ...Array.from(unique)];
+  }, [allJobs]);
+
+  // Location options derived from data
+  const locationTypes = useMemo(() => {
+    const unique = new Set();
+    allJobs.forEach(job => unique.add(job.locationType || 'onsite'));
+    return ['all', ...Array.from(unique)];
+  }, [allJobs]);
 
   // Filter & Sort
   const filteredJobs = useMemo(() => {
@@ -27,8 +43,10 @@ export default function JobsSearchPage() {
       const matchesMScore = job.mScore >= filters.mScoreMin;
       const matchesSScore = job.sScore >= filters.sScoreMin;
       const matchesBudget = job.budget >= filters.budgetMin && job.budget <= filters.budgetMax;
+      const matchesCategory = filters.category === 'all' || job.category === filters.category;
+      const matchesLocation = filters.locationType === 'all' || job.locationType === filters.locationType;
       const notRisky = !filters.excludeRisks || job.recommendationFlag !== 'red';
-      return matchesSearch && matchesMScore && matchesSScore && matchesBudget && notRisky;
+      return matchesSearch && matchesMScore && matchesSScore && matchesBudget && matchesCategory && matchesLocation && notRisky;
     });
 
     // Sort
@@ -57,6 +75,8 @@ export default function JobsSearchPage() {
       budgetMax: 999999,
       searchText: '',
       excludeRisks: true,
+      category: 'all',
+      locationType: 'all',
     });
     setSortBy('recommendation');
   };
@@ -70,6 +90,8 @@ export default function JobsSearchPage() {
       budgetMax: 999999,
       searchText: '',
       excludeRisks: false,
+      category: 'all',
+      locationType: 'all',
     });
     setSortBy('recommendation');
   };
@@ -112,6 +134,40 @@ export default function JobsSearchPage() {
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
+              </div>
+
+              {/* Category */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  カテゴリ
+                </label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat === 'all' ? 'すべて' : cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Location */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  勤務形態
+                </label>
+                <select
+                  value={filters.locationType}
+                  onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                >
+                  {locationTypes.map(loc => (
+                    <option key={loc} value={loc}>
+                      {loc === 'all' ? 'すべて' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '出社/現地'}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* M-Score Filter */}
@@ -290,6 +346,16 @@ function JobCard({ job }) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
+              {job.category && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  {job.category}
+                </span>
+              )}
+                {job.locationType && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    {job.locationType === 'remote' ? 'リモート' : job.locationType === 'hybrid' ? 'ハイブリッド' : '現地'}
+                  </span>
+                )}
               <span className={getFlagStyle()}>
                 {job.recommendationFlag === 'green' ? '✓ おすすめ' :
                  job.recommendationFlag === 'red' ? '⚠️ 要注意' :
@@ -405,7 +471,14 @@ function JobCard({ job }) {
         <div className="grid grid-cols-4 gap-4 text-sm mb-4">
           <div>
             <p className="text-slate-600">報酬</p>
-            <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+            {job.workType === 'hourly' && job.hourlyRate ? (
+              <div className="space-y-1">
+                <p className="text-lg font-bold text-slate-900">¥{job.hourlyRate?.toLocaleString()}/h</p>
+                <p className="text-xs text-slate-500">目安合計: ¥{job.budget?.toLocaleString()}</p>
+              </div>
+            ) : (
+              <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+            )}
           </div>
           <div>
             <p className="text-slate-600">期限</p>
