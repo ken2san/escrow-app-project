@@ -350,6 +350,169 @@ function generateSScoreRecommendations(score, warnings) {
 }
 
 /**
+ * Calculate Ambiguity Score - Contract clarity/completeness
+ * Determines how well-defined the contract is (0-100)
+ * Higher = clearer contract, less risk of disputes
+ */
+export function calculateAmbiguityScore(project) {
+  let score = 0;
+  const checklist = {
+    hasDeliverables: false,
+    hasDeliverableDetails: false,
+    hasAcceptanceCriteria: false,
+    hasAcceptanceCriteriaDetails: false,
+    hasScopeIncluded: false,
+    hasScopeExcluded: false,
+    hasMilestones: false,
+    hasAdditionalTerms: false,
+  };
+
+  // Check each clarity element (each worth 12.5 points)
+  if (project.deliverables && project.deliverables.length > 0) {
+    score += 12.5;
+    checklist.hasDeliverables = true;
+  }
+
+  if (project.deliverableDetails && project.deliverableDetails.length > 50) {
+    score += 12.5;
+    checklist.hasDeliverableDetails = true;
+  }
+
+  if (project.acceptanceCriteria && project.acceptanceCriteria.length > 0) {
+    score += 12.5;
+    checklist.hasAcceptanceCriteria = true;
+  }
+
+  if (project.acceptanceCriteriaDetails && project.acceptanceCriteriaDetails.length > 50) {
+    score += 12.5;
+    checklist.hasAcceptanceCriteriaDetails = true;
+  }
+
+  if (project.scopeOfWork_included && project.scopeOfWork_included.length > 0) {
+    score += 12.5;
+    checklist.hasScopeIncluded = true;
+  }
+
+  if (project.scopeOfWork_excluded && project.scopeOfWork_excluded.length > 0) {
+    score += 12.5;
+    checklist.hasScopeExcluded = true;
+  }
+
+  if (project.milestones && project.milestones.length > 0) {
+    score += 12.5;
+    checklist.hasMilestones = true;
+  }
+
+  if (project.additionalWorkTerms && project.additionalWorkTerms.length > 0) {
+    score += 12.5;
+    checklist.hasAdditionalTerms = true;
+  }
+
+  return {
+    score: Math.round(score),
+    checklist,
+  };
+}
+
+/**
+ * Detect AI Safety Warnings - Unfair or risky contract terms
+ */
+export function detectSafetyWarnings(project) {
+  const warnings = [];
+
+  // Check for unlimited revisions (implied by no acceptance criteria)
+  if (!project.acceptanceCriteriaDetails || project.acceptanceCriteriaDetails.length < 30) {
+    warnings.push('✗ 修正の回数制限が明確でない可能性があります');
+  }
+
+  // Check for unrealistic timeline
+  if (project.milestones && project.milestones.length > 0) {
+    const now = new Date();
+    const firstMilestone = new Date(project.milestones[0].dueDate);
+    const daysUntilFirstMilestone = Math.floor((firstMilestone - now) / (1000 * 60 * 60 * 24));
+
+    if (daysUntilFirstMilestone < 3) {
+      warnings.push('⚠ 最初のマイルストーンまで非常に短い期間です（3日以内）');
+    }
+  }
+
+  // Check for vague scope
+  if (!project.scopeOfWork_excluded || project.scopeOfWork_excluded.length < 30) {
+    warnings.push('✗ 範囲外の作業が明確に定義されていません。スコープクリープのリスク');
+  }
+
+  // Check for missing payment triggers
+  if (!project.acceptanceCriteria || project.acceptanceCriteria.length < 20) {
+    warnings.push('✗ 支払い条件（いつ支払われるか）が不明確です');
+  }
+
+  // Check for high resellingRisk
+  if (project.clientResellingRisk && project.clientResellingRisk > 60) {
+    warnings.push('⚠ クライアントの下請け外注リスクが高いです');
+  }
+
+  // Check for insufficient budget detail
+  if (!project.deliverableDetails || project.deliverableDetails.length < 50) {
+    warnings.push('✗ 予算に対する納品物の詳細が不足しています');
+  }
+
+  return warnings;
+}
+
+/**
+ * Generate Contract Clarity Checklist
+ */
+export function generateClarityChecklist(project) {
+  const ambiguity = calculateAmbiguityScore(project);
+
+  return {
+    totalScore: ambiguity.score,
+    items: [
+      {
+        label: '納品物が定義されている',
+        complete: ambiguity.checklist.hasDeliverables,
+        description: '何を作成するのか明確か？',
+      },
+      {
+        label: '納品物の詳細が明確',
+        complete: ambiguity.checklist.hasDeliverableDetails,
+        description: 'ファイル形式、含まれる内容等が詳しく書かれているか？',
+      },
+      {
+        label: '受入基準が定義されている',
+        complete: ambiguity.checklist.hasAcceptanceCriteria,
+        description: '何をもって完成とするか定義されているか？',
+      },
+      {
+        label: '受入基準の詳細が明確',
+        complete: ambiguity.checklist.hasAcceptanceCriteriaDetails,
+        description: 'テスト方法、検査方法が具体的に書かれているか？',
+      },
+      {
+        label: '含まれる作業が明確',
+        complete: ambiguity.checklist.hasScopeIncluded,
+        description: '「この仕事に含まれる」ことが明記されているか？',
+      },
+      {
+        label: '含まれない作業が明確',
+        complete: ambiguity.checklist.hasScopeExcluded,
+        description: '「この仕事に含まれない」ことが明記されているか？',
+      },
+      {
+        label: 'マイルストーンが定義',
+        complete: ambiguity.checklist.hasMilestones,
+        description: '中間納品や支払いのタイミングが決まっているか？',
+      },
+      {
+        label: '追加作業の条件が明確',
+        complete: ambiguity.checklist.hasAdditionalTerms,
+        description: '追加作業が発生したときの対応が決まっているか？',
+      },
+    ],
+  };
+}
+
+/**
  * Calculate both M-Score and S-Score together
  *
  * @param {Object} project - Project data

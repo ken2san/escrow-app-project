@@ -331,6 +331,12 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
     return { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500' };
   };
 
+  const getAmbiguityColor = (score) => {
+    if (score >= 75) return { bg: 'bg-emerald-50', text: 'text-emerald-700', label: '明確' };
+    if (score >= 50) return { bg: 'bg-yellow-50', text: 'text-yellow-700', label: '普通' };
+    return { bg: 'bg-red-50', text: 'text-red-700', label: '曖昧' };
+  };
+
   const mScoreColor = getScoreColor(job.mScore);
   const sScoreColor = getScoreColor(job.sScore);
 
@@ -364,10 +370,10 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
         </div>
 
         {/* Scores */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div className={`${mScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">M-Score</span>
+              <span className="text-xs font-medium text-slate-700">契約の透明性</span>
               <span className={`text-2xl font-bold ${mScoreColor.text}`}>{job.mScore}</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
@@ -376,12 +382,11 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
                 style={{ width: `${job.mScore}%` }}
               />
             </div>
-            <p className="text-xs text-slate-600 mt-2">契約の透明性・公正性</p>
           </div>
 
           <div className={`${sScoreColor.bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">S-Score</span>
+              <span className="text-xs font-medium text-slate-700">支払い安全性</span>
               <span className={`text-2xl font-bold ${sScoreColor.text}`}>{job.sScore}</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
@@ -390,8 +395,44 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
                 style={{ width: `${job.sScore}%` }}
               />
             </div>
-            <p className="text-xs text-slate-600 mt-2">支払い・予算の安全性</p>
           </div>
+
+          <div className={`${getAmbiguityColor(job.ambiguityScore).bg} p-3 rounded-lg cursor-pointer hover:shadow-sm transition`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-700">条件の明確さ</span>
+              <span className={`text-2xl font-bold ${getAmbiguityColor(job.ambiguityScore).text}`}>{job.ambiguityScore}</span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
+              <div
+                className={`${getAmbiguityColor(job.ambiguityScore).text.replace('text', 'bg')} h-2 rounded-full`}
+                style={{ width: `${job.ambiguityScore}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Badges */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {job.escrowStatus?.isFullyDeposited && (
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+              ✓ 資金確保済み
+            </span>
+          )}
+          {job.ambiguityScore >= 75 && (
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+              ✓ 条件明確
+            </span>
+          )}
+          {job.safetyWarnings && job.safetyWarnings.length === 0 && (
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+              ✓ 安全
+            </span>
+          )}
+          {job.safetyWarnings && job.safetyWarnings.length > 0 && (
+            <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
+              ⚠ 注意あり
+            </span>
+          )}
         </div>
 
         {/* Quick Details */}
@@ -444,6 +485,55 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
       {/* Expanded Details */}
       {isExpanded && (
         <div className="bg-slate-50 p-6 border-t border-slate-200 space-y-6">
+          {/* Safety Warnings */}
+          {job.safetyWarnings && job.safetyWarnings.length > 0 && (
+            <div className="space-y-2 bg-amber-50 border border-amber-200 p-4 rounded">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={18} className="text-amber-600" />
+                <h4 className="font-semibold text-amber-900">⚠ AI安全警告</h4>
+              </div>
+              <ul className="space-y-1">
+                {job.safetyWarnings.map((warning, idx) => (
+                  <li key={idx} className="text-sm text-amber-900 flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Clarity Checklist */}
+          {job.claritychecklist && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-slate-900">契約の明確さ</h4>
+                <span className={`px-3 py-1 rounded-full font-bold text-sm ${
+                  job.claritychecklist.totalScore >= 75 ? 'bg-emerald-100 text-emerald-700' :
+                  job.claritychecklist.totalScore >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {job.claritychecklist.totalScore}/100
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {job.claritychecklist.items.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-sm">
+                    <span className={`mt-0.5 text-lg ${item.complete ? '✓ text-emerald-600' : '✗ text-slate-400'}`}>
+                      {item.complete ? '✓' : '✗'}
+                    </span>
+                    <div>
+                      <p className={`font-medium ${item.complete ? 'text-slate-900' : 'text-slate-600'}`}>
+                        {item.label}
+                      </p>
+                      <p className="text-xs text-slate-500">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Client Info */}
           <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
             <h4 className="font-semibold text-slate-900">案件詳細</h4>
@@ -557,49 +647,7 @@ function JobCard({ job, isInCart, onAddToCart, onRemoveFromCart }) {
             </div>
           )}
 
-          {/* M-Score Breakdown */}
-          <div className="space-y-3 bg-white p-4 rounded border border-emerald-200">
-            <div className="flex items-center gap-2">
-              <Info size={18} className="text-emerald-600" />
-              <h4 className="font-semibold text-slate-900">M-Score 詳細（契約の透明性）</h4>
-            </div>
-            {job.scoreDetails?.mScore && (
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">総合スコア:</span>
-                  <span className="font-bold text-emerald-700">{job.scoreDetails.mScore.score}/100</span>
-                </div>
-                {job.scoreDetails.mScore.breakdown && Object.entries(job.scoreDetails.mScore.breakdown).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-slate-600 capitalize">{key}:</span>
-                    <span className="font-medium text-slate-900">{value} 点</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* S-Score Breakdown */}
-          <div className="space-y-3 bg-white p-4 rounded border border-blue-200">
-            <div className="flex items-center gap-2">
-              <Zap size={18} className="text-blue-600" />
-              <h4 className="font-semibold text-slate-900">S-Score 詳細（支払い信頼性）</h4>
-            </div>
-            {job.scoreDetails?.sScore && (
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">総合スコア:</span>
-                  <span className="font-bold text-blue-700">{job.scoreDetails.sScore.score}/100</span>
-                </div>
-                {job.scoreDetails.sScore.breakdown && Object.entries(job.scoreDetails.sScore.breakdown).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-slate-600 capitalize">{key}:</span>
-                    <span className="font-medium text-slate-900">{value} 点</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Additional Terms */}
           {job.additionalWorkTerms && (

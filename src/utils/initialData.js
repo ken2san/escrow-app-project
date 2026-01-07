@@ -1,4 +1,5 @@
 import { calculateScores } from './scoreCalculation';
+import { calculateAmbiguityScore, detectSafetyWarnings, generateClarityChecklist } from './scoreCalculation';
 
 // ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
 export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
@@ -99,6 +100,11 @@ export function getAvailableJobsForDiscovery() {
         sScore: scores.sScore,
       };
 
+      // Calculate Trust Indicators
+      const ambiguity = calculateAmbiguityScore(p);
+      const safetyWarnings = detectSafetyWarnings(p);
+      const clarityChecklist = generateClarityChecklist(p);
+
       // Get due date from milestones or use project deadline
       let dueDate = p.dueDate || null;
       if (p.milestones && p.milestones.length > 0) {
@@ -107,6 +113,13 @@ export function getAvailableJobsForDiscovery() {
           dueDate = nextMilestone.dueDate;
         }
       }
+
+      // Check escrow status
+      const escrowStatus = {
+        isFullyDeposited: p.fundsDeposited === p.totalAmount,
+        depositedAmount: p.fundsDeposited || 0,
+        totalAmount: p.totalAmount,
+      };
 
       return {
         id: p.id,
@@ -135,6 +148,11 @@ export function getAvailableJobsForDiscovery() {
         milestones: p.milestones || [],
         aiRecommendationScore: p.aiRecommendationScore || 0,
         proposals: p.proposals || [],
+        // Trust & Safety Indicators
+        ambiguityScore: ambiguity.score,
+        claritychecklist: clarityChecklist,
+        safetyWarnings,
+        escrowStatus,
         postedAt: p.postedAt || new Date().toISOString(),
       };
     });
