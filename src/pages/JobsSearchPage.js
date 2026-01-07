@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, Info, Zap, X } from 'lucide-react';
+import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, X } from 'lucide-react';
 import { getAvailableJobsForDiscovery } from '../utils/initialData';
 
 export default function JobsSearchPage() {
