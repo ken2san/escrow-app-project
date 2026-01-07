@@ -84,5 +84,6 @@
   "proposalsReceived": "{{count}} proposals received",
   "viewProposalDetails": "View Proposal Details",
   "workManagement": "Work Management",
+  "jobsSearch": "Search Jobs",
   "commandUI": "Command UI"
 }

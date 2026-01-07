@@ -13,6 +13,7 @@ import PlaceholderPage from './components/common/PlaceholderPage';
 import NewContractProjectPage from './pages/NewContractProjectPage';
 import WorkManagementPage from './pages/WorkManagementPage';
 import MarketCommandUIPage from './pages/MarketCommandUIPage';
+import JobsSearchPage from './pages/JobsSearchPage';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -312,6 +313,7 @@ export default function App() {
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
             <Route path="/work-management" element={<WorkManagementPage />} />
             <Route path="/command-ui" element={<MarketCommandUIPage />} />
+            <Route path="/jobs" element={<JobsSearchPage />} />
           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />

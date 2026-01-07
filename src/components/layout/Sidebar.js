@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History, Layout, Search } from 'lucide-react';
+import { Briefcase, Home, MessageSquare, AlertTriangle, Settings, UserCircle, ChevronDown, ChevronUp, LogOut, Coins, History, Layout, Search, ShoppingCart } from 'lucide-react';
 import WalletInfo from '../common/WalletInfo';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMode, activePage, userPoints, onPurchasePointsClick, onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) => {
@@ -108,6 +108,21 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
       >
         <Search className="h-5 w-5" />
   {isSidebarOpen && <span className="ml-3 text-sm">{t('commandUI')}</span>}
+      </button>
+    </li>
+    {/* 仕事を探す */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/jobs')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+          window.location.pathname === '/jobs'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-indigo-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : '仕事を探す'}
+      >
+        <ShoppingCart className="h-5 w-5" />
+  {isSidebarOpen && <span className="ml-3 text-sm">{t('jobsSearch', '仕事を探す')}</span>}
       </button>
     </li>
     {/* 仕事管理 */}
