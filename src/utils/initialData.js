@@ -84,6 +84,61 @@ export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
       };
     });
 }
+
+// Job Discovery用：すべての募集中の仕事を返す関数（ユーザー制限なし）
+export function getAvailableJobsForDiscovery() {
+  return dashboardAllProjects
+    .filter(p => p.status === '募集中') // Only show open/recruiting jobs
+    .map(p => {
+      // Calculate M-Score and S-Score using the calculation engine
+      const scores = calculateScores(p);
+      const mScore = scores.mScore.score;
+      const sScore = scores.sScore.score;
+      const scoreDetails = {
+        mScore: scores.mScore,
+        sScore: scores.sScore,
+      };
+
+      // Get due date from milestones or use project deadline
+      let dueDate = p.dueDate || null;
+      if (p.milestones && p.milestones.length > 0) {
+        const nextMilestone = p.milestones.find(m => m.status !== 'paid');
+        if (nextMilestone && nextMilestone.dueDate) {
+          dueDate = nextMilestone.dueDate;
+        }
+      }
+
+      return {
+        id: p.id,
+        title: p.name,
+        by: p.clientName,
+        client: p.clientName,
+        value: p.totalAmount,
+        budget: p.totalAmount,
+        description: p.description,
+        workImage: p.imageUrl || '',
+        status: 'openForProposals',
+        dueDate,
+        mScore,
+        sScore,
+        scoreDetails,
+        clientRating: p.clientRating || { averageScore: 0, totalReviews: 0 },
+        popularity: p.clientRating?.averageScore || 0,
+        requiredSkills: p.requiredSkills || [],
+        deliverables: p.deliverables || '',
+        deliverableDetails: p.deliverableDetails || '',
+        acceptanceCriteria: p.acceptanceCriteria || '',
+        acceptanceCriteriaDetails: p.acceptanceCriteriaDetails || '',
+        scopeOfWork_included: p.scopeOfWork_included || '',
+        scopeOfWork_excluded: p.scopeOfWork_excluded || '',
+        additionalWorkTerms: p.additionalWorkTerms || '',
+        milestones: p.milestones || [],
+        aiRecommendationScore: p.aiRecommendationScore || 0,
+        proposals: p.proposals || [],
+        postedAt: p.postedAt || new Date().toISOString(),
+      };
+    });
+}
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [
   { type: 'request', id: 1, title: 'バックエンド開発', by: 'NextGen Mart', byIcon: '🛒', value: 400000, nature: 0.9, reward: 400000, popularity: 8, description: 'Eコマースサイトのバックエンド開発をお願いします。Node.jsとGraphQLの経験者を募集しています。', workImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80', date: '2025-08-10T10:30:00', userComments: [

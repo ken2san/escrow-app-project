@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, ShoppingCart, ChevronDown, AlertCircle, Info, Zap, X } from 'lucide-react';
-import { getMyProjectCards } from '../utils/initialData';
+import { getAvailableJobsForDiscovery } from '../utils/initialData';
 
 export default function JobsSearchPage() {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export default function JobsSearchPage() {
   const [showBatchProposalModal, setShowBatchProposalModal] = useState(false);
 
   // Get all available jobs
-  const allJobs = useMemo(() => getMyProjectCards(), []);
+  const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
 
   // Get selected jobs in cart
   const selectedJobs = useMemo(() => {
@@ -27,9 +27,6 @@ export default function JobsSearchPage() {
   // Filter & Sort
   const filteredJobs = useMemo(() => {
     let result = allJobs.filter(job => {
-      // Only show jobs that are open for proposals (募集中)
-      if (job.status !== 'openForProposals') return false;
-
       const matchesSearch = job.title.toLowerCase().includes(filters.searchText.toLowerCase());
       const matchesMScore = job.mScore >= filters.mScoreMin;
       const matchesSScore = job.sScore >= filters.sScoreMin;
