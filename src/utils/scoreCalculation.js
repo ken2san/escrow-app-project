@@ -595,11 +595,18 @@ export function calculateRecommendationScore(project) {
 
   const finalScore = Math.max(0, Math.min(100, Math.round(baseScore + adjustments)));
 
-  // Determine flag
+  // Determine flag: More nuanced approach
   let flag = 'yellow';
-  if (finalScore >= 75 && (safetyWarnings?.length || 0) === 0) {
+  const warningCount = safetyWarnings?.length || 0;
+
+  // Green: High score with minimal warnings, OR high client rating + good scores
+  if (finalScore >= 75 && warningCount === 0) {
     flag = 'green';
-  } else if (finalScore < 50 || (safetyWarnings?.length || 0) >= 2) {
+  } else if (finalScore >= 80 && warningCount <= 1 && project.clientRating?.averageScore >= 4.5) {
+    flag = 'green'; // Trust established high-rated clients
+  }
+  // Red: Low score or multiple serious warnings
+  else if (finalScore < 50 || warningCount >= 3) {
     flag = 'red';
   }
 
