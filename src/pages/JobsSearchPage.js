@@ -311,20 +311,16 @@ function JobCard({ job }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return { bg: 'bg-emerald-50', text: 'text-emerald-700', bar: 'bg-emerald-500' };
-    if (score >= 60) return { bg: 'bg-yellow-50', text: 'text-yellow-700', bar: 'bg-yellow-500' };
-    return { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500' };
+  const getScoreIcon = (score) => {
+    if (score >= 75) return { icon: '🟢', label: '◎', text: 'text-emerald-700' };
+    if (score >= 50) return { icon: '🟡', label: '○', text: 'text-yellow-700' };
+    return { icon: '🔴', label: '△', text: 'text-red-700' };
   };
 
-  const getAmbiguityColor = (score) => {
-    if (score >= 75) return { bg: 'bg-emerald-50', text: 'text-emerald-700', label: '明確' };
-    if (score >= 50) return { bg: 'bg-yellow-50', text: 'text-yellow-700', label: '普通' };
-    return { bg: 'bg-red-50', text: 'text-red-700', label: '曖昧' };
-  };
-
-  const mScoreColor = getScoreColor(job.mScore);
-  const sScoreColor = getScoreColor(job.sScore);
+  const mScoreIcon = getScoreIcon(job.mScore);
+  const sScoreIcon = getScoreIcon(job.sScore);
+  const ambiguityIcon = getScoreIcon(job.ambiguityScore);
+  const recommendationIcon = getScoreIcon(job.recommendationScore);
 
   const getCategoryBadgeStyle = (category) => {
     const base = 'px-2 py-0.5 text-xs font-semibold rounded-full border';
@@ -414,7 +410,10 @@ function JobCard({ job }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-600">🤖 AIおすすめ度</p>
-              <p className="text-2xl font-bold text-indigo-600">{job.recommendationScore}/100</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-3xl">{recommendationIcon.icon}</span>
+                <span className={`text-2xl font-bold ${recommendationIcon.text}`}>{recommendationIcon.label}</span>
+              </div>
             </div>
             <div className="text-right text-xs text-slate-600">
               <p className="line-clamp-3">{job.recommendationReason}</p>
@@ -425,45 +424,27 @@ function JobCard({ job }) {
 
       {/* Clickable header for expansion */}
       <div className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50" onClick={() => setIsExpanded(!isExpanded)} role="button">
-        {/* Scores */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className={`${mScoreColor.bg} p-3 rounded-lg`}>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900">契約の透明性</span>
-              <span className={`text-2xl font-bold ${mScoreColor.text}`}>{job.mScore}</span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-              <div
-                className={`${mScoreColor.bar} h-2 rounded-full`}
-                style={{ width: `${job.mScore}%` }}
-              />
-            </div>
+        {/* Simplified Score Icons */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
+            <p className="text-xs text-slate-600 mb-1">契約の透明性</p>
+            <p className="text-3xl">{mScoreIcon.icon}</p>
+            <p className={`text-sm font-bold ${mScoreIcon.text}`}>{mScoreIcon.label}</p>
           </div>
-
-          <div className={`${sScoreColor.bg} p-3 rounded-lg`}>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900">支払い安全性</span>
-              <span className={`text-2xl font-bold ${sScoreColor.text}`}>{job.sScore}</span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-              <div
-                className={`${sScoreColor.bar} h-2 rounded-full`}
-                style={{ width: `${job.sScore}%` }}
-              />
-            </div>
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
+            <p className="text-xs text-slate-600 mb-1">支払い安全性</p>
+            <p className="text-3xl">{sScoreIcon.icon}</p>
+            <p className={`text-sm font-bold ${sScoreIcon.text}`}>{sScoreIcon.label}</p>
           </div>
-
-          <div className={`${getAmbiguityColor(job.ambiguityScore).bg} p-3 rounded-lg`}>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900">条件の明確さ</span>
-              <span className={`text-2xl font-bold ${getAmbiguityColor(job.ambiguityScore).text}`}>{job.ambiguityScore}</span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-              <div
-                className={`${getAmbiguityColor(job.ambiguityScore).text.replace('text', 'bg')} h-2 rounded-full`}
-                style={{ width: `${job.ambiguityScore}%` }}
-              />
-            </div>
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
+            <p className="text-xs text-slate-600 mb-1">条件の明確さ</p>
+            <p className="text-3xl">{ambiguityIcon.icon}</p>
+            <p className={`text-sm font-bold ${ambiguityIcon.text}`}>{ambiguityIcon.label}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
+            <p className="text-xs text-slate-600 mb-1">AI推奨度</p>
+            <p className="text-3xl">{recommendationIcon.icon}</p>
+            <p className={`text-sm font-bold ${recommendationIcon.text}`}>{recommendationIcon.label}</p>
           </div>
         </div>
 
