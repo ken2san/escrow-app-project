@@ -505,7 +505,7 @@ export default function WorkManagementPage() {
                                                         {isEmpty
                                                             ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
                                                             : groupCards.map((card, idx) => (
-                                                                <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
+                                                                <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
                                                             ))}
                                                     </div>
                                                 </SortableContext>
@@ -820,11 +820,11 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     }[card.status] || { label: card.status, bg: 'bg-slate-200', text: 'text-slate-600' };
     // Action icon
     const actionIcon = (card.status === 'unsent' || card.status === 'revision_needed') ? (
-        <button title="編集する" className="text-slate-400 hover:text-indigo-600" onClick={e => { e.stopPropagation(); onEdit && onEdit(card); }}>
+        <button title="編集する" className="text-slate-400 hover:text-indigo-600 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
         </button>
     ) : card.status === 'edited' ? (
-        <button title="送信する" className="text-blue-500 hover:text-blue-700" onClick={e => { e.stopPropagation(); /* 送信アクション仮 */ }}>
+        <button title="送信する" className="text-blue-500 hover:text-blue-700 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.949a.75.75 0 00.95.826L11.25 8.25l-5.607-1.752a.75.75 0 00-.95-.826z" /><path d="M15 6.75a.75.75 0 00-.75-.75h-3.5a.75.75 0 000 1.5h3.5a.75.75 0 00.75-.75zM15 9.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM15 12.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM4.832 15.312a.75.75 0 00.95-.826l-1.414-4.95a.75.75 0 00-.95-.826L.5 11.25l5.607 1.752a.75.75 0 00.95.826z" /></svg>
         </button>
     ) : null;
@@ -846,7 +846,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             {...attributes}
             {...listeners}
             className={
-                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 ' +
+                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 cursor-pointer hover:shadow-md ' +
                 (isDragging ? 'dragging' : '')
             }
             onClick={() => onEdit && onEdit(card)}

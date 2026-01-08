@@ -170,34 +170,33 @@ export default function JobsSearchPage() {
                 </select>
               </div>
 
-              {/* M-Score Filter */}
+              {/* Preset Safety Buttons (replacing sliders) */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  契約の透明性: {filters.mScoreMin}以上
+                  信頼度プリセット
                 </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={filters.mScoreMin}
-                  onChange={(e) => setFilters({ ...filters, mScoreMin: parseInt(e.target.value) })}
-                  className="w-full"
-                />
-              </div>
-
-              {/* S-Score Filter */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  支払い安全性: {filters.sScoreMin}以上
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={filters.sScoreMin}
-                  onChange={(e) => setFilters({ ...filters, sScoreMin: parseInt(e.target.value) })}
-                  className="w-full"
-                />
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 }); }}
+                    className={`w-full px-3 py-2 text-sm rounded-lg font-medium transition ${
+                      filters.mScoreMin === 70 && filters.sScoreMin === 70
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    ✓ 安全な仕事
+                  </button>
+                  <button
+                    onClick={() => { setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 }); }}
+                    className={`w-full px-3 py-2 text-sm rounded-lg font-medium transition ${
+                      filters.mScoreMin === 0 && filters.sScoreMin === 0
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    すべて表示
+                  </button>
+                </div>
               </div>
 
               {/* Budget Filter */}
@@ -393,15 +392,11 @@ function JobCard({ job }) {
             onClick={(e) => {
               e.stopPropagation();
               addDraftJobs([job.id], loggedInUserDataGlobal.id);
-              // eslint-disable-next-line no-alert
-              alert('下書きを作成しました。仕事管理で編集できます。');
               navigate('/work-management');
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-              'bg-indigo-600 text-white hover:bg-indigo-700'
-            }`}
+            className="px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
           >
-            管理で開く
+            このお仕事を見る
           </button>
         </div>
 
@@ -512,11 +507,11 @@ function JobCard({ job }) {
         {/* Required Skills */}
         {job.requiredSkills && job.requiredSkills.length > 0 && (
           <div className="mb-3">
-            <p className="text-xs font-medium text-slate-600 mb-2">必須スキル:</p>
+            <p className="text-xs font-medium text-slate-600 mb-2">向く人:</p>
             <div className="flex flex-wrap gap-2">
               {job.requiredSkills.map((skill, idx) => (
-                <span key={idx} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded font-medium">
-                  {skill}
+                <span key={idx} className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full font-medium">
+                  👤 {skill}
                 </span>
               ))}
             </div>
@@ -614,11 +609,11 @@ function JobCard({ job }) {
           {/* Required Skills - Full */}
           {job.requiredSkills && job.requiredSkills.length > 0 && (
             <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
-              <h4 className="font-semibold text-slate-900">必須スキル</h4>
+              <h4 className="font-semibold text-slate-900">向く人</h4>
               <div className="flex flex-wrap gap-2">
                 {job.requiredSkills.map((skill, idx) => (
                   <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
-                    {skill}
+                    👤 {skill}
                   </span>
                 ))}
               </div>
