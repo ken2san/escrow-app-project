@@ -312,9 +312,9 @@ function JobCard({ job }) {
   const navigate = useNavigate();
 
   const getScoreIcon = (score) => {
-    if (score >= 75) return { icon: '🟢', label: '◎', text: 'text-emerald-700' };
-    if (score >= 50) return { icon: '🟡', label: '○', text: 'text-yellow-700' };
-    return { icon: '🔴', label: '△', text: 'text-red-700' };
+    if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
+    if (score >= 50) return { bg: 'bg-yellow-500', text: 'text-white' };
+    return { bg: 'bg-red-500', text: 'text-white' };
   };
 
   const mScoreIcon = getScoreIcon(job.mScore);
@@ -409,10 +409,9 @@ function JobCard({ job }) {
         <div className="bg-white rounded p-3 mb-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-600">🤖 AIおすすめ度</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-3xl">{recommendationIcon.icon}</span>
-                <span className={`text-2xl font-bold ${recommendationIcon.text}`}>{recommendationIcon.label}</span>
+              <p className="text-xs text-slate-600 mb-2">🤖 AIおすすめ度</p>
+              <div className={`w-16 h-16 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
+                <span className={`text-xl font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
               </div>
             </div>
             <div className="text-right text-xs text-slate-600">
@@ -426,25 +425,29 @@ function JobCard({ job }) {
       <div className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50" onClick={() => setIsExpanded(!isExpanded)} role="button">
         {/* Simplified Score Icons */}
         <div className="grid grid-cols-4 gap-3 mb-4">
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <p className="text-xs text-slate-600 mb-1">契約の透明性</p>
-            <p className="text-3xl">{mScoreIcon.icon}</p>
-            <p className={`text-sm font-bold ${mScoreIcon.text}`}>{mScoreIcon.label}</p>
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-slate-600 mb-2">契約の透明性</p>
+            <div className={`w-14 h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
+              <span className={`text-lg font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
+            </div>
           </div>
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <p className="text-xs text-slate-600 mb-1">支払い安全性</p>
-            <p className="text-3xl">{sScoreIcon.icon}</p>
-            <p className={`text-sm font-bold ${sScoreIcon.text}`}>{sScoreIcon.label}</p>
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-slate-600 mb-2">支払い安全性</p>
+            <div className={`w-14 h-14 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
+              <span className={`text-lg font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
+            </div>
           </div>
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <p className="text-xs text-slate-600 mb-1">条件の明確さ</p>
-            <p className="text-3xl">{ambiguityIcon.icon}</p>
-            <p className={`text-sm font-bold ${ambiguityIcon.text}`}>{ambiguityIcon.label}</p>
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-slate-600 mb-2">条件の明確さ</p>
+            <div className={`w-14 h-14 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
+              <span className={`text-lg font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
+            </div>
           </div>
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center">
-            <p className="text-xs text-slate-600 mb-1">AI推奨度</p>
-            <p className="text-3xl">{recommendationIcon.icon}</p>
-            <p className={`text-sm font-bold ${recommendationIcon.text}`}>{recommendationIcon.label}</p>
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-slate-600 mb-2">AI推奨度</p>
+            <div className={`w-14 h-14 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
+              <span className={`text-lg font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+            </div>
           </div>
         </div>
 
