@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, ChevronDown, AlertCircle } from 'lucide-react';
+import { Search, ChevronDown, AlertCircle } from 'lucide-react';
 import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal } from '../utils/initialData';
 
 export default function JobsSearchPage() {
@@ -17,7 +17,7 @@ export default function JobsSearchPage() {
     locationType: 'all', // New: location filter
   });
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
-
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
 
   // Get all available jobs
   const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
@@ -66,21 +66,6 @@ export default function JobsSearchPage() {
     return result;
   }, [allJobs, filters, sortBy]);
 
-  // Smart filter: show only safe jobs
-  const applySafeJobsFilter = () => {
-    setFilters({
-      mScoreMin: 70,
-      sScoreMin: 70,
-      budgetMin: 0,
-      budgetMax: 999999,
-      searchText: '',
-      excludeRisks: true,
-      category: 'all',
-      locationType: 'all',
-    });
-    setSortBy('recommendation');
-  };
-
   // Reset all filters
   const resetFilters = () => {
     setFilters({
@@ -110,195 +95,167 @@ export default function JobsSearchPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar: Filters */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6 sticky top-24">
-              <div className="flex items-center gap-2 mb-6">
-                <Filter size={20} className="text-indigo-600" />
-                <h2 className="text-xl font-bold text-slate-900">{t('common.filters', 'フィルター')}</h2>
-              </div>
-
+        {/* Top Filter Bar */}
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20">
+          <div className="flex flex-col gap-4">
+            {/* Primary Filters Row */}
+            <div className="flex flex-wrap items-center gap-3">
               {/* Search */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('common.search', '検索')}
-                </label>
+              <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder={t('jobs.searchPlaceholder', 'キーワード')}
+                    placeholder="キーワード検索"
                     value={filters.searchText}
                     onChange={(e) => setFilters({ ...filters, searchText: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
               </div>
 
               {/* Category */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  カテゴリ
-                </label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat === 'all' ? 'すべて' : cat}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={filters.category}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                ))}
+              </select>
 
               {/* Location */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  勤務形態
-                </label>
-                <select
-                  value={filters.locationType}
-                  onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  {locationTypes.map(loc => (
-                    <option key={loc} value={loc}>
-                      {loc === 'all' ? 'すべて' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={filters.locationType}
+                onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              >
+                {locationTypes.map(loc => (
+                  <option key={loc} value={loc}>
+                    {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                  </option>
+                ))}
+              </select>
 
-              {/* Preset Safety Buttons (replacing sliders) */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  信頼度プリセット
-                </label>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => { setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 }); }}
-                    className={`w-full px-3 py-2 text-sm rounded-lg font-medium transition ${
-                      filters.mScoreMin === 70 && filters.sScoreMin === 70
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    ✓ 安全な仕事
-                  </button>
-                  <button
-                    onClick={() => { setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 }); }}
-                    className={`w-full px-3 py-2 text-sm rounded-lg font-medium transition ${
-                      filters.mScoreMin === 0 && filters.sScoreMin === 0
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    すべて表示
-                  </button>
-                </div>
-              </div>
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              >
+                <option value="recommendation">🤖 おすすめ順</option>
+                <option value="trust">🛡️ 信頼度</option>
+                <option value="budget">💰 報酬順</option>
+              </select>
 
-              {/* Budget Filter */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('common.budget', '予算')} (¥)
-                </label>
-                <div className="space-y-2">
+              {/* Advanced Filters Toggle */}
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                  showAdvancedFilters
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                ⚙️ 詳細
+              </button>
+
+              {/* Reset */}
+              <button
+                onClick={resetFilters}
+                className="px-3 py-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition"
+              >
+                ✕ リセット
+              </button>
+            </div>
+
+            {/* Safety Preset Buttons (always visible) */}
+            <div className="flex gap-2 items-center">
+              <span className="text-xs font-medium text-slate-600">信頼度:</span>
+              <button
+                onClick={() => { setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 }); }}
+                className={`px-3 py-1.5 text-xs rounded-full font-medium transition ${
+                  filters.mScoreMin === 70 && filters.sScoreMin === 70
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                ✓ 安全な仕事
+              </button>
+              <button
+                onClick={() => { setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 }); }}
+                className={`px-3 py-1.5 text-xs rounded-full font-medium transition ${
+                  filters.mScoreMin === 0 && filters.sScoreMin === 0
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                すべて表示
+              </button>
+              <label className="ml-auto flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.excludeRisks}
+                  onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-xs font-medium text-slate-700">リスク除外</span>
+              </label>
+            </div>
+
+            {/* Advanced Filters Panel */}
+            {showAdvancedFilters && (
+              <div className="pt-4 border-t border-slate-200 grid grid-cols-2 md:grid-cols-3 gap-4">
+                {/* Budget Min */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">最小予算</label>
                   <input
                     type="number"
-                    placeholder="最小金額"
+                    placeholder="最小"
                     value={filters.budgetMin}
                     onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
                   />
+                </div>
+
+                {/* Budget Max */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">最大予算</label>
                   <input
                     type="number"
-                    placeholder="最大金額"
+                    placeholder="最大"
                     value={filters.budgetMax}
                     onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
                     className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
                   />
                 </div>
               </div>
+            )}
+          </div>
+        </div>
 
-              {/* Sort */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('common.sortBy', 'ソート')}
-                </label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="recommendation">🤖 AI おすすめ度</option>
-                  <option value="trust">🛡️ 信頼度（M+S）</option>
-                  <option value="budget">💰 報酬（高い順）</option>
-                </select>
-              </div>
-
-              {/* Risk Filter */}
-              <div className="mb-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={filters.excludeRisks}
-                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
-                    className="w-4 h-4 rounded"
-                  />
-                  <span className="text-sm font-medium text-slate-700">リスク案件を除外</span>
-                </label>
-              </div>
-
-              {/* Smart Filters */}
-              <div className="mb-6 pt-6 border-t border-slate-300">
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  🎯 クイックアクション
-                </label>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => applySafeJobsFilter()}
-                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition"
-                  >
-                    ✓ 安全な仕事のみ表示
-                  </button>
-                  <button
-                    onClick={() => resetFilters()}
-                    className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition"
-                  >
-                    ↻ 全てをリセット
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* Main Job Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Results Summary */}
+          <div className="col-span-full mb-4">
+            <p className="text-slate-600 text-sm">
+              {filteredJobs.length} 件の仕事が見つかりました
+            </p>
           </div>
 
-          {/* Main: Job List */}
-          <div className="lg:col-span-3">
-            {/* Results Summary */}
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-slate-600">
-                {filteredJobs.length} {t('jobs.jobsFound', '件の仕事')}
+          {/* Job Cards */}
+          {filteredJobs.length > 0 ? (
+            filteredJobs.map(job => (
+              <JobCard key={job.id} job={job} />
+            ))
+          ) : (
+            <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
+              <p className="text-slate-500 text-lg">
+                条件に合う仕事がありません
               </p>
-
             </div>
-
-            {/* Job Cards */}
-            <div className="space-y-4">
-              {filteredJobs.length > 0 ? (
-                filteredJobs.map(job => (
-                  <JobCard key={job.id} job={job} />
-                ))
-              ) : (
-                <div className="bg-white rounded-lg shadow p-12 text-center">
-                  <p className="text-slate-500 text-lg">
-                    {t('jobs.noResults', '条件に合う仕事がありません')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -358,7 +315,7 @@ function JobCard({ job }) {
       <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-200">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
               {job.category && (
                 <span className={getCategoryBadgeStyle(job.category)}>
