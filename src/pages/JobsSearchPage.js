@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle } from 'lucide-react';
 import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal } from '../utils/initialData';
+import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
   const { t } = useTranslation();
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'timeline'
   const [filters, setFilters] = useState({
     mScoreMin: 0,
     sScoreMin: 0,
@@ -149,6 +151,30 @@ export default function JobsSearchPage() {
                 <option value="budget">💰 報酬順</option>
               </select>
 
+              {/* Layout Toggle */}
+              <div className="flex items-center border border-slate-300 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-1 rounded font-medium text-sm transition ${
+                    viewMode === 'grid'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-transparent text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  📊 グリッド
+                </button>
+                <button
+                  onClick={() => setViewMode('timeline')}
+                  className={`px-3 py-1 rounded font-medium text-sm transition ${
+                    viewMode === 'timeline'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-transparent text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  📜 タイムライン
+                </button>
+              </div>
+
               {/* Advanced Filters Toggle */}
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -235,28 +261,32 @@ export default function JobsSearchPage() {
           </div>
         </div>
 
-        {/* Main Job Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Results Summary */}
-          <div className="col-span-full mb-4">
-            <p className="text-slate-600 text-sm">
-              {filteredJobs.length} 件の仕事が見つかりました
-            </p>
-          </div>
-
-          {/* Job Cards */}
-          {filteredJobs.length > 0 ? (
-            filteredJobs.map(job => (
-              <JobCard key={job.id} job={job} />
-            ))
-          ) : (
-            <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
-              <p className="text-slate-500 text-lg">
-                条件に合う仕事がありません
+        {/* Main Content - View Mode Toggle */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Results Summary */}
+            <div className="col-span-full mb-4">
+              <p className="text-slate-600 text-sm">
+                {filteredJobs.length} 件の仕事が見つかりました
               </p>
             </div>
-          )}
-        </div>
+
+            {/* Job Cards */}
+            {filteredJobs.length > 0 ? (
+              filteredJobs.map(job => (
+                <JobCard key={job.id} job={job} />
+              ))
+            ) : (
+              <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
+                <p className="text-slate-500 text-lg">
+                  条件に合う仕事がありません
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <TimelineJobsView filteredJobs={filteredJobs} />
+        )}
       </div>
     </div>
   );
