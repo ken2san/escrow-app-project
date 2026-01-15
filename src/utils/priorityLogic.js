@@ -24,10 +24,15 @@ export function calculatePriority(project, userRole, userId) {
   let score = 0;
   let reasons = [];
 
-  // Base priority factors
+  // Base priority factors (normalized to UTC to avoid timezone-dependent differences)
   const now = new Date();
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const dueDate = project.dueDate ? new Date(project.dueDate) : null;
-  const daysUntilDue = dueDate ? Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)) : null;
+  const dueDateUtc = dueDate
+    ? Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate())
+    : null;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysUntilDue = dueDateUtc !== null ? Math.ceil((dueDateUtc - todayUtc) / msPerDay) : null;
 
   // ========================================
   // CRITICAL URGENCY (1000+ points)
