@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ImmersiveJobCard({
   job,
@@ -13,7 +13,6 @@ export default function ImmersiveJobCard({
   const [displayScore, setDisplayScore] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [slideAnimation, setSlideAnimation] = useState('');
-  const cardRef = useRef(null);
 
   // Score count-up animation
   useEffect(() => {
@@ -146,7 +145,6 @@ export default function ImmersiveJobCard({
 
   return (
     <div
-      ref={cardRef}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       className={`fixed inset-0 z-50 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col items-center justify-center p-4 transition-all duration-300 ${
