@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, ChevronDown, AlertCircle } from 'lucide-react';
+import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
 import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal } from '../utils/initialData';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filters, setFilters] = useState({
     mScoreMin: 0,
     sScoreMin: 0,
@@ -97,13 +98,12 @@ export default function JobsSearchPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Top Filter Bar */}
+        {/* Top Filter Bar - Mobile optimized with hamburger menu */}
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20">
           <div className="flex flex-col gap-4">
-            {/* Primary Filters Row */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search */}
-              <div className="flex-1 min-w-[200px]">
+            {/* Search + Mobile Menu Toggle */}
+            <div className="flex gap-2">
+              <div className="flex-1">
                 <div className="relative">
                   <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -115,166 +115,324 @@ export default function JobsSearchPage() {
                   />
                 </div>
               </div>
-
-              {/* Category */}
-              <select
-                value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition"
               >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
-                ))}
-              </select>
+                {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
 
-              {/* Location */}
-              <select
-                value={filters.locationType}
-                onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-              >
-                {locationTypes.map(loc => (
-                  <option key={loc} value={loc}>
-                    {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
-                  </option>
-                ))}
-              </select>
+            {/* Desktop: Full Controls - Always visible on md+ */}
+            <div className="hidden md:block space-y-4">
+              {/* First Row: Category, Location, Sort */}
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={filters.category}
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                  ))}
+                </select>
 
-              {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-              >
-                <option value="recommendation">🤖 おすすめ順</option>
-                <option value="trust">🛡️ 信頼度</option>
-                <option value="budget">💰 報酬順</option>
-              </select>
+                <select
+                  value={filters.locationType}
+                  onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                >
+                  {locationTypes.map(loc => (
+                    <option key={loc} value={loc}>
+                      {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                    </option>
+                  ))}
+                </select>
 
-              {/* Layout Toggle - Improved design for easy mood-based switching */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                >
+                  <option value="recommendation">🤖 おすすめ順</option>
+                  <option value="trust">🛡️ 信頼度</option>
+                  <option value="budget">💰 報酬順</option>
+                </select>
+              </div>
+
+              {/* Second Row: Layout Toggle */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 font-medium mr-1">表示:</span>
+                <span className="text-xs text-slate-600 font-medium">表示:</span>
                 <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
                       viewMode === 'grid'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white'
                         : 'bg-white text-slate-700 hover:bg-slate-50'
                     }`}
-                    title="グリッド表示 - 複数の仕事を一覧"
                   >
-                    <span className="text-base">📊</span>
+                    <span>📊</span>
                     <span>グリッド</span>
                   </button>
                   <button
                     onClick={() => setViewMode('timeline')}
                     className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
                       viewMode === 'timeline'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white'
                         : 'bg-white text-slate-700 hover:bg-slate-50'
                     }`}
-                    title="タイムライン表示 - 詳細カード"
                   >
-                    <span className="text-base">📜</span>
+                    <span>📜</span>
                     <span>タイムライン</span>
                   </button>
                   <button
                     onClick={() => setViewMode('immersive')}
                     className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
                       viewMode === 'immersive'
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                         : 'bg-white text-slate-700 hover:bg-slate-50'
                     }`}
-                    title="没入モード - TikTok風の全画面体験"
                   >
-                    <span className="text-base">🎯</span>
+                    <span>🎯</span>
                     <span>没入モード</span>
                   </button>
                 </div>
               </div>
 
-              {/* Advanced Filters Toggle */}
-              <button
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
-                  showAdvancedFilters
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                ⚙️ 詳細
-              </button>
+              {/* Third Row: Buttons & Presets */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    showAdvancedFilters ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  ⚙️ 詳細
+                </button>
+                <button
+                  onClick={resetFilters}
+                  className="px-3 py-2 text-slate-600 text-sm font-medium bg-slate-100 rounded-lg"
+                >
+                  ✕ リセット
+                </button>
 
-              {/* Reset */}
-              <button
-                onClick={resetFilters}
-                className="px-3 py-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition"
-              >
-                ✕ リセット
-              </button>
+                <span className="text-xs font-medium text-slate-600">信頼度:</span>
+                <button
+                  onClick={() => setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 })}
+                  className={`px-3 py-1.5 text-xs rounded-full font-medium ${
+                    filters.mScoreMin === 70 && filters.sScoreMin === 70
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  安全
+                </button>
+                <button
+                  onClick={() => setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 })}
+                  className={`px-3 py-1.5 text-xs rounded-full font-medium ${
+                    filters.mScoreMin === 0 && filters.sScoreMin === 0
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  全て
+                </button>
+                <label className="ml-auto flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeRisks}
+                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-xs font-medium text-slate-700">リスク除外</span>
+                </label>
+              </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">最小予算</label>
+                    <input
+                      type="number"
+                      placeholder="最小"
+                      value={filters.budgetMin}
+                      onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">最大予算</label>
+                    <input
+                      type="number"
+                      placeholder="最大"
+                      value={filters.budgetMax}
+                      onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Safety Preset Buttons (always visible) */}
-            <div className="flex gap-2 items-center">
-              <span className="text-xs font-medium text-slate-600">信頼度:</span>
-              <button
-                onClick={() => { setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 }); }}
-                className={`px-3 py-1.5 text-xs rounded-full font-medium transition ${
-                  filters.mScoreMin === 70 && filters.sScoreMin === 70
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                ✓ 安全な仕事
-              </button>
-              <button
-                onClick={() => { setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 }); }}
-                className={`px-3 py-1.5 text-xs rounded-full font-medium transition ${
-                  filters.mScoreMin === 0 && filters.sScoreMin === 0
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                すべて表示
-              </button>
-              <label className="ml-auto flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.excludeRisks}
-                  onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
-                  className="w-4 h-4 rounded"
-                />
-                <span className="text-xs font-medium text-slate-700">リスク除外</span>
-              </label>
-            </div>
-
-            {/* Advanced Filters Panel */}
-            {showAdvancedFilters && (
-              <div className="pt-4 border-t border-slate-200 grid grid-cols-2 md:grid-cols-3 gap-4">
-                {/* Budget Min */}
+            {/* Mobile: Hamburger Menu */}
+            {showMobileMenu && (
+              <div className="md:hidden pt-4 border-t border-slate-200 space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">最小予算</label>
-                  <input
-                    type="number"
-                    placeholder="最小"
-                    value={filters.budgetMin}
-                    onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                  />
+                  <label className="text-xs font-semibold text-slate-600">カテゴリ</label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Budget Max */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">最大予算</label>
-                  <input
-                    type="number"
-                    placeholder="最大"
-                    value={filters.budgetMax}
-                    onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                  />
+                  <label className="text-xs font-semibold text-slate-600">形態</label>
+                  <select
+                    value={filters.locationType}
+                    onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    {locationTypes.map(loc => (
+                      <option key={loc} value={loc}>
+                        {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">並べ替え</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    <option value="recommendation">🤖 おすすめ順</option>
+                    <option value="trust">🛡️ 信頼度</option>
+                    <option value="budget">💰 報酬順</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-2">表示</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
+                      }`}
+                    >
+                      📊
+                    </button>
+                    <button
+                      onClick={() => setViewMode('timeline')}
+                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
+                        viewMode === 'timeline'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
+                      }`}
+                    >
+                      📜
+                    </button>
+                    <button
+                      onClick={() => setViewMode('immersive')}
+                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
+                        viewMode === 'immersive'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
+                      }`}
+                    >
+                      🎯
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className={`flex-1 px-3 py-2 text-sm rounded font-medium ${
+                      showAdvancedFilters ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    ⚙️詳細
+                  </button>
+                  <button
+                    onClick={resetFilters}
+                    className="flex-1 px-3 py-2 text-sm rounded font-medium bg-slate-100 text-slate-700"
+                  >
+                    ✕リセット
+                  </button>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 block">信頼度</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 })}
+                      className={`flex-1 px-3 py-2 text-xs rounded-full font-medium ${
+                        filters.mScoreMin === 70 && filters.sScoreMin === 70
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      安全
+                    </button>
+                    <button
+                      onClick={() => setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 })}
+                      className={`flex-1 px-3 py-2 text-xs rounded-full font-medium ${
+                        filters.mScoreMin === 0 && filters.sScoreMin === 0
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      全て
+                    </button>
+                  </div>
+                </div>
+
+                {showAdvancedFilters && (
+                  <div className="pt-3 border-t border-slate-200 space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">最小予算</label>
+                      <input
+                        type="number"
+                        placeholder="最小"
+                        value={filters.budgetMin}
+                        onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">最大予算</label>
+                      <input
+                        type="number"
+                        placeholder="最大"
+                        value={filters.budgetMax}
+                        onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeRisks}
+                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-xs font-medium text-slate-700">リスク除外</span>
+                </label>
               </div>
             )}
           </div>
@@ -369,11 +527,11 @@ function JobCard({ job }) {
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       {/* AI Flag + Header */}
-      <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-200">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex-1">
+      <div className="bg-gradient-to-r from-slate-50 to-white p-4 md:p-6 border-b border-slate-200">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h3 className="text-lg font-bold text-slate-900">{job.title}</h3>
+              <h3 className="text-base md:text-lg font-bold text-slate-900 truncate">{job.title}</h3>
               {job.category && (
                 <span className={getCategoryBadgeStyle(job.category)}>
                   {job.category}
@@ -395,7 +553,7 @@ function JobCard({ job }) {
                  '⚡ 確認推奨'}
               </span>
             </div>
-            <p className="text-sm text-slate-600">{job.client || 'クライアント名'}</p>
+            <p className="text-sm text-slate-600 truncate">{job.client || 'クライアント名'}</p>
             {job.description && (
               <p className="text-sm text-slate-600 mt-2 line-clamp-2">
                 {job.description.substring(0, 120)}{job.description.length > 120 ? '...' : ''}
@@ -408,7 +566,7 @@ function JobCard({ job }) {
               addDraftJobs([job.id], loggedInUserDataGlobal.id);
               navigate('/work-management');
             }}
-            className="px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+            className="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
           >
             このお仕事を見る
           </button>
@@ -416,14 +574,14 @@ function JobCard({ job }) {
 
         {/* AI Recommendation */}
         <div className="bg-white rounded p-3 mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-600 mb-2">🤖 AIおすすめ度</p>
-              <div className={`w-16 h-16 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
-                <span className={`text-xl font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-slate-600 md:mb-0">🤖 AIおすすめ度</p>
+              <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
+                <span className={`text-lg md:text-xl font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
               </div>
             </div>
-            <div className="text-right text-xs text-slate-600">
+            <div className="text-xs md:text-sm text-slate-600">
               <p className="line-clamp-3">{job.recommendationReason}</p>
             </div>
           </div>
@@ -431,31 +589,31 @@ function JobCard({ job }) {
       </div>
 
       {/* Clickable header for expansion */}
-      <div className="p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50" onClick={() => setIsExpanded(!isExpanded)} role="button">
-        {/* Simplified Score Icons */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="p-4 md:p-6 border-b border-slate-200 cursor-pointer hover:bg-slate-50" onClick={() => setIsExpanded(!isExpanded)} role="button">
+        {/* Simplified Score Icons - Mobile optimized */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4">
           <div className="flex flex-col items-center">
-            <p className="text-xs text-slate-600 mb-2">契約の透明性</p>
-            <div className={`w-14 h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
-              <span className={`text-lg font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
+            <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center">契約の透明性</p>
+            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
+              <span className={`text-base md:text-lg font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-xs text-slate-600 mb-2">支払い安全性</p>
-            <div className={`w-14 h-14 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
-              <span className={`text-lg font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
+            <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center">支払い安全性</p>
+            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
+              <span className={`text-base md:text-lg font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-xs text-slate-600 mb-2">条件の明確さ</p>
-            <div className={`w-14 h-14 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
-              <span className={`text-lg font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
+            <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center">条件の明確さ</p>
+            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
+              <span className={`text-base md:text-lg font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-xs text-slate-600 mb-2">AI推奨度</p>
-            <div className={`w-14 h-14 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
-              <span className={`text-lg font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+            <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center">AI推奨度</p>
+            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${recommendationIcon.bg} flex items-center justify-center`}>
+              <span className={`text-base md:text-lg font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
             </div>
           </div>
         </div>

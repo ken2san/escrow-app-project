@@ -3,6 +3,7 @@ import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import { workManagementProjects as initialProjectsData, getProposedProjectsForUser, getDraftProjectsForUser, loggedInUserDataGlobal } from '../utils/initialData';
 
@@ -80,6 +81,7 @@ export default function WorkManagementPage() {
     // cards state is initialized from all cards in initialProjects
     const [cards, setCards] = useState(initialProjects.flatMap(p => p.cards || []));
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     // Handlers for grouping, sorting, and layout switching
     const handleGroupByChange = (e) => {
@@ -220,8 +222,21 @@ export default function WorkManagementPage() {
 
             <main className="flex-1 flex flex-col">
                     <div className="flex-1 overflow-y-auto p-4 md:p-8">
-                        {/* View Settings Panel */}
-                        <div className="flex flex-row justify-between items-center gap-3 mb-0 sticky top-12 z-20 bg-slate-100 py-1" style={{marginLeft: '-2rem', marginRight: '-2rem', paddingLeft: '2rem', paddingRight: '2rem'}}>
+                        {/* View Settings Panel - Mobile optimized with hamburger menu */}
+                        <div className="sticky top-12 z-20 bg-slate-100 py-1 mb-0" style={{marginLeft: window.innerWidth < 768 ? 0 : '-2rem', marginRight: window.innerWidth < 768 ? 0 : '-2rem', paddingLeft: window.innerWidth < 768 ? '1rem' : '2rem', paddingRight: window.innerWidth < 768 ? '1rem' : '2rem'}}>
+                          {/* Mobile: Hamburger Menu */}
+                          <div className="md:hidden flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold text-slate-700">表示設定</span>
+                            <button
+                              onClick={() => setShowMobileMenu(!showMobileMenu)}
+                              className="p-2 hover:bg-slate-200 rounded-lg transition"
+                            >
+                              {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+                            </button>
+                          </div>
+
+                          {/* Desktop: Full Controls */}
+                          <div className="hidden md:flex flex-row justify-between items-center gap-3">
                             <div className="flex flex-row flex-wrap items-center gap-3">
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-sm font-semibold text-slate-500">レイアウト:</span>
@@ -258,6 +273,65 @@ export default function WorkManagementPage() {
                             >
                                 ＋ 新規案件登録
                             </button>
+                          </div>
+
+                          {/* Mobile: Expanded Menu */}
+                          {showMobileMenu && (
+                            <div className="md:hidden mt-3 pt-3 border-t border-slate-300 space-y-3">
+                              <div className="flex flex-col gap-2">
+                                <span className="text-xs font-semibold text-slate-600">レイアウト:</span>
+                                <div className="flex gap-2">
+                                  <button
+                                    className={`flex-1 px-3 py-2 text-sm font-semibold rounded-md transition ${viewSettings.layout === 'list' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-300'}`}
+                                    onClick={() => {
+                                      handleLayoutChange('list');
+                                      setShowMobileMenu(false);
+                                    }}
+                                  >リスト</button>
+                                  <button
+                                    className={`flex-1 px-3 py-2 text-sm font-semibold rounded-md transition ${viewSettings.layout === 'board' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-300'}`}
+                                    onClick={() => {
+                                      handleLayoutChange('board');
+                                      setShowMobileMenu(false);
+                                    }}
+                                  >ボード</button>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                <label className="text-xs font-semibold text-slate-600">グループ化:</label>
+                                <select id="group-by-select-mobile" value={viewSettings.groupBy} onChange={(e) => {
+                                  handleGroupByChange(e);
+                                  setShowMobileMenu(false);
+                                }} className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-medium text-slate-700">
+                                  <option value="project">プロジェクト</option>
+                                  <option value="status">ステータス</option>
+                                  <option value="dueDate">期日</option>
+                                </select>
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                <label className="text-xs font-semibold text-slate-600">並べ替え:</label>
+                                <select id="sort-by-select-mobile" value={viewSettings.sortBy} onChange={(e) => {
+                                  handleSortByChange(e);
+                                  setShowMobileMenu(false);
+                                }} className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-medium text-slate-700">
+                                  <option value="startDate">開始日 (昇順)</option>
+                                  <option value="reward">報酬額 (降順)</option>
+                                </select>
+                              </div>
+
+                              <button
+                                className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+                                onClick={() => {
+                                  setShowNewProjectModal(true);
+                                  setShowMobileMenu(false);
+                                }}
+                              >
+                                ＋ 新規案件登録
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div className="h-16"></div>
                         {/* View Area: レイアウト切り替え */}
