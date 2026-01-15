@@ -67,6 +67,16 @@ export default function App() {
     return true;
   };
   const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarOpen());
+  React.useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      }
+    };
+    onResize();
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const activePage = location.pathname === '/' ? 'command-ui' : location.pathname.replace('/', '');

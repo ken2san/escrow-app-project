@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
-import { DndContext, closestCenter, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
@@ -83,12 +83,13 @@ export default function WorkManagementPage() {
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-    // Configure sensors for both mouse and touch
+    // Configure sensors: Mouse uses distance; Touch uses press delay for mobile
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8, // 8px movement required before drag starts (prevents accidental drags)
-            },
+        useSensor(MouseSensor, {
+            activationConstraint: { distance: 8 },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 250, tolerance: 5 },
         })
     );
 
@@ -867,6 +868,10 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         border: '1.5px solid #e5e7eb',
         minHeight: '48px',
         willChange: 'transform',
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
     };
     // Status badge
     const statusInfo = {
@@ -904,7 +909,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             {...attributes}
             {...listeners}
             className={
-                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 cursor-pointer hover:shadow-md ' +
+                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 cursor-pointer hover:shadow-md touch-none select-none ' +
                 (isDragging ? 'dragging' : '')
             }
             onClick={() => onEdit && onEdit(card)}
