@@ -171,7 +171,7 @@ export default function ImmersiveJobCard({
       </div>
 
       {/* Main scrollable content */}
-      <div className="w-full max-w-md mt-20 overflow-y-auto max-h-[80vh] pb-32 no-scrollbar">
+      <div className="w-full max-w-md mt-20 overflow-y-auto max-h-[80vh] pb-32">
         {/* AI Score - Large and prominent */}
         <div className="mb-8 text-center">
           <p className="text-xs font-semibold text-gray-600 mb-4 uppercase tracking-wider">
