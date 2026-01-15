@@ -406,8 +406,6 @@ export default function WorkManagementPage() {
                                     }
                                     // const targetCards = groupedCards[targetGroupKey];
                                     // overIndex: 空リストDnD時は0、通常DnD時は既存カードのindex
-                                    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを移動しました', id: Date.now() }]);
-                                    setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
                                     setCards(prev => {
                                         let updated = [...prev];
                                         if (viewSettings.groupBy === 'project') {
@@ -620,6 +618,10 @@ export default function WorkManagementPage() {
                                     if (!over) return setDragOverInfo({ groupKey: null, overIndex: null });
                                     let targetGroupKey = null;
                                     let overIndex = null;
+                                    if (typeof over.id === 'string' && over.id.startsWith('column-dropzone-')) {
+                                        targetGroupKey = over.id.replace('column-dropzone-', '');
+                                        overIndex = groupedCards[targetGroupKey]?.length || 0;
+                                    } else {
                                     for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
                                         const ids = groupCards.map(card => card.id.toString());
                                         const idx = ids.indexOf(over.id.toString());
@@ -629,22 +631,31 @@ export default function WorkManagementPage() {
                                             break;
                                         }
                                     }
+                                    }
                                     setDragOverInfo({ groupKey: targetGroupKey, overIndex });
                                 }}
                                 onDragEnd={e => {
+                                    const { active, over } = e;
+                                    // overがnullになるケースに備え、最後にホバーしていたgroupをフォールバックに使う
+                                    let fallbackOver = over;
+                                    if (!fallbackOver && dragOverInfo.groupKey) {
+                                        fallbackOver = { id: `column-dropzone-${dragOverInfo.groupKey}` };
+                                    }
                                     setActiveId(null);
                                     setDragOverInfo({ groupKey: null, overIndex: null });
-                                    const { active, over } = e;
-                                    if (!over || active.id === over.id) return;
+                                    if (!fallbackOver || active.id === fallbackOver.id) return;
+
+                                    // ドロップ先のカラムを特定
                                     let targetGroupKey = null;
-                                    // 空カラムDnD対応
-                                    if (typeof over.id === 'string' && over.id.startsWith('empty-dropzone-')) {
-                                        targetGroupKey = over.id.replace('empty-dropzone-', '');
+                                    // 空カラム/カラム末尾DnD対応
+                                    if (typeof fallbackOver.id === 'string' && fallbackOver.id.startsWith('empty-dropzone-')) {
+                                        targetGroupKey = fallbackOver.id.replace('empty-dropzone-', '');
+                                    } else if (typeof fallbackOver.id === 'string' && fallbackOver.id.startsWith('column-dropzone-')) {
+                                        targetGroupKey = fallbackOver.id.replace('column-dropzone-', '');
                                     } else {
+                                        // カード上にドロップした場合、そのカードが所属するカラムを特定
                                         for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
-                                            const ids = groupCards.map(card => card.id.toString());
-                                            const idx = ids.indexOf(over.id.toString());
-                                            if (idx !== -1) {
+                                            if (groupCards.some(card => card.id.toString() === fallbackOver.id.toString())) {
                                                 targetGroupKey = groupKey;
                                                 break;
                                             }
@@ -653,27 +664,72 @@ export default function WorkManagementPage() {
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
-                                    // Undo保存
-                                    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを移動しました', id: Date.now() }]);
-                                    setUndoToast({ open: true, message: 'カードを移動しました', id: Date.now() });
+                                    // ボードビューではprojectIdまたはstatusのみ変更（日付計算なし）
                                     setCards(prev => {
                                         let updated = [...prev];
                                         if (viewSettings.groupBy === 'project') {
-                                            // プロジェクト間の移動のみ処理（日付計算はリストビューのみで実行）
                                             updated = prev.map(card =>
                                                 card.id === movingCard.id ? { ...card, projectId: targetGroupKey } : card
                                             );
-                                            return updated;
                                         } else if (viewSettings.groupBy === 'status') {
                                             updated = prev.map(card =>
                                                 card.id === movingCard.id ? { ...card, status: targetGroupKey } : card
                                             );
-                                            return updated;
-                                        } else if (viewSettings.groupBy === 'dueDate') {
-                                            // 期日グループ内での移動は禁止済みなので何もしない
-                                            return updated;
                                         }
-                                        return updated;
+
+                                        // グループ内での並び順を反映（日付再計算なし）
+                                        let newTargetCards = updated.filter(card =>
+                                            viewSettings.groupBy === 'project' ? card.projectId === targetGroupKey :
+                                            viewSettings.groupBy === 'status' ? card.status === targetGroupKey :
+                                            false
+                                        );
+                                        const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
+                                        if (movingIdx === -1) return updated;
+
+                                        // overがカードIDの場合はそのインデックスを取得
+                                        let targetOverIndex = 0;
+                                        if (fallbackOver && !fallbackOver.id.toString().startsWith('empty-dropzone-') && !fallbackOver.id.toString().startsWith('column-dropzone-')) {
+                                            targetOverIndex = newTargetCards.findIndex(card => card.id.toString() === fallbackOver.id.toString());
+                                            if (targetOverIndex === -1) targetOverIndex = newTargetCards.length;
+                                        }
+
+                                        let reordered = arrayMove(newTargetCards, movingIdx, targetOverIndex);
+
+                                        // プロジェクトグループの場合、日付を再計算（リストビューと同じロジック）
+                                        if (viewSettings.groupBy === 'project') {
+                                            let baseDate = null;
+                                            for (const card of newTargetCards) {
+                                                if (card.startDate) {
+                                                    const cardDate = new Date(card.startDate);
+                                                    if (baseDate === null || cardDate < baseDate) {
+                                                        baseDate = cardDate;
+                                                    }
+                                                }
+                                            }
+                                            if (baseDate === null) baseDate = new Date();
+
+                                            for (let i = 0; i < reordered.length; i++) {
+                                                let card = reordered[i];
+                                                let duration = Number(card.duration) || 1;
+                                                card = { ...card, startDate: baseDate.toISOString().split('T')[0] };
+                                                baseDate.setDate(baseDate.getDate() + duration);
+                                                reordered[i] = card;
+                                            }
+                                        }
+
+                                        // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
+                                        let result = [];
+                                        let usedIds = new Set(reordered.map(c => c.id));
+                                        for (let card of updated) {
+                                            if (usedIds.has(card.id)) {
+                                                if (reordered.length) {
+                                                    result.push(reordered.shift());
+                                                }
+                                            } else {
+                                                result.push(card);
+                                            }
+                                        }
+                                        return result;
                                     });
                                 }}
                             >
@@ -738,7 +794,6 @@ export default function WorkManagementPage() {
                                             <div
                                                 key={groupKey}
                                                 className={`bg-slate-200 rounded-xl p-3 kanban-column flex flex-col min-h-[400px] ${dragOverInfo.groupKey === groupKey ? 'drag-over' : ''}`}
-                                                style={{ boxSizing: 'border-box' }}
                                             >
                                                 <div className="flex flex-col gap-1 mb-4 px-1">
                                                     <div className="flex items-center justify-between">
