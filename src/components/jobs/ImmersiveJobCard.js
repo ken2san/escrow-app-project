@@ -14,6 +14,7 @@ export default function ImmersiveJobCard({
   const [touchStart, setTouchStart] = useState(null);
   const [slideAnimation, setSlideAnimation] = useState('');
   const cardRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   // Score count-up animation
   useEffect(() => {
@@ -29,13 +30,20 @@ export default function ImmersiveJobCard({
       setDisplayScore(Math.round(targetScore * easeOutQuad));
 
       if (animationFrames < duration) {
-        requestAnimationFrame(animate);
+        animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         setDisplayScore(targetScore);
       }
     };
 
     animate();
+
+    // Cleanup function to cancel animation frame
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, [job]);
 
   // Get gradient based on recommendation score
