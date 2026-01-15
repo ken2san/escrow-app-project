@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addDraftJobs, loggedInUserDataGlobal } from '../../utils/initialData';
 
@@ -178,7 +178,7 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
 
   const currentJob = jobs[currentIndex];
 
-  const handleApply = (job) => {
+  const handleApply = useCallback((job) => {
     addDraftJobs([job.id], loggedInUserDataGlobal.id);
     if (onExitImmersive) {
       onExitImmersive();
@@ -188,9 +188,9 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
     } else {
       navigate('/work-management');
     }
-  };
+  }, [navigate, onExitImmersive]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentIndex < jobs.length - 1) {
       setAnimationDirection('slide-up');
       setTimeout(() => {
@@ -198,9 +198,9 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
         setAnimationDirection('');
       }, 150);
     }
-  };
+  }, [currentIndex, jobs.length]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
       setAnimationDirection('slide-down');
       setTimeout(() => {
@@ -208,7 +208,7 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
         setAnimationDirection('');
       }, 150);
     }
-  };
+  }, [currentIndex]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -227,7 +227,7 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, currentJob]);
+  }, [currentIndex, currentJob, handleNext, handlePrevious, handleApply]);
 
   if (!currentJob) {
     return (
@@ -245,7 +245,6 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
   const mScoreIcon = getScoreIcon(currentJob.mScore);
   const sScoreIcon = getScoreIcon(currentJob.sScore);
   const ambiguityIcon = getScoreIcon(currentJob.ambiguityScore);
-  const recommendationIcon = getScoreIcon(currentJob.recommendationScore);
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 overflow-y-auto">
