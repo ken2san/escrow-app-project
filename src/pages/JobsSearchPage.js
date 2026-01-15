@@ -23,8 +23,7 @@ export default function JobsSearchPage() {
 
   // Store desktop view mode when switching to immersive
   useEffect(() => {
-    const mobile = window.innerWidth < 768;
-    if (!mobile && viewMode !== 'immersive' && (viewMode === 'grid' || viewMode === 'timeline')) {
+    if (viewMode !== 'immersive') {
       setPreviousDesktopViewMode(viewMode);
     }
   }, [viewMode]);
