@@ -30,6 +30,8 @@ export default function JobsSearchPage() {
       }
     };
 
+    // Ensure correct initial state on mount
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [viewMode]);
