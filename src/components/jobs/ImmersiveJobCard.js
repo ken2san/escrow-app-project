@@ -20,10 +20,13 @@ export default function ImmersiveJobCard({
   useEffect(() => {
     if (!job) return;
     let animationFrames = 0;
+    let isMounted = true;
     const targetScore = job.recommendationScore;
     const duration = 30; // frames
 
     const animate = () => {
+      if (!isMounted) return;
+      
       animationFrames++;
       const progress = animationFrames / duration;
       const easeOutQuad = 1 - Math.pow(1 - progress, 2);
@@ -40,6 +43,7 @@ export default function ImmersiveJobCard({
 
     // Cleanup function to cancel animation frame
     return () => {
+      isMounted = false;
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
