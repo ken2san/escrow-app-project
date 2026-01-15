@@ -103,9 +103,6 @@ export default function ImmersiveJobCard({
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         onSkip?.();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        // Go to previous job - handled by parent
       } else if (e.key === 'Enter') {
         e.preventDefault();
         onNext?.(job);
