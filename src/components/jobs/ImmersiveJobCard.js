@@ -36,7 +36,7 @@ export default function ImmersiveJobCard({
       }
     };
 
-    animate();
+    animationFrameRef.current = requestAnimationFrame(animate);
 
     // Cleanup function to cancel animation frame
     return () => {
