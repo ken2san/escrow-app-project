@@ -352,10 +352,14 @@ function JobCard({ job }) {
   };
 
   // First shift time badge for hourly jobs
-  const firstShift = job?.workType === 'hourly' && Array.isArray(job?.milestones)
-    ? job.milestones.find(m => m.start && m.end)
-    : null;
+  const getFirstShift = (jobData) => {
+    if (jobData?.workType !== 'hourly' || !Array.isArray(jobData?.milestones)) {
+      return null;
+    }
+    return jobData.milestones.find((m) => m.start && m.end) || null;
+  };
 
+  const firstShift = getFirstShift(job);
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       {/* AI Flag + Header */}
