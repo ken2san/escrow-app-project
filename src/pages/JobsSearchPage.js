@@ -8,6 +8,7 @@ import TimelineJobsView from '../components/jobs/TimelineJobsView';
 export default function JobsSearchPage() {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
+  const [previousDesktopViewMode, setPreviousDesktopViewMode] = useState('grid'); // Store previous desktop view
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filters, setFilters] = useState({
     mScoreMin: 0,
@@ -20,13 +21,22 @@ export default function JobsSearchPage() {
     locationType: 'all', // New: location filter
   });
 
+  // Helper function to update view mode and track desktop preference
+  const updateViewMode = (newMode) => {
+    setViewMode(newMode);
+    // Store desktop view preference (grid or timeline, not immersive)
+    if (newMode === 'grid' || newMode === 'timeline') {
+      setPreviousDesktopViewMode(newMode);
+    }
+  };
+
   // Detect mobile screen size changes
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
-      // Reset to grid if in immersive mode on desktop
+      // Reset to previous desktop view if in immersive mode on desktop
       if (!mobile && viewMode === 'immersive') {
-        setViewMode('timeline');
+        setViewMode(previousDesktopViewMode);
       }
     };
 
@@ -34,7 +44,7 @@ export default function JobsSearchPage() {
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode]);
+  }, [viewMode, previousDesktopViewMode]);
 
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
@@ -182,7 +192,7 @@ export default function JobsSearchPage() {
                   <span className="text-xs text-slate-600 font-medium">表示:</span>
                   <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
                     <button
-                      onClick={() => setViewMode('grid')}
+                      onClick={() => updateViewMode('grid')}
                       className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
                         viewMode === 'grid'
                           ? 'bg-indigo-600 text-white'
@@ -193,7 +203,7 @@ export default function JobsSearchPage() {
                       <span>グリッド</span>
                     </button>
                     <button
-                      onClick={() => setViewMode('timeline')}
+                      onClick={() => updateViewMode('timeline')}
                       className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
                         viewMode === 'timeline'
                           ? 'bg-indigo-600 text-white'
@@ -331,7 +341,7 @@ export default function JobsSearchPage() {
                   <label className="text-xs font-semibold text-slate-600 block mb-2">表示</label>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setViewMode('grid')}
+                      onClick={() => updateViewMode('grid')}
                       className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
                         viewMode === 'grid'
                           ? 'bg-indigo-600 text-white'
@@ -341,7 +351,7 @@ export default function JobsSearchPage() {
                       📊
                     </button>
                     <button
-                      onClick={() => setViewMode('immersive')}
+                      onClick={() => updateViewMode('immersive')}
                       className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
                         viewMode === 'immersive'
                           ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
@@ -462,7 +472,7 @@ export default function JobsSearchPage() {
           <TimelineJobsView
             filteredJobs={filteredJobs}
             immersive={viewMode === 'immersive'}
-            onExitImmersive={() => setViewMode('timeline')}
+            onExitImmersive={() => setViewMode(previousDesktopViewMode)}
           />
         )}
       </div>
