@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
@@ -19,6 +19,21 @@ export default function JobsSearchPage() {
     category: 'all', // New: category filter
     locationType: 'all', // New: location filter
   });
+
+  // Detect mobile screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      // Reset to grid if in immersive mode on desktop
+      if (!mobile && viewMode === 'immersive') {
+        setViewMode('timeline');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode, setViewMode]);
+
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
 
@@ -186,17 +201,6 @@ export default function JobsSearchPage() {
                       <span>📜</span>
                       <span>タイムライン</span>
                     </button>
-                    <button
-                      onClick={() => setViewMode('immersive')}
-                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
-                        viewMode === 'immersive'
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                          : 'bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span>🎯</span>
-                      <span>没入モード</span>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -333,16 +337,6 @@ export default function JobsSearchPage() {
                       }`}
                     >
                       📊
-                    </button>
-                    <button
-                      onClick={() => setViewMode('timeline')}
-                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
-                        viewMode === 'timeline'
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 text-slate-700 border border-slate-300'
-                      }`}
-                    >
-                      📜
                     </button>
                     <button
                       onClick={() => setViewMode('immersive')}
