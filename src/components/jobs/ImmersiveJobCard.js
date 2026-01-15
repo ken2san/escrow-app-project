@@ -19,6 +19,7 @@ export default function ImmersiveJobCard({
   useEffect(() => {
     if (!job) return;
     
+    let animationFrameId = null;
     let animationFrames = 0;
     const targetScore = job.recommendationScore;
     const duration = 30; // frames
@@ -36,10 +37,12 @@ export default function ImmersiveJobCard({
       }
     };
 
-    let animationFrameId = requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, [job]);
 
