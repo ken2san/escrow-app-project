@@ -369,16 +369,16 @@ function JobCard({ job }) {
                   {job.category}
                 </span>
               )}
-                {job.locationType && (
-                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                    {job.locationType === 'remote' ? 'リモート' : job.locationType === 'hybrid' ? 'ハイブリッド' : '現地'}
-                  </span>
-                )}
-                {firstShift && (
-                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                    {firstShift.start}–{firstShift.end}
-                  </span>
-                )}
+              {job.locationType && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  {job.locationType === 'remote' ? 'リモート' : job.locationType === 'hybrid' ? 'ハイブリッド' : '現地'}
+                </span>
+              )}
+              {firstShift && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                  {firstShift.start}–{firstShift.end}
+                </span>
+              )}
               <span className={getFlagStyle()}>
                 {job.recommendationFlag === 'green' ? '✓ おすすめ' :
                  job.recommendationFlag === 'red' ? '⚠️ 要注意' :
