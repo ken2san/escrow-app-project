@@ -43,11 +43,11 @@ export default function ImmersiveJobCard({
 
     // Cleanup function to cancel animation frame
     return () => {
-      isMounted = false;
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
+      isMounted = false;
     };
   }, [job]);
 
