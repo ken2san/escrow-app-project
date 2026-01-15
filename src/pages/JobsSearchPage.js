@@ -7,7 +7,7 @@ import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
   const { t } = useTranslation();
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'timeline'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
   const [filters, setFilters] = useState({
     mScoreMin: 0,
     sScoreMin: 0,
@@ -166,13 +166,26 @@ export default function JobsSearchPage() {
                 <button
                   onClick={() => setViewMode('timeline')}
                   className={`px-3 py-1 rounded font-medium text-sm transition ${
-                    viewMode === 'timeline'
+                    viewMode === 'timeline' || viewMode === 'immersive'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-transparent text-slate-700 hover:bg-slate-100'
                   }`}
                 >
                   📜 タイムライン
                 </button>
+                {(viewMode === 'timeline' || viewMode === 'immersive') && (
+                  <button
+                    onClick={() => setViewMode(viewMode === 'immersive' ? 'timeline' : 'immersive')}
+                    className={`px-3 py-1 rounded font-medium text-sm transition ${
+                      viewMode === 'immersive'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-transparent text-slate-700 hover:bg-slate-100'
+                    }`}
+                    title="TikTok風の全画面没入モード"
+                  >
+                    🎯 没入モード
+                  </button>
+                )}
               </div>
 
               {/* Advanced Filters Toggle */}
@@ -285,7 +298,11 @@ export default function JobsSearchPage() {
             )}
           </div>
         ) : (
-          <TimelineJobsView filteredJobs={filteredJobs} />
+          <TimelineJobsView
+            filteredJobs={filteredJobs}
+            immersive={viewMode === 'immersive'}
+            onExitImmersive={() => setViewMode('timeline')}
+          />
         )}
       </div>
     </div>
