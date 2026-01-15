@@ -31,6 +31,7 @@
   "userRoleClient": "Client",
   "userRoleContractor": "Contractor",
   "dashboard": "Dashboard",
+  "dashboardLegacy": "Dashboard (Legacy)",
   "newProject": "New Project",
   "messages": "Messages",
   "disputes": "Ongoing Discussions",
@@ -83,5 +84,6 @@
   "proposalsReceived": "{{count}} proposals received",
   "viewProposalDetails": "View Proposal Details",
   "workManagement": "Work Management",
+  "jobsSearch": "Search Jobs",
   "commandUI": "Command UI"
 }

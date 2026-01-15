@@ -3,15 +3,15 @@ import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { workManagementProjects as initialProjectsData } from '../utils/initialData';
+import { workManagementProjects as initialProjectsData, getProposedProjectsForUser, getDraftProjectsForUser, loggedInUserDataGlobal } from '../utils/initialData';
 
 import EmptyDropzone from '../components/common/EmptyDropzone';
 
 // 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
 function getInitialProjects() {
-        // milestones→cards変換（cardsがなければmilestonesをcardsとして返す）
-        return initialProjectsData.map(project => {
+        const base = initialProjectsData.map(project => {
             if (project.cards && Array.isArray(project.cards)) return project;
             if (project.milestones && Array.isArray(project.milestones)) {
                 return {
@@ -30,6 +30,10 @@ function getInitialProjects() {
             }
             return { ...project, cards: [] };
         });
+        // Merge proposed projects for current user
+        const proposed = getProposedProjectsForUser(loggedInUserDataGlobal.id);
+        const drafts = getDraftProjectsForUser(loggedInUserDataGlobal.id);
+        return [...base, ...drafts, ...proposed];
 }
 
 // styles moved to src/pages/workmanagement.css
@@ -77,6 +81,7 @@ export default function WorkManagementPage() {
     // cards state is initialized from all cards in initialProjects
     const [cards, setCards] = useState(initialProjects.flatMap(p => p.cards || []));
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     // Handlers for grouping, sorting, and layout switching
     const handleGroupByChange = (e) => {
@@ -217,8 +222,21 @@ export default function WorkManagementPage() {
 
             <main className="flex-1 flex flex-col">
                     <div className="flex-1 overflow-y-auto p-4 md:p-8">
-                        {/* View Settings Panel */}
-                        <div className="flex flex-row justify-between items-center gap-3 mb-0 sticky top-12 z-20 bg-slate-100 py-1" style={{marginLeft: '-2rem', marginRight: '-2rem', paddingLeft: '2rem', paddingRight: '2rem'}}>
+                        {/* View Settings Panel - Mobile optimized with hamburger menu */}
+                        <div className="sticky top-12 z-20 bg-slate-100 py-1 mb-0" style={{marginLeft: window.innerWidth < 768 ? 0 : '-2rem', marginRight: window.innerWidth < 768 ? 0 : '-2rem', paddingLeft: window.innerWidth < 768 ? '1rem' : '2rem', paddingRight: window.innerWidth < 768 ? '1rem' : '2rem'}}>
+                          {/* Mobile: Hamburger Menu */}
+                          <div className="md:hidden flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold text-slate-700">表示設定</span>
+                            <button
+                              onClick={() => setShowMobileMenu(!showMobileMenu)}
+                              className="p-2 hover:bg-slate-200 rounded-lg transition"
+                            >
+                              {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+                            </button>
+                          </div>
+
+                          {/* Desktop: Full Controls */}
+                          <div className="hidden md:flex flex-row justify-between items-center gap-3">
                             <div className="flex flex-row flex-wrap items-center gap-3">
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-sm font-semibold text-slate-500">レイアウト:</span>
@@ -255,6 +273,65 @@ export default function WorkManagementPage() {
                             >
                                 ＋ 新規案件登録
                             </button>
+                          </div>
+
+                          {/* Mobile: Expanded Menu */}
+                          {showMobileMenu && (
+                            <div className="md:hidden mt-3 pt-3 border-t border-slate-300 space-y-3">
+                              <div className="flex flex-col gap-2">
+                                <span className="text-xs font-semibold text-slate-600">レイアウト:</span>
+                                <div className="flex gap-2">
+                                  <button
+                                    className={`flex-1 px-3 py-2 text-sm font-semibold rounded-md transition ${viewSettings.layout === 'list' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-300'}`}
+                                    onClick={() => {
+                                      handleLayoutChange('list');
+                                      setShowMobileMenu(false);
+                                    }}
+                                  >リスト</button>
+                                  <button
+                                    className={`flex-1 px-3 py-2 text-sm font-semibold rounded-md transition ${viewSettings.layout === 'board' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-300'}`}
+                                    onClick={() => {
+                                      handleLayoutChange('board');
+                                      setShowMobileMenu(false);
+                                    }}
+                                  >ボード</button>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                <label className="text-xs font-semibold text-slate-600">グループ化:</label>
+                                <select id="group-by-select-mobile" value={viewSettings.groupBy} onChange={(e) => {
+                                  handleGroupByChange(e);
+                                  setShowMobileMenu(false);
+                                }} className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-medium text-slate-700">
+                                  <option value="project">プロジェクト</option>
+                                  <option value="status">ステータス</option>
+                                  <option value="dueDate">期日</option>
+                                </select>
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                <label className="text-xs font-semibold text-slate-600">並べ替え:</label>
+                                <select id="sort-by-select-mobile" value={viewSettings.sortBy} onChange={(e) => {
+                                  handleSortByChange(e);
+                                  setShowMobileMenu(false);
+                                }} className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-medium text-slate-700">
+                                  <option value="startDate">開始日 (昇順)</option>
+                                  <option value="reward">報酬額 (降順)</option>
+                                </select>
+                              </div>
+
+                              <button
+                                className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+                                onClick={() => {
+                                  setShowNewProjectModal(true);
+                                  setShowMobileMenu(false);
+                                }}
+                              >
+                                ＋ 新規案件登録
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div className="h-16"></div>
                         {/* View Area: レイアウト切り替え */}
@@ -502,7 +579,7 @@ export default function WorkManagementPage() {
                                                         {isEmpty
                                                             ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
                                                             : groupCards.map((card, idx) => (
-                                                                <SortableCard key={card.id} card={card} /* onEdit={handleEditClick} */ activeId={activeId} />
+                                                                <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
                                                             ))}
                                                     </div>
                                                 </SortableContext>
@@ -817,11 +894,11 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     }[card.status] || { label: card.status, bg: 'bg-slate-200', text: 'text-slate-600' };
     // Action icon
     const actionIcon = (card.status === 'unsent' || card.status === 'revision_needed') ? (
-        <button title="編集する" className="text-slate-400 hover:text-indigo-600" onClick={e => { e.stopPropagation(); onEdit && onEdit(card); }}>
+        <button title="編集する" className="text-slate-400 hover:text-indigo-600 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
         </button>
     ) : card.status === 'edited' ? (
-        <button title="送信する" className="text-blue-500 hover:text-blue-700" onClick={e => { e.stopPropagation(); /* 送信アクション仮 */ }}>
+        <button title="送信する" className="text-blue-500 hover:text-blue-700 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.949a.75.75 0 00.95.826L11.25 8.25l-5.607-1.752a.75.75 0 00-.95-.826z" /><path d="M15 6.75a.75.75 0 00-.75-.75h-3.5a.75.75 0 000 1.5h3.5a.75.75 0 00.75-.75zM15 9.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM15 12.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM4.832 15.312a.75.75 0 00.95-.826l-1.414-4.95a.75.75 0 00-.95-.826L.5 11.25l5.607 1.752a.75.75 0 00.95.826z" /></svg>
         </button>
     ) : null;
@@ -843,7 +920,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             {...attributes}
             {...listeners}
             className={
-                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 ' +
+                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 cursor-pointer hover:shadow-md ' +
                 (isDragging ? 'dragging' : '')
             }
             onClick={() => onEdit && onEdit(card)}

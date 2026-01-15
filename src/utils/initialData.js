@@ -1,20 +1,277 @@
-// ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
-export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
+import { calculateScores, calculateRecommendationScore } from './scoreCalculation';
+import { calculateAmbiguityScore, detectSafetyWarnings, generateClarityChecklist } from './scoreCalculation';
+
+// Function to get user's projects (mine)
+export function getProjectsForUser(userId) {
   return dashboardAllProjects
     .filter(p => p.clientId === userId || p.contractorId === userId)
-    .map(p => ({
-      id: p.id,
-      title: p.name,
-      by: p.clientId === userId ? p.clientName : p.contractorName,
-      value: p.totalAmount,
-      nature: p.aiRecommendationScore || 0.7,
-      reward: p.totalAmount,
-      popularity: p.clientRating?.averageScore || 5,
-      description: p.description,
-      workImage: p.imageUrl || '',
-      type: p.clientId === userId ? 'request' : 'offer',
-      isMyProject: true,
-    }));
+    .map(p => {
+      const unreadMessages = 0; // TODO: get from messaging service
+      // Calculate M-Score and S-Score using the calculation engine
+      const scores = calculateScores(p);
+      const mScore = scores.mScore.score;
+      const sScore = scores.sScore.score;
+      const scoreDetails = {
+        mScore: scores.mScore,
+        sScore: scores.sScore,
+      };
+
+      // Map status to standard format
+      let status = 'inProgress';
+      if (p.status === '完了' || p.status === 'Completed') {
+        status = 'completed';
+      } else if (p.status === '募集中' || p.status === 'openForProposals') {
+        status = 'openForProposals';
+      } else if (p.status === '作業開始待ち') {
+        status = 'workReady';
+      } else if (p.status === '検収待ち') {
+        status = 'pendingAcceptance';
+      } else if (p.status === '協議中') {
+        status = 'agreementPending';
+      }
+
+      // Get due date from milestones or use project deadline
+      let dueDate = null;
+      if (p.milestones && p.milestones.length > 0) {
+        // Find next incomplete milestone
+        const nextMilestone = p.milestones.find(m => m.status !== 'paid');
+        if (nextMilestone && nextMilestone.dueDate) {
+          dueDate = nextMilestone.dueDate;
+        }
+      }
+
+      // Demo: Make some projects urgent by setting near deadlines
+      if (p.id === 'job101') {
+        // LP design - demo job for Jobs Search page
+        const twoDaysLater = new Date();
+        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+        dueDate = twoDaysLater.toISOString().split('T')[0];
+        // Keep status as '募集中' for demo purposes (shown in Jobs Search)
+      } else if (p.id === 'job1') {
+        // Completed logo project - needs evaluation
+        status = 'completed';
+      }
+
+      // Check if needs evaluation
+      const needsEvaluation = status === 'completed' &&
+        !p.contractorRating &&
+        p.clientId === userId;
+
+      return {
+        id: p.id,
+        title: p.name,
+        by: p.clientId === userId ? p.clientName : p.contractorName,
+        value: p.totalAmount,
+        budget: p.totalAmount,
+        nature: p.aiRecommendationScore || 0.7,
+        reward: p.totalAmount,
+        popularity: p.clientRating?.averageScore || 5,
+        description: p.description,
+        workImage: p.imageUrl || '',
+        type: p.clientId === userId ? 'request' : 'offer',
+        isMyProject: true,
+        // Priority calculation fields
+        status,
+        dueDate,
+        unreadMessages,
+        mScore,
+        sScore,
+        scoreDetails,
+        needsEvaluation,
+        proposals: p.proposals || [],
+        postedAt: p.postedAt || new Date().toISOString(),
+      };
+    });
+}
+
+// Job Discovery用：すべての募集中の仕事を返す関数（ユーザー制限なし）
+export function getAvailableJobsForDiscovery() {
+  const seenIds = new Set();
+  return dashboardAllProjects
+    .filter(p => p.status === '募集中' && (!seenIds.has(p.id) && seenIds.add(p.id))) // dedupe by id
+    .map(p => {
+      // Calculate M-Score and S-Score using the calculation engine
+      const scores = calculateScores(p);
+      const mScore = scores.mScore.score;
+      const sScore = scores.sScore.score;
+      const scoreDetails = {
+        mScore: scores.mScore,
+        sScore: scores.sScore,
+      };
+
+      // Calculate Trust Indicators
+      const ambiguity = calculateAmbiguityScore(p);
+      const safetyWarnings = detectSafetyWarnings(p);
+      const clarityChecklist = generateClarityChecklist(p);
+
+      // Calculate AI Recommendation Score
+      const recommendation = calculateRecommendationScore(p);
+
+      // Get due date from milestones or use project deadline
+      let dueDate = p.dueDate || null;
+      if (p.milestones && p.milestones.length > 0) {
+        const nextMilestone = p.milestones.find(m => m.status !== 'paid');
+        if (nextMilestone && nextMilestone.dueDate) {
+          dueDate = nextMilestone.dueDate;
+        }
+      }
+
+      // Check escrow status
+      const escrowStatus = {
+        isFullyDeposited: p.fundsDeposited === p.totalAmount,
+        depositedAmount: p.fundsDeposited || 0,
+        totalAmount: p.totalAmount,
+      };
+
+      return {
+        id: p.id,
+        title: p.name,
+        by: p.clientName,
+        client: p.clientName,
+        category: p.category || 'IT',
+        workType: p.workType || 'project', // project | hourly
+        locationType: p.locationType || 'remote', // remote | onsite | hybrid
+        value: p.totalAmount,
+        budget: p.totalAmount,
+        description: p.description,
+        workImage: p.imageUrl || '',
+        status: 'openForProposals',
+        dueDate,
+        mScore,
+        sScore,
+        scoreDetails,
+        clientRating: p.clientRating || { averageScore: 0, totalReviews: 0 },
+        popularity: p.clientRating?.averageScore || 0,
+        requiredSkills: p.requiredSkills || [],
+        deliverables: p.deliverables || '',
+        deliverableDetails: p.deliverableDetails || '',
+        acceptanceCriteria: p.acceptanceCriteria || '',
+        acceptanceCriteriaDetails: p.acceptanceCriteriaDetails || '',
+        scopeOfWork_included: p.scopeOfWork_included || '',
+        scopeOfWork_excluded: p.scopeOfWork_excluded || '',
+        additionalWorkTerms: p.additionalWorkTerms || '',
+        milestones: p.milestones || [],
+        aiRecommendationScore: p.aiRecommendationScore || 0,
+        proposals: p.proposals || [],
+        // AI Recommendation & Trust & Safety Indicators
+        recommendationScore: recommendation.score,
+        recommendationReason: recommendation.reason,
+        recommendationFlag: recommendation.flag, // 'green' | 'yellow' | 'red'
+        ambiguityScore: ambiguity.score,
+        claritychecklist: clarityChecklist,
+        safetyWarnings,
+        escrowStatus,
+        postedAt: p.postedAt || new Date().toISOString(),
+      };
+    });
+}
+
+// Get user's own project cards (my projects) for MarketCommandUI
+export function getMyProjectCards(userId) {
+  return getProjectsForUser(userId).map(p => ({
+    id: p.id,
+    title: p.title,
+    by: p.by,
+    value: p.value,
+    nature: p.nature,
+    reward: p.reward,
+    popularity: p.popularity,
+    description: p.description,
+    workImage: p.workImage,
+    type: p.type,
+    isMyProject: p.isMyProject,
+    status: p.status,
+    dueDate: p.dueDate,
+    unreadMessages: p.unreadMessages || 0,
+  }));
+}
+
+// In-memory proposals/drafts store (demo only)
+const _proposedProjectsByUser = {};
+const _draftProjectsByUser = {};
+
+// Normalize a dashboard project into WorkManagement-like project shape
+function _toWorkManagementProject(p) {
+  const projectId = p.id || `job-${Date.now()}`;
+  const cards = (p.milestones && Array.isArray(p.milestones) && p.milestones.length > 0)
+    ? p.milestones.map((m, idx) => ({
+        id: m.id || `${projectId}-m${idx + 1}`,
+        projectId: projectId,
+        title: m.name || m.title || `マイルストーン ${idx + 1}`,
+        status: 'unsent',
+        reward: m.amount || 0,
+        startDate: m.dueDate || '',
+        duration: '',
+        order: idx + 1,
+      }))
+    : [{ id: `${projectId}-m1`, projectId, title: p.name || '作業', status: 'unsent', reward: p.totalAmount || 0, startDate: p.dueDate || '', duration: '', order: 1 }];
+
+  return {
+    id: projectId,
+    name: p.name || p.title || '新規案件',
+    client: p.clientName || p.client || 'クライアント',
+    totalBudget: p.totalAmount || p.budget || 0,
+    deadline: p.dueDate || '',
+    duration: '',
+    description: p.description || '',
+    cards,
+  };
+}
+
+// Add proposals and materialize them as projects for Work Management view
+export function addProposals(proposals, userId = loggedInUserDataGlobal.id) {
+  if (!proposals || proposals.length === 0) return;
+  if (!_proposedProjectsByUser[userId]) _proposedProjectsByUser[userId] = [];
+
+  proposals.forEach((prop) => {
+    const job = dashboardAllProjects.find(j => j.id === prop.jobId);
+    if (job) {
+      const project = _toWorkManagementProject(job);
+      // Attach minimal proposal meta for reference
+      project._proposal = {
+        message: prop.message || '',
+        estimatedDays: prop.estimatedDays || '',
+        timestamp: prop.timestamp || new Date().toISOString(),
+      };
+      // If a draft exists, replace/upgrade it
+      if (_draftProjectsByUser[userId]) {
+        _draftProjectsByUser[userId] = _draftProjectsByUser[userId].filter(p => p.id !== project.id);
+      }
+      // Avoid duplicates by id
+      const exists = _proposedProjectsByUser[userId].some(p => p.id === project.id);
+      if (!exists) _proposedProjectsByUser[userId].push(project);
+    }
+  });
+}
+
+export function getProposedProjectsForUser(userId = loggedInUserDataGlobal.id) {
+  return _proposedProjectsByUser[userId] ? [..._proposedProjectsByUser[userId]] : [];
+}
+
+// Drafts API: cart selection → create draft work items immediately
+export function addDraftJobs(jobIds = [], userId = loggedInUserDataGlobal.id) {
+  if (!jobIds || jobIds.length === 0) return;
+  if (!_draftProjectsByUser[userId]) _draftProjectsByUser[userId] = [];
+  jobIds.forEach((jid) => {
+    const job = dashboardAllProjects.find(j => j.id === jid);
+    if (!job) return;
+    const project = _toWorkManagementProject(job);
+    project._draft = true;
+    project._status = '未編集';
+    // Avoid duplicates by id
+    const existsDraft = _draftProjectsByUser[userId].some(p => p.id === project.id);
+    const existsProposed = _proposedProjectsByUser[userId]?.some(p => p.id === project.id);
+    if (!existsDraft && !existsProposed) _draftProjectsByUser[userId].push(project);
+  });
+}
+
+export function removeDraftJob(jobId, userId = loggedInUserDataGlobal.id) {
+  if (!_draftProjectsByUser[userId]) return;
+  _draftProjectsByUser[userId] = _draftProjectsByUser[userId].filter(p => p.id !== jobId);
+}
+
+export function getDraftProjectsForUser(userId = loggedInUserDataGlobal.id) {
+  return _draftProjectsByUser[userId] ? [..._draftProjectsByUser[userId]] : [];
 }
 // Dummy data for MarketCommandUIPage
 export const marketCommandItems = [
@@ -56,6 +313,7 @@ export const loggedInUserDataGlobal = {
   id: 'user555',
   name: '田中 さとし',
   name_en: 'Satoshi Tanaka',
+  role: 'contractor', // 'client' or 'contractor'
 };
 
 // --- ダミーデータ ---
@@ -152,88 +410,9 @@ export const dashboardAllProjects = [
     lastUpdate: '2024-08-19 11:00',
     hasDispute: false,
     milestones: [
-      {
-        id: 'm1-1',
-        name: 'ヒアリングと方向性提案',
-        name_en: 'Hearing and Direction Proposal',
-        amount: 30000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-07-05',
-        startDate: '2024-07-01',
-        duration: 4,
-        paidDate: '2024-07-06',
-        description: '詳細ヒアリング、3つのデザイン方向性を提案。',
-        description_en: 'Detailed hearing. Propose 3 design directions.',
-        submittedFiles: [
-          { name: 'direction_proposal.pdf', date: '2024-07-04' },
-        ],
-        feedbackHistory: [
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-07-05',
-            comment: 'B案でお願いします。',
-            comment_en: 'Please go with option B.',
-          },
-        ],
-      },
-      {
-        id: 'm1-2',
-        name: 'ロゴデザイン案（3種）提出と選定',
-        name_en: 'Logo Design Proposals (3 types) Submission and Selection',
-        amount: 70000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-07-25',
-        startDate: '2024-07-06',
-        duration: 19,
-        paidDate: '2024-07-28',
-        description: 'ロゴデザイン案3種作成。展開例も提示。',
-        description_en: 'Create 3 logo design proposals. Also present deployment examples.',
-        submittedFiles: [{ name: 'logo_drafts.zip', date: '2024-07-24' }],
-        feedbackHistory: [
-          {
-            type: 'feedback',
-            type_en: 'Feedback',
-            date: '2024-07-25',
-            comment: '案2が良いがフォント調整希望。',
-            comment_en: 'Option 2 is good, but please adjust the font.',
-          },
-          { type: 'submission', type_en: 'Submission', date: '2024-07-26', comment: '修正案提出。', comment_en: 'Submitted revised proposal.' },
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-07-27',
-            comment: 'フォントBで決定。',
-            comment_en: 'Font B is selected.',
-          },
-        ],
-      },
-      {
-        id: 'm1-3',
-        name: '最終納品',
-        name_en: 'Final Delivery',
-        amount: 60000,
-        status: 'paid',
-        status_en: 'Paid',
-        dueDate: '2024-08-18',
-        startDate: '2024-07-26',
-        duration: 23,
-        paidDate: '2024-08-18',
-        description: 'ロゴデータ、ブランドガイドライン、各種デザイン案データ。',
-        description_en: 'Logo data, brand guidelines, and various design proposal data.',
-        submittedFiles: [{ name: 'FINAL_ASSETS.zip', date: '2024-08-17' }],
-        feedbackHistory: [
-          {
-            type: 'approval',
-            type_en: 'Approval',
-            date: '2024-08-18',
-            comment: '完璧です。ありがとうございました。',
-            comment_en: 'Perfect. Thank you very much.',
-          },
-        ],
-      },
+      { id: 'job1-m1', name: '要件定義', amount: 60000, status: 'completed', dueDate: '2024-07-10' },
+      { id: 'job1-m2', name: 'デザイン承認', amount: 60000, status: 'completed', dueDate: '2024-07-20' },
+      { id: 'job1-m3', name: '納品', amount: 60000, status: 'released', dueDate: '2024-08-01' },
     ],
     contractorRating: {
       averageScore: 5,
@@ -386,7 +565,7 @@ export const dashboardAllProjects = [
     fundsReleased: 0,
     status: '募集中',
     status_en: 'Open for Applications',
-    dueDate: '2025-06-30',
+    dueDate: '2025-08-01',
     description: '弊社サービスの認知度向上のため、指定キーワードに基づいたPR記事を月5本作成・納品していただけるライター様を募集します。1記事あたり2000字程度。SEOライティング経験者歓迎。継続依頼の可能性あり。',
     description_en: 'We are seeking a writer to create and deliver 5 PR articles per month based on specified keywords to increase awareness of our service. Each article should be around 2,000 characters. SEO writing experience is welcome. Possible ongoing work.',
     deliverables: 'PR記事5本（Word形式）、各記事のキーワードリスト',
@@ -566,6 +745,97 @@ export const dashboardAllProjects = [
     clientRating: { averageScore: 4.0, totalReviews: 3 },
     allowSubcontracting: false,
   },
+  // job104 - New high-budget development project
+  {
+    id: 'job104',
+    name: 'スマートホームアプリ開発',
+    name_en: 'Smart Home App Development',
+    clientName: '株式会社スマートデバイス',
+    clientName_en: 'Smart Device Inc.',
+    clientId: 'clientSD',
+    contractorName: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 35,
+    totalAmount: 250000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    status_en: 'Open for Applications',
+    dueDate: '2025-09-15',
+    completionDate: null,
+    description: 'IoTデバイスを制御するiOS/Androidアプリの開発。Bluetooth通信、クラウドAPI連携、プッシュ通知機能が必須。大手メーカーのプロジェクトのため、高品質と確実な納期が重要です。',
+    description_en: 'Develop iOS/Android apps to control IoT devices. Bluetooth communication, cloud API integration, and push notification features are essential. High quality and reliable delivery are important due to partnership with a major manufacturer.',
+    deliverables: 'iOS/Androidアプリ一式、ソースコード、API仕様書',
+    deliverables_en: 'Complete iOS/Android apps, source code, API specifications',
+    deliverableDetails: 'フルネイティブアプリ対応。デバイスペアリング、リモート操作、使用履歴表示、デバイス管理画面を実装。',
+    deliverableDetails_en: 'Full native app support. Implement device pairing, remote control, usage history display, and device management screens.',
+    acceptanceCriteria: '両OSでの動作確認済み、デバイス50台以上での負荷テスト合格',
+    acceptanceCriteria_en: 'Verified to work on both iOS and Android, passed load testing with 50+ devices',
+    acceptanceCriteriaDetails: '提出後、クライアントの QA チームによる検証。全機能が仕様通りに動作し、パフォーマンス基準を満たす必要がある。',
+    acceptanceCriteriaDetails_en: 'Client QA team will verify after submission. All features must work as specified and meet performance requirements.',
+    scopeOfWork_included: 'iOS/Androidネイティブアプリ開発、UI/UXデザイン、Bluetooth実装、API連携、プッシュ通知機能',
+    scopeOfWork_included_en: 'iOS/Android native app development, UI/UX design, Bluetooth implementation, API integration, push notification features',
+    scopeOfWork_excluded: 'バックエンドサーバー開発、デバイスハードウェア、App Store/Google Playへのリリース手続き',
+    scopeOfWork_excluded_en: 'Backend server development, hardware, App Store/Google Play release procedures',
+    additionalWorkTerms: '仕様変更や追加機能は1機能あたり50,000円から。プラットフォーム対応の追加（例：Wear OS）は別途お見積もり。',
+    additionalWorkTerms_en: 'Scope changes or additional features start at ¥50,000 per feature. Additional platforms (e.g., Wear OS) will be quoted separately.',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-05 09:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job104-m1',
+        name: '設計とプロトタイプ',
+        name_en: 'Design & Prototype',
+        amount: 80000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-07-15',
+        startDate: '2025-06-15',
+        duration: 30,
+        description: 'アプリ設計、ワイヤーフレーム、インタラクティブプロトタイプの作成。',
+        description_en: 'App design, wireframes, and interactive prototype creation.',
+      },
+      {
+        id: 'job104-m2',
+        name: 'iOS開発完了',
+        name_en: 'iOS Development Complete',
+        amount: 85000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-08-15',
+        startDate: '2025-07-16',
+        duration: 30,
+        description: 'iOSアプリの全機能実装とテスト完了。',
+        description_en: 'Complete iOS implementation and testing.',
+      },
+      {
+        id: 'job104-m3',
+        name: 'Android開発と統合テスト',
+        name_en: 'Android Development & Integration Testing',
+        amount: 85000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-09-15',
+        startDate: '2025-08-16',
+        duration: 30,
+        description: 'Androidアプリの実装、両OSの統合テスト、最終納品。',
+        description_en: 'Android implementation, cross-platform integration testing, final delivery.',
+      },
+    ],
+    requiredSkills: ['iOS開発', 'Android開発', 'Bluetooth', 'API設計', 'Swift', 'Kotlin'],
+    requiredSkills_en: ['iOS Development', 'Android Development', 'Bluetooth', 'API Design', 'Swift', 'Kotlin'],
+    clientRating: { averageScore: 4.8, totalReviews: 15 },
+    imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E3%83%9B%E3%83%BC%E3%83%A0',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.88,
+    aiRecommendationReason: 'あなたのiOS/Android開発スキルと大型プロジェクト実績に最適です。',
+    aiRecommendationReason_en: 'Your iOS/Android development skills and large project experience are a perfect fit.',
+    proposals: [],
+  },
   // job105
   {
     id: 'job105',
@@ -649,7 +919,7 @@ export const dashboardAllProjects = [
       },
     ],
   },
-  // ...existing code...
+  // job106 - E-Commerce Site Development
   {
     id: 'job106',
     name: 'ECサイト新機能開発',
@@ -659,20 +929,34 @@ export const dashboardAllProjects = [
     clientId: 'clientECX',
     contractorName: null,
     contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 15,
     totalAmount: 300000,
     fundsDeposited: 0,
     fundsReleased: 0,
     status: '募集中',
     dueDate: '2025-08-30',
-    description: '既存ECサイトに決済機能とユーザーレビュー機能を追加開発。React, Node.jsの経験必須。',
-    description_en: 'Develop and add payment and user review features to an existing EC site. Experience with React and Node.js required.',
-    requiredSkills: ['React', 'Node.js', 'API連携'],
-    requiredSkills_en: ['React', 'Node.js', 'API Integration'],
-    clientRating: { averageScore: 4.7, totalReviews: 8 },
-    allowSubcontracting: false,
-    aiRecommendationScore: 0.85,
-    aiRecommendationReason_en: 'Your skills in React and Node.js are a perfect match for this project!',
-    proposals: [],
+    description: '既存ECサイトに決済機能とユーザーレビュー機能を追加開発。React, Node.jsの経験必須。複数の決済ゲートウェイ対応が必要。',
+    description_en: 'Develop and add payment and user review features to an existing EC site. Experience with React and Node.js required. Must support multiple payment gateways.',
+    deliverables: 'フロントエンドコンポーネント、バックエンドAPI、決済統合',
+    deliverables_en: 'Frontend components, backend APIs, payment integration',
+    deliverableDetails: 'Stripe/PayPal/Square対応の決済画面、レビュー投稿・管理機能、決済履歴管理画面。',
+    deliverableDetails_en: 'Payment screens supporting Stripe/PayPal/Square, review submission/management features, payment history management screen.',
+    acceptanceCriteria: '複数決済ゲートウェイの動作確認、セキュリティ監査クリア',
+    acceptanceCriteria_en: 'Verified functionality across multiple payment gateways, passed security audit',
+    acceptanceCriteriaDetails: 'PCI DSS準拠の確認、本番環境での2週間の負荷テスト、セキュリティペネトレーションテスト合格。',
+    acceptanceCriteriaDetails_en: 'PCI DSS compliance verification, 2-week production load testing, passed security penetration testing.',
+    scopeOfWork_included: 'React UI開発（決済・レビュー機能）、Node.js/Express API開発、決済ゲートウェイ連携、テスト（単体・統合）',
+    scopeOfWork_included_en: 'React UI development (payment and review features), Node.js/Express API development, payment gateway integration, testing (unit and integration)',
+    scopeOfWork_excluded: 'インフラストラクチャ構築、SSL証明書取得、データベース移行',
+    scopeOfWork_excluded_en: 'Infrastructure setup, SSL certificate acquisition, database migration',
+    additionalWorkTerms: '追加決済ゲートウェイ対応は1ゲートウェイあたり40,000円。国際化対応は別途お見積もり。',
+    additionalWorkTerms_en: 'Additional payment gateway support: ¥40,000 per gateway. Internationalization will be quoted separately.',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-06 14:00',
+    hasDispute: false,
     milestones: [
       {
         id: 'job106-m1',
@@ -704,9 +988,489 @@ export const dashboardAllProjects = [
         description: '全機能の結合テスト完了後、本番環境へのデプロイ支援と最終納品。',
         description_en: 'Complete integration testing for all features, assist with production deployment, and deliver final assets.'
       }
-    ]
+    ],
+    requiredSkills: ['React', 'Node.js', 'API連携', 'Express.js', 'PaymentGateway'],
+    requiredSkills_en: ['React', 'Node.js', 'API Integration', 'Express.js', 'Payment Gateway'],
+    clientRating: { averageScore: 4.7, totalReviews: 8 },
+    imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=EC%E3%82%B5%E3%82%A4%E3%83%88',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.92,
+    aiRecommendationReason: 'Reactとバックエンド開発の経験が豊富。高報酬案件です。',
+    aiRecommendationReason_en: 'Your React and backend development experience is a strong match. High-paying project.',
+    proposals: [],
+  },
+  // job107 - Graphic Design Project
+  {
+    id: 'job107',
+    name: 'ブランドアイデンティティデザイン',
+    name_en: 'Brand Identity Design Package',
+    clientName: 'ベンチャー企業Z',
+    clientName_en: 'Venture Company Z',
+    clientId: 'clientZ',
+    contractorName: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 40,
+    totalAmount: 180000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-07-25',
+    description: 'ロゴ、カラーパレット、タイポグラフィ、ガイドラインを含むブランドアイデンティティの完全なパッケージ設計。業界は SaaS スタートアップです。',
+    description_en: 'Design a complete brand identity package including logo, color palette, typography, and guidelines. The client is a SaaS startup.',
+    deliverables: 'ロゴ（複数バリエーション）、ブランドガイドライン、カラーパレット定義、フォント選定',
+    deliverables_en: 'Logo (multiple variations), brand guidelines, color palette definitions, font selections',
+    deliverableDetails: '3種類のロゴバリエーション（フル/シンボル/テキスト）、40ページ以上のブランドガイドライン、カラーコード指定（RGB/HEX/CMYK）。',
+    deliverableDetails_en: '3 logo variations (full/symbol/text), 40+ page brand guidelines, color codes specified (RGB/HEX/CMYK).',
+    acceptanceCriteria: 'ロゴデザインが業界内で差別化され、ガイドラインが完全であること',
+    acceptanceCriteria_en: 'Logo design differentiates in the industry, and guidelines are complete',
+    acceptanceCriteriaDetails: 'クライアントによる最終承認。修正は2ラウンドまで。',
+    acceptanceCriteriaDetails_en: 'Client final approval. Up to 2 rounds of revisions.',
+    scopeOfWork_included: 'ロゴデザイン、ブランドガイドライン作成、カラー研究、タイポグラフィ選定、スタイルフレーム作成',
+    scopeOfWork_included_en: 'Logo design, brand guidelines creation, color research, typography selection, style frame creation',
+    scopeOfWork_excluded: 'ウェブサイト実装、印刷物の実製造、商標登録サポート',
+    scopeOfWork_excluded_en: 'Website implementation, physical print production, trademark registration support',
+    additionalWorkTerms: '追加のロゴバリエーション提案は1提案あたり30,000円。アニメーション ロゴはMotion Designとして別途見積もり。',
+    additionalWorkTerms_en: 'Additional logo variations: ¥30,000 per proposal. Animated logos will be quoted as Motion Design separately.',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-07 10:30',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job107-m1',
+        name: 'ロゴコンセプト提案',
+        name_en: 'Logo Concept Proposals',
+        amount: 60000,
+        status: 'pending',
+        dueDate: '2025-07-05',
+        description: 'ブランドコンセプトに基づいた5つのロゴコンセプト提案',
+        description_en: 'Propose 5 logo concepts based on brand concept'
+      },
+      {
+        id: 'job107-m2',
+        name: 'ガイドライン制作',
+        name_en: 'Guidelines Creation',
+        amount: 80000,
+        status: 'pending',
+        dueDate: '2025-07-20',
+        description: 'ロゴ承認後、完全なブランドガイドラインを作成',
+        description_en: 'Create comprehensive brand guidelines after logo approval'
+      },
+      {
+        id: 'job107-m3',
+        name: '最終納品',
+        name_en: 'Final Delivery',
+        amount: 40000,
+        status: 'pending',
+        dueDate: '2025-07-25',
+        description: '納品ファイル一式（EPS, AI, PNG, PDF）',
+        description_en: 'Final delivery files (EPS, AI, PNG, PDF)'
+      }
+    ],
+    requiredSkills: ['グラフィックデザイン', 'Illustrator', 'ブランディング', 'Adobe Creative Suite'],
+    requiredSkills_en: ['Graphic Design', 'Illustrator', 'Branding', 'Adobe Creative Suite'],
+    clientRating: { averageScore: 4.6, totalReviews: 11 },
+    imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=%E3%83%96%E3%83%A9%E3%83%B3%E3%83%89%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.80,
+    aiRecommendationReason: 'デザインスキルとブランディング経験が豊富。SaaS企業向けデザイン実績があります。',
+    aiRecommendationReason_en: 'Strong design and branding experience. You have experience designing for SaaS companies.',
+    proposals: [],
+  },
+  // job108 - SEO Audit & Optimization
+  {
+    id: 'job108',
+    name: 'ウェブサイトSEO監査と最適化提案',
+    name_en: 'Website SEO Audit & Optimization Plan',
+    clientName: '中堅企業W',
+    clientName_en: 'Mid-Size Company W',
+    clientId: 'clientW',
+    contractorName: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 25,
+    totalAmount: 120000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-08-15',
+    description: '既存ウェブサイトの包括的なSEO監査を実施し、改善提案を作成。キーワード調査、テクニカルSEO、コンテンツ分析を含みます。',
+    description_en: 'Conduct comprehensive SEO audit of existing website and create improvement recommendations. Includes keyword research, technical SEO, and content analysis.',
+    deliverables: 'SEO監査レポート、改善提案書、キーワード戦略ドキュメント',
+    deliverables_en: 'SEO audit report, improvement recommendations, keyword strategy document',
+    deliverableDetails: '現状分析（50項目以上）、競合分析、キーワード提案（100以上）、改善優先度ランク付け。',
+    deliverableDetails_en: 'Current state analysis (50+ items), competitive analysis, keyword proposals (100+), improvement prioritization.',
+    acceptanceCriteria: 'レポートが実装可能で、3～6ヶ月で効果測定できる提案であること',
+    acceptanceCriteria_en: 'Report is implementable and measurable within 3-6 months',
+    acceptanceCriteriaDetails: 'クライアント承認後、3ヶ月のフォローアップコンサルティング無料提供。',
+    acceptanceCriteriaDetails_en: 'Free 3-month follow-up consulting provided after client approval.',
+    scopeOfWork_included: 'キーワード調査、オンページSEO分析、テクニカルSEO監査、バックリンク分析、競合分析',
+    scopeOfWork_included_en: 'Keyword research, on-page SEO analysis, technical SEO audit, backlink analysis, competitive analysis',
+    scopeOfWork_excluded: '実装サポート、広告運用、コンテンツ作成（別サービス）',
+    scopeOfWork_excluded_en: 'Implementation support, ad management, content creation (separate service)',
+    additionalWorkTerms: '実装サポートは時給15,000円。マンスリー SEO コンサルはパッケージ化して別途提案可。',
+    additionalWorkTerms_en: 'Implementation support: ¥15,000/hour. Monthly SEO consulting can be packaged separately.',
+    agreementDocLink: null,
+    changeOrders: [],
+    communicationLogCount: 0,
+    lastUpdate: '2025-06-08 15:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job108-m1',
+        name: 'キーワードリサーチと分析',
+        name_en: 'Keyword Research & Analysis',
+        amount: 40000,
+        status: 'pending',
+        dueDate: '2025-07-20',
+        description: 'ターゲットキーワード100以上を特定し、検索意図分析を完了',
+        description_en: 'Identify 100+ target keywords and complete search intent analysis'
+      },
+      {
+        id: 'job108-m2',
+        name: 'テクニカル＆オンページ分析',
+        name_en: 'Technical & On-Page Analysis',
+        amount: 50000,
+        status: 'pending',
+        dueDate: '2025-08-05',
+        description: 'サイト全体のテクニカルSEO監査とオンページ最適化分析',
+        description_en: 'Complete technical SEO audit and on-page optimization analysis for entire site'
+      },
+      {
+        id: 'job108-m3',
+        name: 'レポート作成と提案',
+        name_en: 'Report Creation & Recommendations',
+        amount: 30000,
+        status: 'pending',
+        dueDate: '2025-08-15',
+        description: '統合レポート、改善提案、実装ロードマップを納品',
+        description_en: 'Deliver integrated report, improvement recommendations, and implementation roadmap'
+      }
+    ],
+    requiredSkills: ['SEO', 'キーワード調査', 'Google Analytics', 'Search Console', 'テクニカルSEO'],
+    requiredSkills_en: ['SEO', 'Keyword Research', 'Google Analytics', 'Search Console', 'Technical SEO'],
+    clientRating: { averageScore: 4.5, totalReviews: 7 },
+    imageUrl: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=SEO%E7%9B%A3%E6%9F%BB',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.78,
+    aiRecommendationReason: 'SEO分析とレポート作成スキルが最適。中堅企業向けの実績多数。',
+    aiRecommendationReason_en: 'Your SEO analysis and reporting skills are ideal. Extensive experience with mid-size companies.',
+    proposals: [],
+  },
+  // job201 - 飲食アルバイト（カフェ）
+  {
+    id: 'job201',
+    name: 'カフェスタッフ（レジ・ドリンク作成）',
+    clientName: 'Cafe Latte Tokyo',
+    clientId: 'clientCafe',
+    contractorName: null,
+    contractorId: null,
+    category: '飲食',
+    workType: 'hourly',
+    locationType: 'onsite',
+    hourlyRate: 1200,
+    totalAmount: 1200 * 6 * 3, // 時給×6h×3日分目安
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-08-10',
+    description: '週3日、1日6時間程度。レジ対応とドリンク作成。初心者歓迎。',
+    deliverables: 'シフト勤務、接客・ドリンク提供',
+    acceptanceCriteria: '時間厳守と接客品質を守ること',
+    scopeOfWork_included: 'レジ、ドリンク作成、簡単な片付け',
+    scopeOfWork_excluded: '調理メニュー開発',
+    additionalWorkTerms: '交通費1日上限1,000円支給',
+    milestones: [
+      { id: 'job201-m1', name: '初日シフト', amount: 0, status: 'pending', dueDate: '2025-08-05' },
+      { id: 'job201-m2', name: '2日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-07' },
+      { id: 'job201-m3', name: '3日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-10' },
+    ],
+    requiredSkills: ['接客', 'ドリンク作成'],
+    clientRating: { averageScore: 4.2, totalReviews: 18 },
+    imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Cafe',
+    aiRecommendationScore: 0.65,
+    proposals: [],
+  },
+  // job202 - 物流アルバイト（倉庫ピッキング）
+  {
+    id: 'job202',
+    name: '倉庫内ピッキング・梱包スタッフ',
+    clientName: 'LogiX Warehouse',
+    clientId: 'clientLogi',
+    contractorName: null,
+    contractorId: null,
+    category: '物流',
+    workType: 'hourly',
+    locationType: 'onsite',
+    hourlyRate: 1150,
+    totalAmount: 1150 * 7 * 4, // 時給×7h×4日分
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-08-12',
+    description: 'EC倉庫での商品ピッキング・梱包作業。未経験可、軽作業中心。',
+    deliverables: 'シフト勤務でのピッキング・梱包',
+    acceptanceCriteria: '指定シフトを守り、誤出荷ゼロを目指すこと',
+    scopeOfWork_included: '商品ピッキング、梱包、ラベル貼付',
+    scopeOfWork_excluded: 'フォークリフト作業',
+    additionalWorkTerms: '交通費全額支給、作業靴支給',
+    milestones: [
+      { id: 'job202-m1', name: '初日シフト', amount: 0, status: 'pending', dueDate: '2025-08-06' },
+      { id: 'job202-m2', name: '2日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-08' },
+      { id: 'job202-m3', name: '3日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-10' },
+      { id: 'job202-m4', name: '4日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-12' },
+    ],
+    requiredSkills: ['体力', '丁寧さ'],
+    clientRating: { averageScore: 4.0, totalReviews: 9 },
+    imageUrl: 'https://placehold.co/600x400/6366F1/FFFFFF?text=Logistics',
+    aiRecommendationScore: 0.6,
+    proposals: [],
+  },
+  // job203 - 小売（アパレル販売）
+  {
+    id: 'job203',
+    name: 'アパレル販売スタッフ（週末のみ）',
+    clientName: 'Urban Wear Shibuya',
+    clientId: 'clientRetail',
+    contractorName: null,
+    contractorId: null,
+    category: '小売',
+    workType: 'hourly',
+    locationType: 'onsite',
+    hourlyRate: 1300,
+    totalAmount: 1300 * 6 * 2, // 時給×6h×2日
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    dueDate: '2025-08-09',
+    description: '週末限定の販売スタッフ。レジ、フィッティング対応、商品整理。',
+    deliverables: 'シフト勤務での接客販売',
+    acceptanceCriteria: '接客品質とレジ誤差ゼロ',
+    scopeOfWork_included: 'レジ、フィッティング、商品陳列',
+    scopeOfWork_excluded: '仕入れ・発注業務',
+    additionalWorkTerms: '交通費1日上限800円、社員割引あり',
+    milestones: [
+      { id: 'job203-m1', name: '初日シフト', amount: 0, status: 'pending', dueDate: '2025-08-03' },
+      { id: 'job203-m2', name: '2日目シフト', amount: 0, status: 'pending', dueDate: '2025-08-09' },
+    ],
+    requiredSkills: ['接客', 'レジ操作'],
+    clientRating: { averageScore: 4.3, totalReviews: 12 },
+    imageUrl: 'https://placehold.co/600x400/F97316/FFFFFF?text=Retail',
+    aiRecommendationScore: 0.62,
+    proposals: [],
+  },
+  // Safe Job Sample - High S-Score and M-Score (Trusted, Well-Established Client)
+  {
+    id: 'job_safe_001',
+    name: '既存Webサイトの定期メンテナンス（3ヶ月間）',
+    name_en: 'Existing Website Regular Maintenance (3 months)',
+    clientName: '東京都市銀行株式会社',
+    clientName_en: 'Tokyo City Bank Inc.',
+    clientId: 'client_bank_001',
+    contractorName: null,
+    contractorName_en: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 5, // Very low risk - established corporation
+    totalAmount: 180000,
+    fundsDeposited: 0,
+    fundsReleased: 0,
+    status: '募集中',
+    status_en: 'Open for Applications',
+    dueDate: '2025-09-30',
+    completionDate: null,
+    description: '東京都市銀行のWebサイト定期メンテナンス業務です。既存のシステムのバグ修正、セキュリティアップデート、軽微な改善を月1回の定期レビュー会で対応していただきます。長期安定的な業務のため、信頼できるパートナーを探しています。',
+    description_en: 'Regular maintenance for Tokyo City Bank website. Bug fixes, security updates, and minor improvements will be addressed through monthly review meetings. We are looking for a reliable partner for long-term stable work.',
+    deliverables: '月次メンテナンスレポート、バグ修正実装、セキュリティパッチ適用',
+    deliverables_en: 'Monthly maintenance reports, bug fixes, security patch applications',
+    deliverableDetails: '月1回（第2水曜日）の定期レビュー会への参加、発見されたバグの修正、セキュリティパッチの適用。詳細は要件定義会で決定します。',
+    deliverableDetails_en: 'Participation in monthly review meetings (2nd Wednesday), bug fixes, security patch applications. Details will be determined in the requirements definition meeting.',
+    acceptanceCriteria: '検収基準に従い、月末までに実装完了',
+    acceptanceCriteria_en: 'Implementation completed by month-end in accordance with acceptance criteria',
+    acceptanceCriteriaDetails: '各月のメンテナンス内容について、完了時点で品質保証チームによる確認を実施します。',
+    acceptanceCriteriaDetails_en: 'Quality assurance team will verify each month\'s maintenance upon completion.',
+    scopeOfWork_included: '既存機能のバグ修正、セキュリティアップデート、軽微なUI改善、月次レポート作成',
+    scopeOfWork_included_en: 'Bug fixes, security updates, minor UI improvements, monthly report creation',
+    scopeOfWork_excluded: '新機能開発、システムリプレースメント、緊急対応（別途契約）',
+    scopeOfWork_excluded_en: 'New feature development, system replacement, emergency support (separate contract)',
+    additionalWorkTerms: '緊急対応が発生した場合は別途見積もり。継続契約の場合、3ヶ月以上は割引適用。',
+    additionalWorkTerms_en: 'Emergency support will be quoted separately. Volume discounts apply for 3+ month contracts.',
+    agreementDocLink: 'tokyo_bank_agreement_v1.pdf',
+    changeOrders: [],
+    communicationLogCount: 5,
+    lastUpdate: '2025-06-08 14:30',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job_safe_001-m1',
+        name: '6月度メンテナンス',
+        name_en: 'June Maintenance',
+        amount: 60000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-06-30',
+        startDate: '2025-06-01',
+        duration: 30,
+        description: '初月のメンテナンス対応',
+        description_en: 'First month maintenance',
+      },
+      {
+        id: 'job_safe_001-m2',
+        name: '7月度メンテナンス',
+        name_en: 'July Maintenance',
+        amount: 60000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-07-31',
+        startDate: '2025-07-01',
+        duration: 31,
+        description: '2ヶ月目のメンテナンス対応',
+        description_en: 'Second month maintenance',
+      },
+      {
+        id: 'job_safe_001-m3',
+        name: '8月度メンテナンス',
+        name_en: 'August Maintenance',
+        amount: 60000,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-08-31',
+        startDate: '2025-08-01',
+        duration: 31,
+        description: '3ヶ月目のメンテナンス対応',
+        description_en: 'Third month maintenance',
+      },
+    ],
+    requiredSkills: [
+      'Webエンジニアリング',
+      'PHP',
+      'MySQL',
+      'セキュリティ',
+      'バグ修正',
+    ],
+    requiredSkills_en: [
+      'Web Engineering',
+      'PHP',
+      'MySQL',
+      'Security',
+      'Debugging',
+    ],
+    clientRating: { averageScore: 4.8, totalReviews: 47 }, // Highly trusted client
+    imageUrl: 'https://placehold.co/600x400/1E40AF/FFFFFF?text=Bank%20Website',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.95, // High recommendation score
+    aiRecommendationReason: 'これは信頼できるクライアントからの安定案件です。継続的な収入源になります。',
+    aiRecommendationReason_en: 'This is a stable project from a trusted client. It can become a reliable source of income.',
+    proposals: [],
+  },
+  // Safe & Trusted Job Sample - High M-Score and S-Score (Fully Deposited + Trusted Client)
+  {
+    id: 'job_trusted_001',
+    name: 'React コンポーネントライブラリ保守・拡張',
+    name_en: 'React Component Library Maintenance & Enhancement',
+    clientName: '株式会社デジタルプラットフォーム',
+    clientName_en: 'Digital Platform Inc.',
+    clientId: 'client_platform_001',
+    contractorName: null,
+    contractorName_en: null,
+    contractorId: null,
+    contractorResellingRisk: 0,
+    clientResellingRisk: 3, // Very low risk - established tech company
+    totalAmount: 250000,
+    fundsDeposited: 250000, // FULLY DEPOSITED - High Safety Score!
+    fundsReleased: 0,
+    status: '募集中',
+    status_en: 'Open for Applications',
+    dueDate: '2025-08-31',
+    completionDate: null,
+    description: '弊社のプロダクトで使用しているReactコンポーネントライブラリの保守・改善業務。新しいコンポーネント追加、既存コンポーネントのバグ修正、パフォーマンス最適化、ドキュメント更新を行います。長期的なパートナーシップを想定しており、信頼できるエンジニアをお探しです。',
+    description_en: 'Maintenance and improvement of our React component library. Add new components, fix bugs in existing components, optimize performance, and update documentation. We are looking for a reliable engineer for long-term partnership.',
+    deliverables: 'React コンポーネント（TypeScript）、Storybook ドキュメント、ユニットテスト',
+    deliverables_en: 'React components (TypeScript), Storybook documentation, unit tests',
+    deliverableDetails: '毎月、新規コンポーネント2～3個の追加、既存コンポーネントの改善3～5件、テストカバレッジ80%以上の維持、Storybook による詳細なドキュメント作成。全て Git にコミット、コードレビュー合格後にリリース。',
+    deliverableDetails_en: 'Monthly: Add 2-3 new components, improve 3-5 existing components, maintain 80%+ test coverage, create detailed Storybook documentation. All committed to Git, released after code review approval.',
+    acceptanceCriteria: '月ごとの成果物がタスク定義通りに完成し、コードレビューで承認される',
+    acceptanceCriteria_en: 'Monthly deliverables are completed as per task definition and pass code review',
+    acceptanceCriteriaDetails: '各月末までに GitHub にプッシュ。コードレビューは3営業日以内に完了し、指摘事項があれば修正。修正から再レビューまで2営業日以内。コードレビュー合格時点で支払い実行。',
+    acceptanceCriteriaDetails_en: 'Push to GitHub by month-end. Code review completed within 3 business days. If feedback given, fixes within 2 business days. Payment executed upon code review approval.',
+    scopeOfWork_included: 'React コンポーネント開発、TypeScript での型定義、ユニットテスト（Jest）、Storybook ドキュメント、パフォーマンス監視',
+    scopeOfWork_included_en: 'React component development, TypeScript type definitions, unit tests (Jest), Storybook documentation, performance monitoring',
+    scopeOfWork_excluded: 'バックエンド開発、インフラ構築、デザイン作成（UI/UX）、ドキュメンテーション以外のサービス業務',
+    scopeOfWork_excluded_en: 'Backend development, infrastructure setup, design creation (UI/UX), non-documentation service tasks',
+    additionalWorkTerms: '緊急対応やスコープ外作業は別途見積もり。長期契約（3ヶ月以上）で月額10%割引。',
+    additionalWorkTerms_en: 'Emergency support or out-of-scope work quoted separately. 10% monthly discount for long-term contracts (3+ months).',
+    agreementDocLink: 'platform_component_lib_agreement_v1.pdf',
+    changeOrders: [],
+    communicationLogCount: 8,
+    lastUpdate: '2025-06-10 10:00',
+    hasDispute: false,
+    milestones: [
+      {
+        id: 'job_trusted_001-m1',
+        name: '6月度開発（新コンポーネント・改善）',
+        name_en: 'June Development (New & Improvements)',
+        amount: 83333,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-06-30',
+        startDate: '2025-06-01',
+        duration: 30,
+        description: '新規コンポーネント2個、既存改善4件、テスト追加、ドキュメント更新',
+        description_en: 'Add 2 new components, improve 4 existing, add tests, update documentation',
+      },
+      {
+        id: 'job_trusted_001-m2',
+        name: '7月度開発（新コンポーネント・改善）',
+        name_en: 'July Development (New & Improvements)',
+        amount: 83333,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-07-31',
+        startDate: '2025-07-01',
+        duration: 31,
+        description: '新規コンポーネント2個、既存改善4件、テスト追加、ドキュメント更新',
+        description_en: 'Add 2 new components, improve 4 existing, add tests, update documentation',
+      },
+      {
+        id: 'job_trusted_001-m3',
+        name: '8月度開発（新コンポーネント・改善）',
+        name_en: 'August Development (New & Improvements)',
+        amount: 83334,
+        status: 'pending',
+        status_en: 'Pending',
+        dueDate: '2025-08-31',
+        startDate: '2025-08-01',
+        duration: 31,
+        description: '新規コンポーネント2個、既存改善4件、テスト追加、ドキュメント更新',
+        description_en: 'Add 2 new components, improve 4 existing, add tests, update documentation',
+      },
+    ],
+    requiredSkills: [
+      'React',
+      'TypeScript',
+      'Jest',
+      'Storybook',
+      'Git',
+    ],
+    requiredSkills_en: [
+      'React',
+      'TypeScript',
+      'Jest',
+      'Storybook',
+      'Git',
+    ],
+    clientRating: { averageScore: 4.9, totalReviews: 63 }, // Very high trust
+    imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=Component%20Library',
+    allowSubcontracting: false,
+    aiRecommendationScore: 0.98, // Highest recommendation
+    aiRecommendationReason: 'これは最も安心できる案件です。全額デポジット済み、信頼できるクライアント、要件が非常に明確です。',
+    aiRecommendationReason_en: 'This is the safest project. Fully deposited, trusted client, requirements crystal clear.',
+    proposals: [],
   },
 ];
+
 
 // --- Exports for each app section (after dashboardAllProjects definition) ---
 // Dashboard: 案件一覧や進捗表示用

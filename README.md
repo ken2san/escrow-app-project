@@ -49,6 +49,32 @@ Escrow App is a modern web application designed to facilitate secure transaction
    - Development: `http://localhost:3000`
    - Docker: `http://localhost`
 
+## Blockchain Integration (local testing)
+
+This project can be connected to a local Hardhat (v3) development chain for end-to-end UI testing with smart contracts. For automated agents or external teams that will prepare contract artifacts and a local node, see `BLOCKCHAIN_AGENT_README.md` for the exact packaging and environment variables the frontend expects.
+
+Quick steps:
+
+- Start a Hardhat node and deploy contracts (in the separate Hardhat workspace):
+
+```bash
+npx hardhat node
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+- In this project, create `.env.local` with:
+
+```
+REACT_APP_RPC_URL=http://127.0.0.1:8545
+REACT_APP_POINTS_ADDR=<DEPLOYED_POINTS_MANAGER_ADDRESS>
+```
+
+- Start the frontend:
+
+```bash
+npm start
+```
+
 ## Usage
 
 1. **Create a Project**
