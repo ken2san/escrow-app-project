@@ -18,8 +18,8 @@ export default function ImmersiveJobCard({
   // Score count-up animation
   useEffect(() => {
     if (!job) return;
+    
     let animationFrames = 0;
-    let animationFrameId = null;
     const targetScore = job.recommendationScore;
     const duration = 30; // frames
 
@@ -36,12 +36,10 @@ export default function ImmersiveJobCard({
       }
     };
 
-    animationFrameId = requestAnimationFrame(animate);
+    let animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      if (animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      cancelAnimationFrame(animationFrameId);
     };
   }, [job]);
 
