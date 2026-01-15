@@ -178,6 +178,14 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
 
   const currentJob = jobs[currentIndex];
 
+  // Helper function to get animation className
+  const getAnimationClassName = (direction) => {
+    const baseClasses = 'w-full max-w-2xl transition-all duration-300';
+    if (direction === 'slide-up') return `${baseClasses} translate-y-full opacity-0`;
+    if (direction === 'slide-down') return `${baseClasses} -translate-y-full opacity-0`;
+    return `${baseClasses} translate-y-0 opacity-100`;
+  };
+
   const handleApply = useCallback((job) => {
     addDraftJobs([job.id], loggedInUserDataGlobal.id);
     if (onExitImmersive) {
@@ -274,7 +282,7 @@ function ImmersiveJobsView({ jobs, getScoreIcon, getCategoryBadgeStyle, flagStyl
         </div>
 
         {/* Job card */}
-        <div className={`w-full max-w-2xl transition-all duration-300 ${animationDirection === 'slide-up' ? 'translate-y-full opacity-0' : animationDirection === 'slide-down' ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+        <div className={getAnimationClassName(animationDirection)}>
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="p-6 space-y-4">
               {/* Header */}

@@ -151,41 +151,47 @@ export default function JobsSearchPage() {
                 <option value="budget">💰 報酬順</option>
               </select>
 
-              {/* Layout Toggle */}
-              <div className="flex items-center border border-slate-300 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`px-3 py-1 rounded font-medium text-sm transition ${
-                    viewMode === 'grid'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-transparent text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  📊 グリッド
-                </button>
-                <button
-                  onClick={() => setViewMode('timeline')}
-                  className={`px-3 py-1 rounded font-medium text-sm transition ${
-                    viewMode === 'timeline' || viewMode === 'immersive'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-transparent text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  📜 タイムライン
-                </button>
-                {(viewMode === 'timeline' || viewMode === 'immersive') && (
+              {/* Layout Toggle - Improved design for easy mood-based switching */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-600 font-medium mr-1">表示:</span>
+                <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
                   <button
-                    onClick={() => setViewMode(viewMode === 'immersive' ? 'timeline' : 'immersive')}
-                    className={`px-3 py-1 rounded font-medium text-sm transition ${
-                      viewMode === 'immersive'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-transparent text-slate-700 hover:bg-slate-100'
+                    onClick={() => setViewMode('grid')}
+                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                      viewMode === 'grid'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 hover:bg-slate-50'
                     }`}
-                    title="TikTok風の全画面没入モード"
+                    title="グリッド表示 - 複数の仕事を一覧"
                   >
-                    🎯 没入モード
+                    <span className="text-base">📊</span>
+                    <span>グリッド</span>
                   </button>
-                )}
+                  <button
+                    onClick={() => setViewMode('timeline')}
+                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
+                      viewMode === 'timeline'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                    title="タイムライン表示 - 詳細カード"
+                  >
+                    <span className="text-base">📜</span>
+                    <span>タイムライン</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('immersive')}
+                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                      viewMode === 'immersive'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                    title="没入モード - TikTok風の全画面体験"
+                  >
+                    <span className="text-base">🎯</span>
+                    <span>没入モード</span>
+                  </button>
+                </div>
               </div>
 
               {/* Advanced Filters Toggle */}
