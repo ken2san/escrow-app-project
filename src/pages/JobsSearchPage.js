@@ -32,7 +32,7 @@ export default function JobsSearchPage() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode, setViewMode]);
+  }, [viewMode]);
 
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
