@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ImmersiveJobCard({
   job,
@@ -13,12 +13,12 @@ export default function ImmersiveJobCard({
   const [displayScore, setDisplayScore] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [slideAnimation, setSlideAnimation] = useState('');
-  const cardRef = useRef(null);
 
   // Score count-up animation
   useEffect(() => {
     if (!job) return;
     let animationFrames = 0;
+    let animationFrameId = null;
     const targetScore = job.recommendationScore;
     const duration = 30; // frames
 
@@ -29,13 +29,19 @@ export default function ImmersiveJobCard({
       setDisplayScore(Math.round(targetScore * easeOutQuad));
 
       if (animationFrames < duration) {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
       } else {
         setDisplayScore(targetScore);
       }
     };
 
-    animate();
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [job]);
 
   // Get gradient based on recommendation score
@@ -146,7 +152,6 @@ export default function ImmersiveJobCard({
 
   return (
     <div
-      ref={cardRef}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       className={`fixed inset-0 z-50 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col items-center justify-center p-4 transition-all duration-300 ${
