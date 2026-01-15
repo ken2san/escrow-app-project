@@ -19,6 +19,7 @@ export default function ImmersiveJobCard({
   useEffect(() => {
     if (!job) return;
     let animationFrames = 0;
+    let animationFrameId = null;
     const targetScore = job.recommendationScore;
     const duration = 30; // frames
 
@@ -29,13 +30,19 @@ export default function ImmersiveJobCard({
       setDisplayScore(Math.round(targetScore * easeOutQuad));
 
       if (animationFrames < duration) {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
       } else {
         setDisplayScore(targetScore);
       }
     };
 
-    animate();
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [job]);
 
   // Get gradient based on recommendation score
