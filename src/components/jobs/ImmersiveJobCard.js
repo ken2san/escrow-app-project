@@ -42,6 +42,7 @@ export default function ImmersiveJobCard({
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
     };
   }, [job]);
