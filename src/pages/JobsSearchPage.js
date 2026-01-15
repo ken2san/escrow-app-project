@@ -8,6 +8,7 @@ import TimelineJobsView from '../components/jobs/TimelineJobsView';
 export default function JobsSearchPage() {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
+  const [previousDesktopViewMode, setPreviousDesktopViewMode] = useState('grid'); // Store previous desktop view mode
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filters, setFilters] = useState({
     mScoreMin: 0,
@@ -20,13 +21,21 @@ export default function JobsSearchPage() {
     locationType: 'all', // New: location filter
   });
 
+  // Store desktop view mode when switching to immersive
+  useEffect(() => {
+    const mobile = window.innerWidth < 768;
+    if (!mobile && viewMode !== 'immersive' && (viewMode === 'grid' || viewMode === 'timeline')) {
+      setPreviousDesktopViewMode(viewMode);
+    }
+  }, [viewMode]);
+
   // Detect mobile screen size changes
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
-      // Reset to grid if in immersive mode on desktop
+      // Reset to previous desktop view mode if in immersive mode on desktop
       if (!mobile && viewMode === 'immersive') {
-        setViewMode('timeline');
+        setViewMode(previousDesktopViewMode);
       }
     };
 
@@ -34,7 +43,7 @@ export default function JobsSearchPage() {
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode]);
+  }, [viewMode, previousDesktopViewMode]);
 
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
