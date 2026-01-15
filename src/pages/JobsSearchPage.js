@@ -125,82 +125,83 @@ export default function JobsSearchPage() {
 
             {/* Desktop: Full Controls - Always visible on md+ */}
             <div className="hidden md:block space-y-4">
-              {/* First Row: Category, Location, Sort */}
-              <div className="flex flex-wrap items-center gap-3">
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={filters.locationType}
-                  onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  {locationTypes.map(loc => (
-                    <option key={loc} value={loc}>
-                      {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  <option value="recommendation">🤖 おすすめ順</option>
-                  <option value="trust">🛡️ 信頼度</option>
-                  <option value="budget">💰 報酬順</option>
-                </select>
-              </div>
-
-              {/* Second Row: Layout Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 font-medium">表示:</span>
-                <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
-                      viewMode === 'grid'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+              {/* Top Row: Filters + View toggle on one line, wrapping if needed */}
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>📊</span>
-                    <span>グリッド</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('timeline')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
-                      viewMode === 'timeline'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filters.locationType}
+                    onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>📜</span>
-                    <span>タイムライン</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('immersive')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
-                      viewMode === 'immersive'
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    {locationTypes.map(loc => (
+                      <option key={loc} value={loc}>
+                        {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>🎯</span>
-                    <span>没入モード</span>
-                  </button>
+                    <option value="recommendation">🤖 おすすめ順</option>
+                    <option value="trust">🛡️ 信頼度</option>
+                    <option value="budget">💰 報酬順</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-600 font-medium">表示:</span>
+                  <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📊</span>
+                      <span>グリッド</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('timeline')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
+                        viewMode === 'timeline'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📜</span>
+                      <span>タイムライン</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('immersive')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                        viewMode === 'immersive'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>🎯</span>
+                      <span>没入モード</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Third Row: Buttons & Presets */}
+              {/* Second Row: Buttons & Presets */}
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
