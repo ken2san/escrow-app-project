@@ -121,7 +121,7 @@ export default function ImmersiveJobCard({
           <p className="text-2xl font-bold text-gray-800 mb-2">全ての仕事を見ました！</p>
           <p className="text-gray-600 mb-6">すべてチェック完了です。おめでとうございます！</p>
           <button
-            onClick={onSkip}
+            onClick={onExit}
             className="px-8 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             戻る
