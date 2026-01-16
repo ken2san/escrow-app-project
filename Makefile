@@ -3,8 +3,10 @@ IMAGE_NAME=gcr.io/$(PROJECT_ID)/escrow-app-project
 REGION=us-central1
 SERVICE_NAME=escrow-app-web
 
+.PHONY: build push deploy down all
+
 build:
-	docker buildx build --platform linux/amd64 -t $(IMAGE_NAME) .
+	docker buildx build --platform linux/amd64 --load -t $(IMAGE_NAME) .
 
 push:
 	docker push $(IMAGE_NAME)
