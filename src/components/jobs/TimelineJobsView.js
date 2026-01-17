@@ -172,6 +172,7 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 // Immersive Jobs View Container Component
 function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isNewCard, setIsNewCard] = useState(false);
 
   const handleNext = useCallback((job) => {
     addDraftJobs([job.id], loggedInUserDataGlobal.id);
@@ -180,6 +181,8 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
 
   const handleSkip = useCallback(() => {
     if (currentIndex < jobs.length - 1) {
+      setIsNewCard(true);
+      setTimeout(() => setIsNewCard(false), 300);
       setCurrentIndex(currentIndex + 1);
     } else {
       onExitImmersive?.();
@@ -233,6 +236,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
       currentIndex={currentIndex}
       totalJobs={jobs.length}
       maxScore={100}
+      isNew={isNewCard}
     />
   );
 }
