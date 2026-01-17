@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 
 export default function ImmersiveJobCard({
   job,
-  onNext,
+  onApply,
+  onPrev,
   onSkip,
   onExit,
   totalRemaining,
@@ -135,10 +136,10 @@ export default function ImmersiveJobCard({
           setIsAnimating(false);
         }, 300);
       } else {
-        // Swipe right: Apply to job
+        // Swipe right: Go to previous job
         setSlideAnimation('slide-out-right');
         setTimeout(() => {
-          onNext?.(job);
+          onPrev?.();
           setSlideAnimation('');
           setIsAnimating(false);
         }, 300);
@@ -169,7 +170,16 @@ export default function ImmersiveJobCard({
         setIsAnimating(true);
         setSlideAnimation('slide-out-right');
         setTimeout(() => {
-          onNext?.(job);
+          onApply?.(job);
+          setSlideAnimation('');
+          setIsAnimating(false);
+        }, 300);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setIsAnimating(true);
+        setSlideAnimation('slide-out-right');
+        setTimeout(() => {
+          onPrev?.();
           setSlideAnimation('');
           setIsAnimating(false);
         }, 300);
@@ -178,7 +188,7 @@ export default function ImmersiveJobCard({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [job, onNext, onSkip, isAnimating]);
+  }, [job, onApply, onSkip, onPrev, isAnimating]);
 
   if (!job) {
     return (
@@ -372,7 +382,8 @@ export default function ImmersiveJobCard({
         <div className="max-w-md mx-auto space-y-3">
           <button
             onClick={() => {
-              if (!isSwipingRef.current) onNext?.(job);
+              // Button: view details (navigate to Work Management)
+              if (!isSwipingRef.current) onApply?.(job);
             }}
             className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200"
           >

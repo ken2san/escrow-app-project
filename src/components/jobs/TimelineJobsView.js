@@ -174,20 +174,25 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isNewCard, setIsNewCard] = useState(false);
 
-  const handleNext = useCallback((job) => {
+  // Apply: navigate to Work Management
+  const handleApply = useCallback((job) => {
     addDraftJobs([job.id], loggedInUserDataGlobal.id);
     navigate('/work-management');
   }, [navigate]);
 
+  // Like/save: stay in immersive and go to next (looping)
+  const handlePrev = useCallback(() => {
+    setIsNewCard(true);
+    setTimeout(() => setIsNewCard(false), 300);
+    setCurrentIndex((prev) => (prev - 1 + jobs.length) % jobs.length);
+  }, [jobs.length]);
+
   const handleSkip = useCallback(() => {
-    if (currentIndex < jobs.length - 1) {
-      setIsNewCard(true);
-      setTimeout(() => setIsNewCard(false), 300);
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      onExitImmersive?.();
-    }
-  }, [currentIndex, jobs.length, onExitImmersive]);
+    setIsNewCard(true);
+    setTimeout(() => setIsNewCard(false), 300);
+    // Loop to the beginning when reaching the end
+    setCurrentIndex((prev) => (prev + 1) % jobs.length);
+  }, [jobs.length]);
 
   if (jobs.length === 0) {
     return (
@@ -229,7 +234,8 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
   return (
     <ImmersiveJobCard
       job={currentJob}
-      onNext={handleNext}
+      onApply={handleApply}
+      onPrev={handlePrev}
       onSkip={handleSkip}
       onExit={onExitImmersive}
       totalRemaining={totalRemaining}
