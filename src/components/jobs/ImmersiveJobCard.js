@@ -221,14 +221,14 @@ export default function ImmersiveJobCard({
           {/* Job Title & Category */}
           <div className="px-6 pt-6 pb-4 border-b border-gray-100">
             <div className="mb-3">
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{job.title}</h2>
+              <h2 className="text-xl font-bold text-gray-900 leading-tight mb-2 break-words">{job.title}</h2>
               {job.category && (
                 <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">
                   {job.category}
                 </span>
               )}
             </div>
-            {job.client && <p className="text-sm text-gray-600 font-medium">{job.client}</p>}
+            {job.client && <p className="text-sm text-gray-600 font-medium break-words">{job.client}</p>}
           </div>
 
           {/* Description */}
@@ -238,57 +238,57 @@ export default function ImmersiveJobCard({
             </div>
           )}
 
-          {/* Three Score Badges */}
-          <div className="px-6 py-6 space-y-3">
+          {/* Three Score Badges - Mobile optimized */}
+          <div className="px-6 py-6 space-y-4">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-600">契約の透明性</span>
-                <span className="text-sm font-bold text-gray-900">{job.mScore}/100</span>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">📜 契約の透明性</span>
+                <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.mScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${mScoreColor} transition-all duration-500`}
-                  style={{ width: `${(job.mScore / 100) * 100}%` }}
+                  style={{ width: `${job.mScore}%` }}
                 ></div>
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-600">支払い安全性</span>
-                <span className="text-sm font-bold text-gray-900">{job.sScore}/100</span>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">💳 支払い安全性</span>
+                <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.sScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${sScoreColor} transition-all duration-500`}
-                  style={{ width: `${(job.sScore / 100) * 100}%` }}
+                  style={{ width: `${job.sScore}%` }}
                 ></div>
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-600">条件の明確さ</span>
-                <span className="text-sm font-bold text-gray-900">{job.ambiguityScore}/100</span>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">📋 条件の明確さ</span>
+                <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.ambiguityScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${ambiguityColor} transition-all duration-500`}
-                  style={{ width: `${(job.ambiguityScore / 100) * 100}%` }}
+                  style={{ width: `${job.ambiguityScore}%` }}
                 ></div>
               </div>
             </div>
           </div>
 
-          {/* Budget & Details */}
-          <div className="px-6 py-4 bg-gray-50 grid grid-cols-2 gap-4">
+          {/* Budget & Details - Mobile optimized */}
+          <div className="px-6 py-4 bg-gray-50 space-y-4">
             <div>
-              <p className="text-xs text-gray-600 font-medium mb-1">報酬</p>
-              <p className="text-2xl font-bold text-gray-900">¥{job.budget?.toLocaleString()}</p>
+              <p className="text-xs text-gray-600 font-medium mb-1">💰 報酬</p>
+              <p className="text-xl font-bold text-gray-900 break-words">¥{job.budget?.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-600 font-medium mb-1">期間</p>
-              <p className="text-lg font-bold text-gray-900">{job.duration || '未指定'}</p>
+              <p className="text-xs text-gray-600 font-medium mb-1">📅 期間</p>
+              <p className="text-base font-bold text-gray-900 break-words">{job.duration || '未指定'}</p>
             </div>
           </div>
         </div>
