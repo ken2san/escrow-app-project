@@ -639,36 +639,44 @@ function JobCard({ job }) {
           )}
         </div>
 
-        {/* Quick Details */}
-        <div className="grid grid-cols-4 gap-4 text-sm mb-4">
+        {/* Quick Details - Mobile optimized */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-sm mb-4">
           <div>
-            <p className="text-slate-600">報酬</p>
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="報酬">
+              <span aria-hidden="true">💰 </span>報酬
+            </p>
             {job.workType === 'hourly' && job.hourlyRate ? (
               <div className="space-y-1">
-                <p className="text-lg font-bold text-slate-900">¥{job.hourlyRate?.toLocaleString()}/h</p>
-                <p className="text-xs text-slate-500">目安合計: ¥{job.budget?.toLocaleString()}</p>
+                <p className="text-base md:text-lg font-bold text-slate-900 break-words">¥{job.hourlyRate?.toLocaleString()}/h</p>
+                <p className="text-xs text-slate-500 break-words">目安合計: ¥{job.budget?.toLocaleString()}</p>
                 {job.milestones?.length > 0 && (
-                  <p className="text-xs text-slate-500">シフト予定: {job.milestones.length}日{firstShift ? ` ・ 初回 ${firstShift.start}–${firstShift.end}` : ''}</p>
+                  <p className="text-xs text-slate-500 break-words">シフト予定: {job.milestones.length}日{firstShift ? ` ・ 初回 ${firstShift.start}–${firstShift.end}` : ''}</p>
                 )}
               </div>
             ) : (
-              <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+              <p className="text-base md:text-lg font-bold text-slate-900 break-words">¥{job.budget?.toLocaleString()}</p>
             )}
           </div>
           <div>
-            <p className="text-slate-600">期限</p>
-            <p className="text-lg font-bold text-slate-900">
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="期限">
+              <span aria-hidden="true">📅 </span>期限
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 break-words">
               {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
             </p>
           </div>
           <div>
-            <p className="text-slate-600">依頼者</p>
-            <p className="text-lg font-bold text-slate-900 truncate">{job.by || 'クライアント'}</p>
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="依頼者">
+              <span aria-hidden="true">👤 </span>依頼者
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 truncate">{job.by || 'クライアント'}</p>
           </div>
           <div>
-            <p className="text-slate-600">評価</p>
-            <p className="text-lg font-bold text-slate-900">
-              ⭐ {job.popularity?.toFixed(1) || 'N/A'} / {job.clientRating?.totalReviews || 0}件
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="評価">
+              <span aria-hidden="true">⭐ </span>評価
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 break-words">
+              {job.popularity?.toFixed(1) || 'N/A'} / {job.clientRating?.totalReviews || 0}件
             </p>
           </div>
         </div>
