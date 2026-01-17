@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function ImmersiveJobCard({
   job,
@@ -9,11 +9,13 @@ export default function ImmersiveJobCard({
   maxScore = 100,
   currentIndex = 0,
   totalJobs = 0,
+  isNew = false,
 }) {
   const [displayScore, setDisplayScore] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
+  const [touchStartPos, setTouchStartPos] = useState(null);
   const [slideAnimation, setSlideAnimation] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
+  const isSwipingRef = useRef(false);
 
   // Score count-up animation
   useEffect(() => {
@@ -72,19 +74,34 @@ export default function ImmersiveJobCard({
 
   // Touch handlers for swipe
   const handleTouchStart = (e) => {
-    setTouchStart(e.touches[0].clientX);
+    const touch = e.touches[0];
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    isSwipingRef.current = false;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStartPos) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartPos.x;
+    const dy = touch.clientY - touchStartPos.y;
+    // Mark as swiping if horizontal movement is significant and dominant
+    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      isSwipingRef.current = true;
+      e.preventDefault();
+    }
   };
 
   const handleTouchEnd = (e) => {
-    if (!touchStart || isAnimating) return;
+    if (!touchStartPos || isAnimating) return;
 
-    const touchEnd = e.changedTouches[0].clientX;
-    const distance = touchStart - touchEnd;
-    const isHorizontalSwipe = Math.abs(distance) > 50;
+    const touch = e.changedTouches[0];
+    const dx = touchStartPos.x - touch.clientX;
+    const dy = touchStartPos.y - touch.clientY;
+    const isHorizontalSwipe = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy);
 
     if (isHorizontalSwipe) {
       setIsAnimating(true);
-      if (distance > 0) {
+      if (dx > 0) {
         // Swipe left: Skip job
         setSlideAnimation('slide-out-left');
         setTimeout(() => {
@@ -103,7 +120,9 @@ export default function ImmersiveJobCard({
       }
     }
 
-    setTouchStart(null);
+    setTouchStartPos(null);
+    // reset swiping flag shortly after touch end
+    setTimeout(() => { isSwipingRef.current = false; }, 50);
   };
 
   // Keyboard handlers
@@ -170,11 +189,20 @@ export default function ImmersiveJobCard({
   return (
     <div
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className={`fixed inset-0 z-50 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col items-center justify-center p-4 transition-all duration-300 ${
-        slideAnimation === 'slide-out-left' ? 'translate-x-full opacity-0' : ''
-      } ${slideAnimation === 'slide-out-right' ? '-translate-x-full opacity-0' : ''}`}
+      className={
+        'fixed inset-0 z-50 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden flex flex-col items-center justify-center p-4'
+      }
     >
+      {/* Animated content wrapper: keep overlay visible; animate inner content only */}
+      <div
+        className={`w-full h-full transition-transform duration-300 ${
+          slideAnimation === 'slide-out-left' ? 'translate-x-full' : ''
+        } ${slideAnimation === 'slide-out-right' ? '-translate-x-full' : ''} ${
+          isNew ? 'animate-slide-in' : ''
+        }`}
+      >
       {/* Header with progress */}
       <div className="fixed top-6 left-6 right-6 z-50 flex items-center justify-between">
         <button
@@ -317,14 +345,18 @@ export default function ImmersiveJobCard({
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-8 pb-6 px-4">
         <div className="max-w-md mx-auto space-y-3">
           <button
-            onClick={() => onNext?.(job)}
+            onClick={() => {
+              if (!isSwipingRef.current) onNext?.(job);
+            }}
             className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200"
           >
             ✓ このお仕事を見る
           </button>
 
           <button
-            onClick={onSkip}
+            onClick={() => {
+              if (!isSwipingRef.current) onSkip?.();
+            }}
             className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200"
           >
             → スキップ（次の仕事へ）
@@ -345,6 +377,7 @@ export default function ImmersiveJobCard({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
