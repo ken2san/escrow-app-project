@@ -128,7 +128,7 @@ export default function ImmersiveJobCard({
     if (isHorizontalSwipe) {
       setIsAnimating(true);
       if (dx > 0) {
-        // Swipe left: Skip job
+        // Swipe left: card slides left, go to next
         setSlideAnimation('slide-out-left');
         setTimeout(() => {
           onSkip?.();
@@ -136,7 +136,7 @@ export default function ImmersiveJobCard({
           setIsAnimating(false);
         }, 300);
       } else {
-        // Swipe right: Go to previous job
+        // Swipe right: card slides right, go to previous
         setSlideAnimation('slide-out-right');
         setTimeout(() => {
           onPrev?.();
@@ -233,9 +233,9 @@ export default function ImmersiveJobCard({
     >
       {/* Animated content wrapper: keep overlay visible; animate inner content only */}
       <div
-        className={`w-full h-full transition-transform duration-300 ${
-          slideAnimation === 'slide-out-left' ? 'translate-x-full' : ''
-        } ${slideAnimation === 'slide-out-right' ? '-translate-x-full' : ''} ${
+        className={`w-full h-full transition-transform duration-300 ease-out ${
+          slideAnimation === 'slide-out-left' ? '-translate-x-full' : ''
+        } ${slideAnimation === 'slide-out-right' ? 'translate-x-full' : ''} ${
           isNew ? 'animate-slide-in' : ''
         }`}
       >

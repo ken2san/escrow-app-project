@@ -7,12 +7,12 @@ module.exports = {
     extend: {
       keyframes: {
         slideIn: {
-          'from': { transform: 'translateX(-100%)', opacity: '0' },
+          'from': { transform: 'translateX(100%)', opacity: '0.5' },
           'to': { transform: 'translateX(0)', opacity: '1' }
         }
       },
       animation: {
-        'slide-in': 'slideIn 0.3s ease-out'
+        'slide-in': 'slideIn 0.25s ease-out'
       }
     },
   },
