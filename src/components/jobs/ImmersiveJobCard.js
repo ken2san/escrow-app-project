@@ -221,7 +221,7 @@ export default function ImmersiveJobCard({
           {/* Job Title & Category */}
           <div className="px-6 pt-6 pb-4 border-b border-gray-100">
             <div className="mb-3">
-              <h2 className="text-xl font-bold text-gray-900 leading-tight mb-2 break-words">{job.title}</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight mb-2 break-words">{job.title}</h2>
               {job.category && (
                 <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">
                   {job.category}
@@ -242,7 +242,9 @@ export default function ImmersiveJobCard({
           <div className="px-6 py-6 space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">📜 契約の透明性</span>
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap" aria-label="契約の透明性">
+                  <span aria-hidden="true">📜 </span>契約の透明性
+                </span>
                 <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.mScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -255,7 +257,9 @@ export default function ImmersiveJobCard({
 
             <div>
               <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">💳 支払い安全性</span>
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap" aria-label="支払い安全性">
+                  <span aria-hidden="true">💳 </span>支払い安全性
+                </span>
                 <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.sScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -268,7 +272,9 @@ export default function ImmersiveJobCard({
 
             <div>
               <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">📋 条件の明確さ</span>
+                <span className="text-xs font-semibold text-gray-600 whitespace-nowrap" aria-label="条件の明確さ">
+                  <span aria-hidden="true">📋 </span>条件の明確さ
+                </span>
                 <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{job.ambiguityScore}/100</span>
               </div>
               <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -281,14 +287,18 @@ export default function ImmersiveJobCard({
           </div>
 
           {/* Budget & Details - Mobile optimized */}
-          <div className="px-6 py-4 bg-gray-50 space-y-4">
+          <div className="px-6 py-4 bg-gray-50 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-600 font-medium mb-1">💰 報酬</p>
-              <p className="text-xl font-bold text-gray-900 break-words">¥{job.budget?.toLocaleString()}</p>
+              <p className="text-xs text-gray-600 font-medium mb-1" aria-label="報酬">
+                <span aria-hidden="true">💰 </span>報酬
+              </p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900 break-words">¥{job.budget?.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-600 font-medium mb-1">📅 期間</p>
-              <p className="text-base font-bold text-gray-900 break-words">{job.duration || '未指定'}</p>
+              <p className="text-xs text-gray-600 font-medium mb-1" aria-label="期間">
+                <span aria-hidden="true">📅 </span>期間
+              </p>
+              <p className="text-base md:text-lg font-bold text-gray-900 break-words">{job.duration || '未指定'}</p>
             </div>
           </div>
         </div>
