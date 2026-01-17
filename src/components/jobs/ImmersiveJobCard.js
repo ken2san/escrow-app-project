@@ -16,6 +16,8 @@ export default function ImmersiveJobCard({
   const [slideAnimation, setSlideAnimation] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
   const isSwipingRef = useRef(false);
+  const containerRef = useRef(null);
+  const [isHorizLock, setIsHorizLock] = useState(false);
 
   // Score count-up animation
   useEffect(() => {
@@ -79,17 +81,38 @@ export default function ImmersiveJobCard({
     isSwipingRef.current = false;
   };
 
-  const handleTouchMove = (e) => {
-    if (!touchStartPos) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - touchStartPos.x;
-    const dy = touch.clientY - touchStartPos.y;
-    // Mark as swiping if horizontal movement is significant and dominant
-    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
-      isSwipingRef.current = true;
-      e.preventDefault();
-    }
-  };
+  // Attach a non-passive touchmove listener to allow preventDefault on horizontal swipes
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const moveHandler = (e) => {
+      if (!touchStartPos) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchStartPos.x;
+      const dy = touch.clientY - touchStartPos.y;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      // Direction lock: decide early if gesture is horizontal vs vertical
+      if (!isHorizLock && (absDx > 12 || absDy > 12)) {
+        if (absDx > absDy * 1.5) {
+          setIsHorizLock(true);
+          isSwipingRef.current = true;
+          if (e.cancelable) e.preventDefault();
+        } else {
+          // Vertical scroll dominates: do not intercept
+          setIsHorizLock(false);
+        }
+      } else if (isHorizLock) {
+        // Already locked to horizontal: keep preventing default to avoid scroll
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+    el.addEventListener('touchmove', moveHandler, { passive: false });
+    return () => {
+      el.removeEventListener('touchmove', moveHandler);
+    };
+  }, [touchStartPos, isHorizLock]);
 
   const handleTouchEnd = (e) => {
     if (!touchStartPos || isAnimating) return;
@@ -97,7 +120,9 @@ export default function ImmersiveJobCard({
     const touch = e.changedTouches[0];
     const dx = touchStartPos.x - touch.clientX;
     const dy = touchStartPos.y - touch.clientY;
-    const isHorizontalSwipe = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy);
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    const isHorizontalSwipe = isHorizLock && isSwipingRef.current && absDx > 80 && absDx > absDy * 1.2;
 
     if (isHorizontalSwipe) {
       setIsAnimating(true);
@@ -121,8 +146,8 @@ export default function ImmersiveJobCard({
     }
 
     setTouchStartPos(null);
-    // reset swiping flag shortly after touch end
-    setTimeout(() => { isSwipingRef.current = false; }, 50);
+    // reset swiping flag and lock shortly after touch end
+    setTimeout(() => { isSwipingRef.current = false; setIsHorizLock(false); }, 50);
   };
 
   // Keyboard handlers
@@ -189,8 +214,9 @@ export default function ImmersiveJobCard({
   return (
     <div
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      ref={containerRef}
+      style={{ touchAction: isHorizLock ? 'none' : 'pan-y', overscrollBehavior: 'contain' }}
       className={
         'fixed inset-0 z-50 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden flex flex-col items-center justify-center p-4'
       }
