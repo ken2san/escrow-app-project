@@ -109,20 +109,32 @@ export default function ImmersiveJobCard({
   // Keyboard handlers
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (!job) return;
+      if (!job || isAnimating) return;
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        onSkip?.();
+        setIsAnimating(true);
+        setSlideAnimation('slide-out-left');
+        setTimeout(() => {
+          onSkip?.();
+          setSlideAnimation('');
+          setIsAnimating(false);
+        }, 300);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        onNext?.(job);
+        setIsAnimating(true);
+        setSlideAnimation('slide-out-right');
+        setTimeout(() => {
+          onNext?.(job);
+          setSlideAnimation('');
+          setIsAnimating(false);
+        }, 300);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [job, onNext, onSkip]);
+  }, [job, onNext, onSkip, isAnimating]);
 
   if (!job) {
     return (
