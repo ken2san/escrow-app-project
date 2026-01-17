@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
@@ -19,6 +19,23 @@ export default function JobsSearchPage() {
     category: 'all', // New: category filter
     locationType: 'all', // New: location filter
   });
+
+  // Detect mobile screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      // Reset to grid if in immersive mode on desktop
+      if (!mobile && viewMode === 'immersive') {
+        setViewMode('timeline');
+      }
+    };
+
+    // Ensure correct initial state on mount
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode]);
+
   const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
 
@@ -125,82 +142,72 @@ export default function JobsSearchPage() {
 
             {/* Desktop: Full Controls - Always visible on md+ */}
             <div className="hidden md:block space-y-4">
-              {/* First Row: Category, Location, Sort */}
-              <div className="flex flex-wrap items-center gap-3">
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={filters.locationType}
-                  onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  {locationTypes.map(loc => (
-                    <option key={loc} value={loc}>
-                      {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
-                >
-                  <option value="recommendation">🤖 おすすめ順</option>
-                  <option value="trust">🛡️ 信頼度</option>
-                  <option value="budget">💰 報酬順</option>
-                </select>
-              </div>
-
-              {/* Second Row: Layout Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 font-medium">表示:</span>
-                <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
-                      viewMode === 'grid'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+              {/* Top Row: Filters + View toggle on one line, wrapping if needed */}
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>📊</span>
-                    <span>グリッド</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('timeline')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
-                      viewMode === 'timeline'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filters.locationType}
+                    onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>📜</span>
-                    <span>タイムライン</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('immersive')}
-                    className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
-                      viewMode === 'immersive'
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                        : 'bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    {locationTypes.map(loc => (
+                      <option key={loc} value={loc}>
+                        {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <span>🎯</span>
-                    <span>没入モード</span>
-                  </button>
+                    <option value="recommendation">🤖 おすすめ順</option>
+                    <option value="trust">🛡️ 信頼度</option>
+                    <option value="budget">💰 報酬順</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-600 font-medium">表示:</span>
+                  <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📊</span>
+                      <span>グリッド</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('timeline')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
+                        viewMode === 'timeline'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📜</span>
+                      <span>タイムライン</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Third Row: Buttons & Presets */}
+              {/* Second Row: Buttons & Presets */}
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -332,16 +339,6 @@ export default function JobsSearchPage() {
                       }`}
                     >
                       📊
-                    </button>
-                    <button
-                      onClick={() => setViewMode('timeline')}
-                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
-                        viewMode === 'timeline'
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-100 text-slate-700 border border-slate-300'
-                      }`}
-                    >
-                      📜
                     </button>
                     <button
                       onClick={() => setViewMode('immersive')}
@@ -642,36 +639,44 @@ function JobCard({ job }) {
           )}
         </div>
 
-        {/* Quick Details */}
-        <div className="grid grid-cols-4 gap-4 text-sm mb-4">
+        {/* Quick Details - Mobile optimized */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-sm mb-4">
           <div>
-            <p className="text-slate-600">報酬</p>
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="報酬">
+              <span aria-hidden="true">💰 </span>報酬
+            </p>
             {job.workType === 'hourly' && job.hourlyRate ? (
               <div className="space-y-1">
-                <p className="text-lg font-bold text-slate-900">¥{job.hourlyRate?.toLocaleString()}/h</p>
-                <p className="text-xs text-slate-500">目安合計: ¥{job.budget?.toLocaleString()}</p>
+                <p className="text-base md:text-lg font-bold text-slate-900 break-words">¥{job.hourlyRate?.toLocaleString()}/h</p>
+                <p className="text-xs text-slate-500 break-words">目安合計: ¥{job.budget?.toLocaleString()}</p>
                 {job.milestones?.length > 0 && (
-                  <p className="text-xs text-slate-500">シフト予定: {job.milestones.length}日{firstShift ? ` ・ 初回 ${firstShift.start}–${firstShift.end}` : ''}</p>
+                  <p className="text-xs text-slate-500 break-words">シフト予定: {job.milestones.length}日{firstShift ? ` ・ 初回 ${firstShift.start}–${firstShift.end}` : ''}</p>
                 )}
               </div>
             ) : (
-              <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+              <p className="text-base md:text-lg font-bold text-slate-900 break-words">¥{job.budget?.toLocaleString()}</p>
             )}
           </div>
           <div>
-            <p className="text-slate-600">期限</p>
-            <p className="text-lg font-bold text-slate-900">
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="期限">
+              <span aria-hidden="true">📅 </span>期限
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 break-words">
               {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
             </p>
           </div>
           <div>
-            <p className="text-slate-600">依頼者</p>
-            <p className="text-lg font-bold text-slate-900 truncate">{job.by || 'クライアント'}</p>
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="依頼者">
+              <span aria-hidden="true">👤 </span>依頼者
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 truncate">{job.by || 'クライアント'}</p>
           </div>
           <div>
-            <p className="text-slate-600">評価</p>
-            <p className="text-lg font-bold text-slate-900">
-              ⭐ {job.popularity?.toFixed(1) || 'N/A'} / {job.clientRating?.totalReviews || 0}件
+            <p className="text-xs md:text-sm text-slate-600 mb-1" aria-label="評価">
+              <span aria-hidden="true">⭐ </span>評価
+            </p>
+            <p className="text-base md:text-lg font-bold text-slate-900 break-words">
+              {job.popularity?.toFixed(1) || 'N/A'} / {job.clientRating?.totalReviews || 0}件
             </p>
           </div>
         </div>
