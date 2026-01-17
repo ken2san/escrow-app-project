@@ -192,7 +192,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
         <div className="text-center">
           <p className="text-2xl text-gray-600 mb-4">条件に合う仕事がありません</p>
           <button
-            onClick={onExitImmersive}
+            onClick={() => onExitImmersive?.()}
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition"
           >
             戻る
@@ -213,7 +213,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
           <p className="text-2xl font-bold text-gray-800 mb-2">全ての仕事を見ました！</p>
           <p className="text-gray-600 mb-6">すべてチェック完了です。おめでとうございます！</p>
           <button
-            onClick={onExitImmersive}
+            onClick={() => onExitImmersive?.()}
             className="px-8 py-4 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             戻る
