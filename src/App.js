@@ -79,7 +79,7 @@ export default function App() {
   }, []);
   const location = useLocation();
   const navigate = useNavigate();
-  const activePage = location.pathname === '/' ? 'command-ui' : location.pathname.replace('/', '');
+  const activePage = location.pathname === '/' ? 'jobs' : location.pathname.replace('/', '');
   const [activeProjectDetailTab, setActiveProjectDetailTab] = useState('details');
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
@@ -311,7 +311,7 @@ export default function App() {
         }} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<MarketCommandUIPage />} />
+            <Route path="/" element={<JobsSearchPage />} />
             <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setCurrentViewMode={setCurrentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={async () => {}} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
             <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
