@@ -13,6 +13,7 @@ export default function ImmersiveJobCard({
   const [displayScore, setDisplayScore] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [slideAnimation, setSlideAnimation] = useState('');
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Score count-up animation
   useEffect(() => {
@@ -75,26 +76,29 @@ export default function ImmersiveJobCard({
   };
 
   const handleTouchEnd = (e) => {
-    if (!touchStart) return;
+    if (!touchStart || isAnimating) return;
 
     const touchEnd = e.changedTouches[0].clientX;
     const distance = touchStart - touchEnd;
     const isHorizontalSwipe = Math.abs(distance) > 50;
 
     if (isHorizontalSwipe) {
+      setIsAnimating(true);
       if (distance > 0) {
-        // Swipe left: Next job (skip)
+        // Swipe left: Skip job
         setSlideAnimation('slide-out-left');
         setTimeout(() => {
           onSkip?.();
           setSlideAnimation('');
+          setIsAnimating(false);
         }, 300);
       } else {
-        // Swipe right: Apply job
+        // Swipe right: Apply to job
         setSlideAnimation('slide-out-right');
         setTimeout(() => {
           onNext?.(job);
           setSlideAnimation('');
+          setIsAnimating(false);
         }, 300);
       }
     }
@@ -105,20 +109,32 @@ export default function ImmersiveJobCard({
   // Keyboard handlers
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (!job) return;
+      if (!job || isAnimating) return;
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        onSkip?.();
+        setIsAnimating(true);
+        setSlideAnimation('slide-out-left');
+        setTimeout(() => {
+          onSkip?.();
+          setSlideAnimation('');
+          setIsAnimating(false);
+        }, 300);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        onNext?.(job);
+        setIsAnimating(true);
+        setSlideAnimation('slide-out-right');
+        setTimeout(() => {
+          onNext?.(job);
+          setSlideAnimation('');
+          setIsAnimating(false);
+        }, 300);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [job, onNext, onSkip]);
+  }, [job, onNext, onSkip, isAnimating]);
 
   if (!job) {
     return (
