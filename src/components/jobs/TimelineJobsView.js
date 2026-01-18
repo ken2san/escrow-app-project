@@ -173,6 +173,7 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isNewCard, setIsNewCard] = useState(false);
+  const [slideInDirection, setSlideInDirection] = useState('right'); // 'right' or 'left'
 
   // Apply: navigate to Work Management
   const handleApply = useCallback((job) => {
@@ -182,15 +183,16 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
 
   // Like/save: stay in immersive and go to next (looping)
   const handlePrev = useCallback(() => {
+    setSlideInDirection('left');
     setIsNewCard(true);
     setTimeout(() => setIsNewCard(false), 300);
     setCurrentIndex((prev) => (prev - 1 + jobs.length) % jobs.length);
   }, [jobs.length]);
 
   const handleSkip = useCallback(() => {
+    setSlideInDirection('right');
     setIsNewCard(true);
     setTimeout(() => setIsNewCard(false), 300);
-    // Loop to the beginning when reaching the end
     setCurrentIndex((prev) => (prev + 1) % jobs.length);
   }, [jobs.length]);
 
@@ -243,6 +245,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
       totalJobs={jobs.length}
       maxScore={100}
       isNew={isNewCard}
+      slideInDirection={slideInDirection}
     />
   );
 }

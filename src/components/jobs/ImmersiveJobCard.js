@@ -11,6 +11,7 @@ export default function ImmersiveJobCard({
   currentIndex = 0,
   totalJobs = 0,
   isNew = false,
+  slideInDirection = 'right',
 }) {
   const [displayScore, setDisplayScore] = useState(0);
   const [touchStartPos, setTouchStartPos] = useState(null);
@@ -236,7 +237,11 @@ export default function ImmersiveJobCard({
         className={`w-full h-full transition-transform duration-300 ease-out ${
           slideAnimation === 'slide-out-left' ? '-translate-x-full' : ''
         } ${slideAnimation === 'slide-out-right' ? 'translate-x-full' : ''} ${
-          isNew ? 'animate-slide-in' : ''
+          isNew
+            ? slideInDirection === 'right'
+              ? 'animate-slide-in-from-right'
+              : 'animate-slide-in-from-left'
+            : ''
         }`}
       >
       {/* Header with progress */}

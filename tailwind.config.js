@@ -6,13 +6,18 @@ module.exports = {
   theme: {
     extend: {
       keyframes: {
-        slideIn: {
+        slideInFromRight: {
           'from': { transform: 'translateX(100%)', opacity: '0.5' },
+          'to': { transform: 'translateX(0)', opacity: '1' }
+        },
+        slideInFromLeft: {
+          'from': { transform: 'translateX(-100%)', opacity: '0.5' },
           'to': { transform: 'translateX(0)', opacity: '1' }
         }
       },
       animation: {
-        'slide-in': 'slideIn 0.25s ease-out'
+        'slide-in-from-right': 'slideInFromRight 0.25s ease-out',
+        'slide-in-from-left': 'slideInFromLeft 0.25s ease-out'
       }
     },
   },
