@@ -86,6 +86,27 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
   const sScoreIcon = getScoreIcon(job.sScore);
   const ambiguityIcon = getScoreIcon(job.ambiguityScore);
   const recommendationIcon = getScoreIcon(job.recommendationScore);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+
+  const handleApply = () => setShowApplyModal(true);
+  const handleApplyModalClose = () => setShowApplyModal(false);
+  const handleApplyModalSubmit = () => {
+    if (job?.id) {
+      if (typeof window.addPendingApplicationJob === 'function') {
+        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id);
+      } else if (typeof addPendingApplicationJob === 'function') {
+        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+      }
+      setApplicationStatus('pending');
+      setShowApplyModal(false);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 1200);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden border-l-4 border-indigo-500">
@@ -159,11 +180,23 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 
         {/* CTA */}
         <button
-          disabled
-          className="w-full px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-slate-300 text-white cursor-not-allowed"
+          onClick={handleApply}
+          className="w-full px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+          disabled={!!applicationStatus}
         >
-          応募は上部のカードから行ってください
+          {applicationStatus ? (applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用済み' : '不採用') : 'このお仕事を見る'}
         </button>
+        <ApplyJobModal
+          isOpen={showApplyModal}
+          onClose={handleApplyModalClose}
+          onSubmit={handleApplyModalSubmit}
+          job={job}
+        />
+        {showToast && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
+            応募が完了しました！
+          </div>
+        )}
       </div>
     </div>
   );

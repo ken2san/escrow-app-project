@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
-import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal, getPendingApplicationJobsForUser, updateApplicationJobStatus } from '../utils/initialData';
+import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser, addPendingApplicationJob } from '../utils/initialData';
+import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
@@ -477,20 +477,17 @@ export default function JobsSearchPage() {
 }
 
 /* Job Card Component */
-function JobCard({ job, pendingApplications = [] }) {
-    // 応募状態取得
-    const [applicationStatus, setApplicationStatus] = useState(() => {
-      const found = pendingApplications.find(j => j.jobId === job.id);
-      return found ? found.status : null;
-    });
+function JobCard({ job, pendingApplications = [], onApply }) {
+  // 応募状態取得
+  const [applicationStatus, setApplicationStatus] = useState(() => {
+    const found = pendingApplications.find(j => j.jobId === job.id);
+    return found ? found.status : null;
+  });
 
-    // テスト用: 状態変更ボタン
-    const handleStatusChange = (status) => {
-      updateApplicationJobStatus(job.id, status, loggedInUserDataGlobal.id);
-      setApplicationStatus(status);
-    };
+  // テスト用: 状態変更ボタン
   const [isExpanded, setIsExpanded] = useState(false);
-  const navigate = useNavigate();
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const getScoreIcon = (score) => {
     if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
@@ -503,19 +500,7 @@ function JobCard({ job, pendingApplications = [] }) {
   const ambiguityIcon = getScoreIcon(job.ambiguityScore);
   const recommendationIcon = getScoreIcon(job.recommendationScore);
 
-  const getCategoryBadgeStyle = (category) => {
-    const base = 'px-2 py-0.5 text-xs font-semibold rounded-full border';
-    switch (category) {
-      case '飲食':
-        return `${base} bg-emerald-50 text-emerald-700 border-emerald-200`;
-      case '物流':
-        return `${base} bg-indigo-50 text-indigo-700 border-indigo-200`;
-      case '小売':
-        return `${base} bg-orange-50 text-orange-700 border-orange-200`;
-      default:
-        return `${base} bg-slate-100 text-slate-700 border-slate-200`;
-    }
-  };
+  // ...existing code...
 
   // AI Flag styling
   const getFlagStyle = () => {
@@ -538,8 +523,34 @@ function JobCard({ job, pendingApplications = [] }) {
   };
 
   const firstShift = getFirstShift(job);
+
+  // Handle Apply Modal
+  const handleApply = (e) => {
+    e.stopPropagation();
+    setShowApplyModal(true);
+  };
+  const handleApplyModalClose = () => setShowApplyModal(false);
+  const handleApplyModalSubmit = () => {
+    if (job?.id) {
+      // Add to pending applications
+      if (typeof window.addPendingApplicationJob === 'function') {
+        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id);
+      } else if (typeof addPendingApplicationJob === 'function') {
+        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+      }
+      setApplicationStatus('pending');
+      setShowApplyModal(false);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        // Do not navigate to work management immediately; wait for acceptance
+      }, 1200);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+    <>
+      <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       {/* AI Flag + Header */}
       <div className="bg-gradient-to-r from-slate-50 to-white p-4 md:p-6 border-b border-slate-200">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -549,23 +560,23 @@ function JobCard({ job, pendingApplications = [] }) {
               {applicationStatus && (
                 <span className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${applicationStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' : applicationStatus === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                   {applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用' : '不採用'}
-                </span>
-              )}
-              {/* テスト用: 応募中なら状態遷移ボタン表示 */}
-              {applicationStatus === 'pending' && (
-                <span className="ml-2 flex gap-1">
-                  <button className="px-2 py-0.5 text-xs rounded bg-emerald-200 text-emerald-900" onClick={() => handleStatusChange('accepted')}>採用</button>
-                  <button className="px-2 py-0.5 text-xs rounded bg-red-200 text-red-900" onClick={() => handleStatusChange('rejected')}>不採用</button>
-                </span>
-              )}
-              {job.category && (
-                <span className={getCategoryBadgeStyle(job.category)}>
-                  {job.category}
-                </span>
-              )}
-              {job.locationType && (
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  {job.locationType === 'remote' ? 'リモート' : job.locationType === 'hybrid' ? 'ハイブリッド' : '現地'}
+                <>
+                  <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+                    ...existing code...
+                  </div>
+                  {/* Apply Modal */}
+                  <ApplyJobModal
+                    isOpen={showApplyModal}
+                    onClose={handleApplyModalClose}
+                    onSubmit={handleApplyModalSubmit}
+                    job={job}
+                  />
+                  {showToast && (
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
+                      応募が完了しました！
+                    </div>
+                  )}
+                </>
                 </span>
               )}
               {firstShift && (
@@ -587,14 +598,11 @@ function JobCard({ job, pendingApplications = [] }) {
             )}
           </div>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              addDraftJobs([job.id], loggedInUserDataGlobal.id);
-              navigate('/work-management');
-            }}
+            onClick={handleApply}
             className="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+            disabled={!!applicationStatus}
           >
-            このお仕事を見る
+            {applicationStatus ? (applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用済み' : '不採用') : 'このお仕事を見る'}
           </button>
         </div>
 
@@ -929,5 +937,18 @@ function JobCard({ job, pendingApplications = [] }) {
         </div>
       )}
     </div>
+    {/* Apply Modal */}
+    <ApplyJobModal
+      isOpen={showApplyModal}
+      onClose={handleApplyModalClose}
+      onSubmit={handleApplyModalSubmit}
+      job={job}
+    />
+    {showToast && (
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
+        応募が完了しました！
+      </div>
+    )}
+  </>
   );
 }

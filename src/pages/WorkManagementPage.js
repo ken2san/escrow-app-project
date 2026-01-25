@@ -5,35 +5,42 @@ import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSe
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { workManagementProjects as initialProjectsData, getProposedProjectsForUser, getDraftProjectsForUser, loggedInUserDataGlobal } from '../utils/initialData';
+import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal } from '../utils/initialData';
 
 import EmptyDropzone from '../components/common/EmptyDropzone';
 
 // 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
 function getInitialProjects() {
-        const base = initialProjectsData.map(project => {
-            if (project.cards && Array.isArray(project.cards)) return project;
-            if (project.milestones && Array.isArray(project.milestones)) {
-                return {
-                    ...project,
-                    cards: project.milestones.map((m, idx) => ({
-                        id: m.id || `${project.id}-m${idx+1}`,
-                        projectId: project.id,
-                        title: m.name || m.title,
-                        status: m.status || 'unsent',
-                        reward: m.amount || 0,
-                        startDate: m.dueDate || '',
-                        duration: '',
-                        order: idx+1,
-                    })),
-                };
-            }
-            return { ...project, cards: [] };
-        });
-        // Merge proposed projects for current user
-        const proposed = getProposedProjectsForUser(loggedInUserDataGlobal.id);
-        const drafts = getDraftProjectsForUser(loggedInUserDataGlobal.id);
-        return [...base, ...drafts, ...proposed];
+        // Only show jobs that have been accepted by the client (application status 'accepted')
+        const { getPendingApplicationJobsForUser } = require('../utils/initialData');
+        const acceptedJobs = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id)
+            .filter(j => j.status === 'accepted')
+            .map(j => j.jobId);
+        const base = initialProjectsData
+            .filter(project => acceptedJobs.includes(project.id))
+            .map(project => {
+                if (project.cards && Array.isArray(project.cards)) return project;
+                if (project.milestones && Array.isArray(project.milestones)) {
+                    return {
+                        ...project,
+                        cards: project.milestones.map((m, idx) => ({
+                            id: m.id || `${project.id}-m${idx+1}`,
+                            projectId: project.id,
+                            title: m.name || m.title,
+                            status: m.status || 'unsent',
+                            reward: m.amount || 0,
+                            startDate: m.dueDate || '',
+                            duration: '',
+                            order: idx+1,
+                        })),
+                    };
+                }
+                return { ...project, cards: [] };
+            });
+        // Merge proposed projects for current user (if needed)
+        // const proposed = getProposedProjectsForUser(loggedInUserDataGlobal.id);
+        // const drafts = getDraftProjectsForUser(loggedInUserDataGlobal.id);
+        return base;
 }
 
 // styles moved to src/pages/workmanagement.css

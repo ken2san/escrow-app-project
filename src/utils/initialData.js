@@ -190,7 +190,13 @@ export function getMyProjectCards(userId) {
 const _proposedProjectsByUser = {};
 const _draftProjectsByUser = {};
 // { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected' }] }
-const _pendingApplicationJobsByUser = {};
+const _pendingApplicationJobsByUser = {
+  'user555': [
+    { jobId: 1, status: 'accepted' },
+    { jobId: 2, status: 'accepted' },
+    { jobId: 3, status: 'accepted' },
+  ]
+};
 // Add a job to the pending application list for a user
 // 応募中リストに追加（デフォルトはpending）
 export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id) {
