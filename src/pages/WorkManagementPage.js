@@ -1,51 +1,50 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal } from '../utils/initialData';
+import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal, addPendingApplicationJob } from '../utils/initialData';
+import { dashboardAllProjects } from '../utils/initialData';
 
+import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 import EmptyDropzone from '../components/common/EmptyDropzone';
+// import * as initialDataUtils from '../utils/initialData';
 
-// 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
-function getInitialProjects() {
-        // Only show jobs that have been accepted by the client (application status 'accepted')
-        const { getPendingApplicationJobsForUser } = require('../utils/initialData');
-        const acceptedJobs = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id)
-            .filter(j => j.status === 'accepted')
-            .map(j => j.jobId);
-        const base = initialProjectsData
-            .filter(project => acceptedJobs.includes(project.id))
-            .map(project => {
-                if (project.cards && Array.isArray(project.cards)) return project;
-                if (project.milestones && Array.isArray(project.milestones)) {
-                    return {
-                        ...project,
-                        cards: project.milestones.map((m, idx) => ({
-                            id: m.id || `${project.id}-m${idx+1}`,
-                            projectId: project.id,
-                            title: m.name || m.title,
-                            status: m.status || 'unsent',
-                            reward: m.amount || 0,
-                            startDate: m.dueDate || '',
-                            duration: '',
-                            order: idx+1,
-                        })),
-                    };
-                }
-                return { ...project, cards: [] };
-            });
-        // Merge proposed projects for current user (if needed)
-        // const proposed = getProposedProjectsForUser(loggedInUserDataGlobal.id);
-        // const drafts = getDraftProjectsForUser(loggedInUserDataGlobal.id);
-        return base;
+// --- カードごとの履歴管理 ---
+// メモリ上でカードIDごとに履歴を保持（本来はDB/API管理）
+const cardHistoryMapRef = typeof window !== 'undefined' ? (window.__cardHistoryMapRef = window.__cardHistoryMapRef || {}) : {};
+
+function getCardHistory(cardId) {
+    return cardHistoryMapRef[cardId] || [];
+}
+function addCardHistory(cardId, entry) {
+    if (!cardHistoryMapRef[cardId]) cardHistoryMapRef[cardId] = [];
+    cardHistoryMapRef[cardId].push(entry);
 }
 
-// styles moved to src/pages/workmanagement.css
+function initCardHistoryIfNeeded(card) {
+    if (!cardHistoryMapRef[card.id]) {
+        // 初期履歴（作成時）
+        cardHistoryMapRef[card.id] = [{
+            type: 'created',
+            text: 'カード作成',
+            date: card.startDate || new Date().toISOString(),
+            userName: loggedInUserDataGlobal.name,
+            userIcon: '📝',
+        }];
+    }
+}
 
-export default function WorkManagementPage() {
+// 初期データ取得関数（将来はAPI/Firebase fetchに差し替え可）
+// (getInitialProjects removed as unused)
+    // styles moved to src/pages/workmanagement.css
+
+    export default function WorkManagementPage() {
+
+    const { t } = useTranslation();
 
     // Ref for each card
     // State for showing the new project modal
@@ -59,23 +58,64 @@ export default function WorkManagementPage() {
         return () => main.removeEventListener('openNewProjectModal', handler);
     }, []);
     // Project/card id counters for unique ids
-    const [nextProjectId, setNextProjectId] = useState(4);
-    const [nextCardId, setNextCardId] = useState(7);
+        // const [nextProjectId, setNextProjectId] = useState(4);
+        // const [nextCardId, setNextCardId] = useState(7);
+    // タブ状態: 'inprogress'|'pending'|'completed'
+    const [projectTab, setProjectTab] = useState('inprogress');
     // Compute initial projects once to avoid duplicate work
-    const initialProjects = useMemo(() => getInitialProjects(), []);
-    // State for projects (array, to match ProjectFlowDemoPage)
-    const [projects, setProjects] = useState(initialProjects);
+    // 全案件（pending, accepted, completed）を取得
+    function getAllProjects() {
+        const { getPendingApplicationJobsForUser } = require('../utils/initialData');
+        const pendingJobs = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id)
+            .map(j => ({ jobId: j.jobId, status: j.status }));
+        // まずworkManagementProjectsから取得
+        let projects = initialProjectsData
+            .map(project => {
+                const pj = pendingJobs.find(j => String(j.jobId) === String(project.id));
+                return pj ? { ...project, _pendingStatus: pj.status } : null;
+            })
+            .filter(Boolean);
+
+        // pending/accepted jobIdでinitialProjectsDataに無いものをdashboardAllProjectsから補完
+        const existingIds = new Set(projects.map(p => String(p.id)));
+        pendingJobs.forEach(j => {
+            if (!existingIds.has(String(j.jobId))) {
+                const dashProject = dashboardAllProjects.find(p => String(p.id) === String(j.jobId));
+                if (dashProject) {
+                    projects.push({ ...dashProject, _pendingStatus: j.status });
+                }
+            }
+        });
+        return projects;
+    }
+    const allProjects = useMemo(() => getAllProjects(), []);
+    // タブごとにフィルタ
+    const filteredProjects = useMemo(() => {
+        if (projectTab === 'pending') return allProjects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
+        if (projectTab === 'completed') return allProjects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了');
+        // 進行中: accepted かつ未完了
+        return allProjects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了');
+    }, [allProjects, projectTab]);
+
+    // 応募中タブで「仕事管理に登録」ボタンを表示
+    const handleRegisterPendingJob = (jobId) => {
+        addPendingApplicationJob(jobId, loggedInUserDataGlobal.id);
+        window.location.reload();
+    };
+    // cardsもfilteredProjectsから生成
+    const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
+    useEffect(() => {
+        setCards(filteredProjects.flatMap(p => p.cards || []));
+    }, [filteredProjects]);
+        // projectsはfilteredProjectsを参照
+        const projects = filteredProjects;
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     // Handler to confirm new project from modal
     const handleConfirmNewProject = (newProject) => {
-        setProjects(prev => [...prev, newProject]);
-        // 新規プロジェクトのカードもcardsに追加
-        if (newProject.cards && newProject.cards.length > 0) {
-            setCards(prev => [...prev, ...newProject.cards]);
-        }
-        setNextProjectId(prev => prev + 1);
-        setNextCardId(prev => prev + (newProject.cards?.length || 0));
+        // 新規プロジェクトはallProjectsに追加（本来はDB/API）
+        // 今回はreloadで反映
         setShowNewProjectModal(false);
+        window.location.reload();
     };
     // ...existing code...
     const cardRefs = useRef({});
@@ -86,7 +126,7 @@ export default function WorkManagementPage() {
     // const [undoToastList, setUndoToastList] = useState([]); // [{id, message, visible}]
     // const [successToastOpen, setSuccessToastOpen] = useState(false);
     // cards state is initialized from all cards in initialProjects
-    const [cards, setCards] = useState(initialProjects.flatMap(p => p.cards || []));
+    // （重複宣言を削除）
     const [viewSettings, setViewSettings] = useState({ layout: 'list', groupBy: 'project', sortBy: 'startDate' });
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -133,6 +173,7 @@ export default function WorkManagementPage() {
     const handleEditClick = (card) => {
         setEditingCard({ ...card }); // Copy for editing
         setEditErrors({});
+        initCardHistoryIfNeeded(card);
         setEditModalOpen(true);
     };
 
@@ -157,9 +198,17 @@ export default function WorkManagementPage() {
 
     const handleSaveEdit = () => {
         if (!validateEdit(editingCard)) return;
-    setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
+        setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
         setUndoToast({ open: true, message: 'カードを編集しました', id: Date.now() });
         setCards(prev => prev.map(card => card.id === editingCard.id ? { ...editingCard, status: 'edited' } : card));
+        // 履歴追加
+        addCardHistory(editingCard.id, {
+          type: 'edited',
+          text: 'カード内容を編集',
+          date: new Date().toISOString(),
+          userName: loggedInUserDataGlobal.name,
+          userIcon: '📝',
+        });
         setEditModalOpen(false);
     };
 
@@ -182,15 +231,34 @@ export default function WorkManagementPage() {
 
     // (listener consolidated earlier) — no-op here
 
+    // --- タブ切り替えUI ---
+    const tabDefs = [
+        { key: 'inprogress', label: '進行中' },
+        { key: 'pending', label: '応募中' },
+        { key: 'completed', label: '完了' },
+    ];
+
     return (
         <div className="flex h-screen overflow-hidden">
+            {/* 応募中タブで「仕事管理に登録」ボタン */}
+            {projectTab === 'pending' && (
+                <div className="fixed top-20 right-8 z-40">
+                    {filteredProjects.map(project => (
+                        <button
+                            key={project.id}
+                            className="mb-2 px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-600"
+                            onClick={() => handleRegisterPendingJob(project.id)}
+                        >
+                            この仕事を仕事管理に登録
+                        </button>
+                    ))}
+                </div>
+            )}
             {/* New Project Modal (ProjectFlowDemo style) */}
             <NewProjectModal
                 open={showNewProjectModal}
                 onClose={handleCloseNewProject}
                 onConfirm={handleConfirmNewProject}
-                nextProjectId={nextProjectId}
-                nextCardId={nextCardId}
             />
             {/* Undo Toast Notification */}
             {undoToast.open && (
@@ -225,6 +293,11 @@ export default function WorkManagementPage() {
                                         {editErrors.duration && <p className="text-xs text-red-500 mt-1">{editErrors.duration}</p>}
                                     </div>
                                 </div>
+                                {/* --- 履歴タイムライン --- */}
+                                <div className="mt-6">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">アクション履歴</label>
+                                    <CardHistoryTimeline history={getCardHistory(editingCard.id)} />
+                                </div>
                             </div>
                         </div>
                         <div className="p-6 bg-slate-50 border-t flex justify-end space-x-3">
@@ -235,10 +308,19 @@ export default function WorkManagementPage() {
                 </div>
             )}
             {/* Main Content */}
-
-
             <main className="flex-1 flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                <div className="w-full max-w-4xl mx-auto mt-4 mb-2 flex gap-2">
+                    {tabDefs.map(tab => (
+                        <button
+                            key={tab.key}
+                            className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all ${projectTab === tab.key ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 bg-slate-100 hover:bg-slate-200'}`}
+                            onClick={() => setProjectTab(tab.key)}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 md:p-8">
                         {/* View Settings Panel - Mobile optimized with hamburger menu */}
                         <div className="sticky top-12 z-20 bg-slate-100 py-1 mb-0" style={{marginLeft: window.innerWidth < 768 ? 0 : '-2rem', marginRight: window.innerWidth < 768 ? 0 : '-2rem', paddingLeft: window.innerWidth < 768 ? '1rem' : '2rem', paddingRight: window.innerWidth < 768 ? '1rem' : '2rem'}}>
                           {/* Mobile: Hamburger Menu */}
@@ -559,13 +641,16 @@ export default function WorkManagementPage() {
                                             }
                                         } else if (viewSettings.groupBy === 'status') {
                                             const statusLabels = {
-                                                unsent: '未編集',
-                                                edited: '編集済',
-                                                awaiting_approval: '承認待ち',
-                                                revision_needed: '要修正',
-                                                approved: '承認済',
+                                                unsent: t('statusUnsent', '未編集'),
+                                                edited: t('statusEdited', '編集済'),
+                                                awaiting_approval: t('statusAwaitingApproval', '承認待ち'),
+                                                revision_needed: t('statusRevisionNeeded', '要修正'),
+                                                approved: t('statusApproved', '承認済'),
+                                                completed: t('statusCompleted', '完了'),
+                                                pending: t('statusPending', '応募中'),
+                                                inprogress: t('statusInProgress', '進行中'),
                                             };
-                                            groupTitle = statusLabels[groupKey] || groupKey;
+                                            groupTitle = statusLabels[groupKey] || t(groupKey, groupKey);
                                         } else if (viewSettings.groupBy === 'dueDate') {
                                             const dueLabels = {
                                                 '期限切れ': '期限切れ',
@@ -880,66 +965,64 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none',
     };
-    // Status badge
-    const statusInfo = {
-        unsent: { label: '未編集', bg: 'bg-slate-200', text: 'text-slate-600' },
-        edited: { label: '編集済', bg: 'bg-blue-100', text: 'text-blue-700' },
-        awaiting_approval: { label: '承認待ち', bg: 'bg-yellow-100', text: 'text-yellow-700' },
-        revision_needed: { label: '要修正', bg: 'bg-red-100', text: 'text-red-700' },
-        approved: { label: '承認済', bg: 'bg-green-100', text: 'text-green-700' },
-    }[card.status] || { label: card.status, bg: 'bg-slate-200', text: 'text-slate-600' };
-    // Action icon
-    const actionIcon = (card.status === 'unsent' || card.status === 'revision_needed') ? (
+    // --- UX改善: ステータスバッジ＆次アクションガイド ---
+    const { t } = require('react-i18next').useTranslation();
+    let statusBadge = null;
+    let nextStepGuide = null;
+    // 応募中
+    if (card._pendingStatus === 'pending') {
+        statusBadge = <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 mr-2">{t('statusPending', '採用待ち')}</span>;
+        nextStepGuide = <span className="block text-xs text-yellow-700 mt-1">{t('nextStepPending', 'クライアントの採用連絡をお待ちください。')}</span>;
+    } else if (card._pendingStatus === 'accepted' && card.status !== '完了') {
+        // 進行中
+        statusBadge = <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mr-2">{t('statusInProgress', '進行中')}</span>;
+        nextStepGuide = <span className="block text-xs text-blue-700 mt-1">{t('nextStepInProgress', '作業を進めてください。納品・連絡が可能です。')}</span>;
+    } else if ((card.status === '完了') || (card._pendingStatus === 'accepted' && card.status === '完了')) {
+        // 完了
+        statusBadge = <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-700 mr-2">{t('statusCompleted', '完了')}</span>;
+        nextStepGuide = <span className="block text-xs text-gray-500 mt-1">{t('nextStepCompleted', 'この仕事は完了しました。')}</span>;
+    } else {
+        // その他
+        // ステータスキーをキャメルケースに変換し、i18nキーに合わせる
+        let statusKey = card.status || '';
+        if (statusKey.includes('_')) {
+            statusKey = statusKey.split('_').map((s, i) => i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1)).join('');
+        }
+        statusBadge = <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600 mr-2">{t(`status${statusKey.charAt(0).toUpperCase() + statusKey.slice(1)}`) || t(card.status, card.status || '未設定')}</span>;
+    }
+    // Action icon: 編集は常時表示
+    const actionIcon = (
         <button title="編集する" className="text-slate-400 hover:text-indigo-600 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
         </button>
-    ) : card.status === 'edited' ? (
-        <button title="送信する" className="text-blue-500 hover:text-blue-700 flex-shrink-0 pointer-events-auto" onMouseDown={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()} onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit && onEdit(card); }}>
-            <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.949a.75.75 0 00.95.826L11.25 8.25l-5.607-1.752a.75.75 0 00-.95-.826z" /><path d="M15 6.75a.75.75 0 00-.75-.75h-3.5a.75.75 0 000 1.5h3.5a.75.75 0 00.75-.75zM15 9.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM15 12.75a.75.75 0 00-.75-.75h-6.5a.75.75 0 000 1.5h6.5a.75.75 0 00.75-.75zM4.832 15.312a.75.75 0 00.95-.826l-1.414-4.95a.75.75 0 00-.95-.826L.5 11.25l5.607 1.752a.75.75 0 00.95.826z" /></svg>
-        </button>
-    ) : null;
-    // Project name
-    const projectName = projects && projects[card.projectId]?.name;
-    // Due date
-    const dueDate = (() => {
-        if (!card.startDate || !card.duration) return '';
-        const date = new Date(card.startDate);
-        if (isNaN(date.getTime())) return '';
-        date.setDate(date.getDate() + Number(card.duration));
-        if (isNaN(date.getTime())) return '';
-        return date.toISOString().split('T')[0];
-    })();
+    );
+
+    // --- JSX return for SortableCard ---
     return (
         <div
             ref={combinedRef}
-            style={style}
             {...attributes}
             {...listeners}
-            className={
-                'bg-white rounded-lg shadow kanban-card flex flex-col gap-2 border border-slate-200 min-h-[48px] transition-all p-3 sm:p-4 cursor-pointer hover:shadow-md touch-none select-none ' +
-                (isDragging ? 'dragging' : '')
-            }
-            onClick={() => onEdit && onEdit(card)}
+            className={`relative flex items-start gap-2 p-3 mb-2 bg-white rounded-lg shadow-sm border border-slate-200 transition-all duration-150 ${isDragging ? 'ring-2 ring-indigo-300 opacity-70' : ''}`}
+            style={{ ...style, boxShadow: isDragging ? '0 8px 20px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.06)' }}
         >
-            <div className="flex justify-between items-start">
-                <h4 className="font-semibold text-slate-800 flex-1 pr-2 text-base truncate">{card.title}</h4>
-                <div className="flex items-center space-x-2">
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>{statusInfo.label}</span>
-                    {actionIcon}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center mb-1">
+                    {statusBadge}
+                    <span className="font-semibold text-sm truncate">{card.title}</span>
                 </div>
+                <div className="text-xs text-slate-600 truncate mb-1">{card.description}</div>
+                {/* 日付・期間・報酬など */}
+                <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-1">
+                    {card.startDate && <span>開始日: {card.startDate}</span>}
+                    {card.duration && <span>期間: {card.duration}日</span>}
+                    {card.reward && <span>報酬: ¥{Number(card.reward).toLocaleString()}</span>}
+                </div>
+                {nextStepGuide}
             </div>
-            {layout === 'board' && (
-                <p className="text-sm text-slate-500 mt-1">{projectName}</p>
-            )}
-            <div className="flex justify-between items-end mt-2">
-                <div className="text-sm text-slate-600">
-                    <p>¥{card.reward.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500">期日: {dueDate || '未設定'} ({card.duration}日間)</p>
-                </div>
-                <img src="https://placehold.co/24x24/E0E7FF/4F46E5?text=A" alt="Assignee" className="w-6 h-6 rounded-full" />
+            <div className="flex flex-col items-end justify-between ml-2">
+                {actionIcon}
             </div>
         </div>
     );
-}
-
-    // Component to match drop target height to card
+    }

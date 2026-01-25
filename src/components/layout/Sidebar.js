@@ -110,21 +110,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         {isSidebarOpen && <span className="ml-3 text-sm">{t('jobsSearch', '仕事を探す')}</span>}
       </button>
     </li>
-    {/* 応募中 */}
-    <li className="mb-1">
-      <button
-        onClick={() => navigate('/pending-applications')}
-        className={`w-full flex items-center p-2.5 rounded-md hover:bg-yellow-600 ${
-          window.location.pathname === '/pending-applications'
-            ? 'bg-yellow-500 text-white shadow-lg'
-            : 'text-yellow-200 hover:text-white'
-        } ${!isSidebarOpen ? 'justify-center' : ''}`}
-        title={isSidebarOpen ? '' : '応募中'}
-      >
-        <AlertTriangle className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">応募中</span>}
-      </button>
-    </li>
+    {/* 応募中（タブ化のためサイドバーから削除） */}
     {/* 仕事管理 */}
     <li className="mb-1">
       <button

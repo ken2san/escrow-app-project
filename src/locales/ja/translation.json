@@ -105,5 +105,13 @@
   "statusWorkReady": "作業開始待ち",
   "agreementPending": "協議中",
   "statusInDispute": "協議中",
-  "projectOverview": "プロジェクト概要"
+  "projectOverview": "プロジェクト概要",
+  "statusApproved": "承認済",
+  "statusAwaitingApproval": "承認待ち",
+  "statusUnsent": "未編集",
+  "statusEdited": "編集済",
+  "statusRevisionNeeded": "要修正",
+  "statusCompleted": "完了",
+  "statusPending": "応募中",
+  "statusInProgress": "進行中"
 }
