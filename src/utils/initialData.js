@@ -186,9 +186,32 @@ export function getMyProjectCards(userId) {
   }));
 }
 
-// In-memory proposals/drafts store (demo only)
+// In-memory proposals/drafts/pending applications store (demo only)
 const _proposedProjectsByUser = {};
 const _draftProjectsByUser = {};
+// { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected' }] }
+const _pendingApplicationJobsByUser = {};
+// Add a job to the pending application list for a user
+// 応募中リストに追加（デフォルトはpending）
+export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) _pendingApplicationJobsByUser[userId] = [];
+  // 既存がなければ追加
+  if (!_pendingApplicationJobsByUser[userId].some(j => j.jobId === jobId)) {
+    _pendingApplicationJobsByUser[userId].push({ jobId, status: 'pending' });
+  }
+}
+
+// 応募状態を更新（accepted/rejected/pending）
+export function updateApplicationJobStatus(jobId, status, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) return;
+  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+  if (job) job.status = status;
+}
+
+// Get all application jobs for a user（状態付き）
+export function getPendingApplicationJobsForUser(userId = loggedInUserDataGlobal.id) {
+  return _pendingApplicationJobsByUser[userId] ? [..._pendingApplicationJobsByUser[userId]] : [];
+}
 
 // Normalize a dashboard project into WorkManagement-like project shape
 function _toWorkManagementProject(p) {

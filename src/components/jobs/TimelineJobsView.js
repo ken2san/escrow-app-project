@@ -1,10 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDraftJobs, loggedInUserDataGlobal } from '../../utils/initialData';
+import { addPendingApplicationJob, loggedInUserDataGlobal } from '../../utils/initialData';
 import ImmersiveJobCard from './ImmersiveJobCard';
+import { useTranslation } from 'react-i18next';
+import ApplyJobModal from '../modals/ApplyJobModal';
 
 export default function TimelineJobsView({ filteredJobs, immersive = false, onExitImmersive = null }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const getScoreIcon = (score) => {
     if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
@@ -58,6 +61,7 @@ export default function TimelineJobsView({ filteredJobs, immersive = false, onEx
         jobs={filteredJobs}
         navigate={navigate}
         onExitImmersive={onExitImmersive}
+        t={t}
       />
     );
   }
@@ -155,14 +159,10 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 
         {/* CTA */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            addDraftJobs([job.id], loggedInUserDataGlobal.id);
-            navigate('/work-management');
-          }}
-          className="w-full px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+          disabled
+          className="w-full px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-slate-300 text-white cursor-not-allowed"
         >
-          このお仕事を見る
+          応募は上部のカードから行ってください
         </button>
       </div>
     </div>
@@ -170,16 +170,38 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 }
 
 // Immersive Jobs View Container Component
-function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
+function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isNewCard, setIsNewCard] = useState(false);
   const [slideInDirection, setSlideInDirection] = useState('right'); // 'right' or 'left'
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [jobToApply, setJobToApply] = useState(null);
 
-  // Apply: navigate to Work Management
   const handleApply = useCallback((job) => {
-    addDraftJobs([job.id], loggedInUserDataGlobal.id);
-    navigate('/work-management');
-  }, [navigate]);
+    setJobToApply(job);
+    setShowApplyModal(true);
+  }, []);
+
+  const handleApplyModalClose = () => {
+    console.log('[ImmersiveJobsView] handleApplyModalClose');
+    setShowApplyModal(false);
+    setJobToApply(null);
+  };
+
+  const [showToast, setShowToast] = useState(false);
+  const handleApplyModalSubmit = (job) => {
+    // 応募中リストに追加
+    if (job?.id) {
+      addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+    }
+    setShowApplyModal(false);
+    setJobToApply(null);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      navigate('/work-management');
+    }, 1200);
+  };
 
   // Like/save: stay in immersive and go to next (looping)
   const handlePrev = useCallback(() => {
@@ -233,19 +255,34 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive }) {
     );
   }
 
+  // ...existing code...
   return (
-    <ImmersiveJobCard
-      job={currentJob}
-      onApply={handleApply}
-      onPrev={handlePrev}
-      onSkip={handleSkip}
-      onExit={onExitImmersive}
-      totalRemaining={totalRemaining}
-      currentIndex={currentIndex}
-      totalJobs={jobs.length}
-      maxScore={100}
-      isNew={isNewCard}
-      slideInDirection={slideInDirection}
-    />
+    <>
+      <ImmersiveJobCard
+        job={currentJob}
+        onApply={handleApply}
+        onPrev={handlePrev}
+        onSkip={handleSkip}
+        onExit={onExitImmersive}
+        totalRemaining={totalRemaining}
+        currentIndex={currentIndex}
+        totalJobs={jobs.length}
+        maxScore={100}
+        isNew={isNewCard}
+        slideInDirection={slideInDirection}
+      />
+      <ApplyJobModal
+        isOpen={showApplyModal}
+        onClose={handleApplyModalClose}
+        onSubmit={handleApplyModalSubmit}
+        job={jobToApply}
+        t={t}
+      />
+      {showToast && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
+          {t ? t('applicationComplete', '応募が完了しました！') : '応募が完了しました！'}
+        </div>
+      )}
+    </>
   );
 }

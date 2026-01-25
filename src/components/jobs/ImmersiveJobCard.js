@@ -21,6 +21,7 @@ export default function ImmersiveJobCard({
   const containerRef = useRef(null);
   const [isHorizLock, setIsHorizLock] = useState(false);
 
+  // ...existing code...
   // Score count-up animation
   useEffect(() => {
     if (!job) return;
@@ -387,7 +388,6 @@ export default function ImmersiveJobCard({
         <div className="max-w-md mx-auto space-y-3">
           <button
             onClick={() => {
-              // Button: view details (navigate to Work Management)
               if (!isSwipingRef.current) onApply?.(job);
             }}
             className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200"

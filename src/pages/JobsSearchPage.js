@@ -2,10 +2,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
-import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal } from '../utils/initialData';
+import { getAvailableJobsForDiscovery, addDraftJobs, loggedInUserDataGlobal, getPendingApplicationJobsForUser, updateApplicationJobStatus } from '../utils/initialData';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
+  // 応募中リスト取得
+  const [pendingApplications, setPendingApplications] = useState([]);
+  useEffect(() => {
+    setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+  }, []);
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -101,6 +106,7 @@ export default function JobsSearchPage() {
     setSortBy('recommendation');
   };
 
+  // ...existing code...
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -448,7 +454,7 @@ export default function JobsSearchPage() {
             {/* Job Cards */}
             {filteredJobs.length > 0 ? (
               filteredJobs.map(job => (
-                <JobCard key={job.id} job={job} />
+                <JobCard key={job.id} job={job} pendingApplications={pendingApplications} />
               ))
             ) : (
               <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
@@ -471,7 +477,18 @@ export default function JobsSearchPage() {
 }
 
 /* Job Card Component */
-function JobCard({ job }) {
+function JobCard({ job, pendingApplications = [] }) {
+    // 応募状態取得
+    const [applicationStatus, setApplicationStatus] = useState(() => {
+      const found = pendingApplications.find(j => j.jobId === job.id);
+      return found ? found.status : null;
+    });
+
+    // テスト用: 状態変更ボタン
+    const handleStatusChange = (status) => {
+      updateApplicationJobStatus(job.id, status, loggedInUserDataGlobal.id);
+      setApplicationStatus(status);
+    };
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
@@ -529,6 +546,18 @@ function JobCard({ job }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <h3 className="text-base md:text-lg font-bold text-slate-900 truncate">{job.title}</h3>
+              {applicationStatus && (
+                <span className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${applicationStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' : applicationStatus === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  {applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用' : '不採用'}
+                </span>
+              )}
+              {/* テスト用: 応募中なら状態遷移ボタン表示 */}
+              {applicationStatus === 'pending' && (
+                <span className="ml-2 flex gap-1">
+                  <button className="px-2 py-0.5 text-xs rounded bg-emerald-200 text-emerald-900" onClick={() => handleStatusChange('accepted')}>採用</button>
+                  <button className="px-2 py-0.5 text-xs rounded bg-red-200 text-red-900" onClick={() => handleStatusChange('rejected')}>不採用</button>
+                </span>
+              )}
               {job.category && (
                 <span className={getCategoryBadgeStyle(job.category)}>
                   {job.category}
