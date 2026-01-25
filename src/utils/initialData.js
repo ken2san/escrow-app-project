@@ -192,11 +192,25 @@ const _draftProjectsByUser = {};
 // { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected' }] }
 const _pendingApplicationJobsByUser = {
   'user555': [
-    { jobId: 1, status: 'accepted' },
-    { jobId: 2, status: 'accepted' },
-    { jobId: 3, status: 'accepted' },
+    { jobId: 'job1', status: 'pending' }, // ← pending状態を追加
+    { jobId: 'job2', status: 'accepted' },
+    { jobId: 'job3', status: 'accepted' },
   ]
 };
+// 応募状態を更新（accepted/rejected/pending）＋履歴も追記
+export function updateApplicationJobStatus(jobId, status, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) return;
+  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+  if (job) {
+    // ステータス変更時のみ履歴を追加
+    if (job.status !== status) {
+      if (!job.history) job.history = [];
+      job.history.push(`${new Date().toLocaleString()} ステータスが「${status === 'accepted' ? '採用' : status === 'rejected' ? '不採用' : '応募中'}」になりました`);
+    }
+    job.status = status;
+  }
+}
+// ...existing code...
 // Add a job to the pending application list for a user
 // 応募中リストに追加（デフォルトはpending）
 export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id) {
@@ -207,12 +221,6 @@ export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.
   }
 }
 
-// 応募状態を更新（accepted/rejected/pending）
-export function updateApplicationJobStatus(jobId, status, userId = loggedInUserDataGlobal.id) {
-  if (!_pendingApplicationJobsByUser[userId]) return;
-  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
-  if (job) job.status = status;
-}
 
 // Get all application jobs for a user（状態付き）
 export function getPendingApplicationJobsForUser(userId = loggedInUserDataGlobal.id) {
@@ -348,6 +356,21 @@ export const loggedInUserDataGlobal = {
 // --- ダミーデータ ---
 // --- WorkManagementPage用のプロジェクト配列（バックアップと同じ構造） ---
 export const workManagementProjects = [
+    // job2: accepted状態の案件（応募中データと連携）
+    {
+      id: 'job2',
+      name: 'WebアプリUI改善プロジェクト',
+      client: '株式会社サンプル',
+      totalBudget: 500000,
+      deadline: '2026-02-28',
+      duration: 30,
+      description: '既存WebアプリのUI/UXを全面刷新し、ユーザー体験を向上させるプロジェクト。',
+      cards: [
+        { id: 'job2-m1', projectId: 'job2', title: '要件定義', status: 'approved', reward: 100000, startDate: '2026-02-01', duration: 5, order: 1 },
+        { id: 'job2-m2', projectId: 'job2', title: 'UIデザイン', status: 'awaiting_approval', reward: 200000, startDate: '2026-02-06', duration: 10, order: 2 },
+        { id: 'job2-m3', projectId: 'job2', title: '実装・テスト', status: 'unsent', reward: 200000, startDate: '2026-02-16', duration: 15, order: 3 },
+      ],
+    },
   {
     id: 1,
     name: 'E-commerce Site',

@@ -107,7 +107,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : '仕事を探す'}
       >
         <ShoppingCart className="h-5 w-5" />
-  {isSidebarOpen && <span className="ml-3 text-sm">{t('jobsSearch', '仕事を探す')}</span>}
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('jobsSearch', '仕事を探す')}</span>}
+      </button>
+    </li>
+    {/* 応募中 */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/pending-applications')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-yellow-600 ${
+          window.location.pathname === '/pending-applications'
+            ? 'bg-yellow-500 text-white shadow-lg'
+            : 'text-yellow-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : '応募中'}
+      >
+        <AlertTriangle className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">応募中</span>}
       </button>
     </li>
     {/* 仕事管理 */}
@@ -197,7 +212,18 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         title={isSidebarOpen ? '' : t('dashboardLegacy')}
       >
         <Home className="h-5 w-5" />
-  {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboardLegacy')}</span>}
+        {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboardLegacy')}</span>}
+      </button>
+    </li>
+    {/* 進行状況ダッシュボード */}
+    <li>
+      <button
+        onClick={() => navigate('/progress-dashboard')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-emerald-700 text-gray-300 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : '進行状況'}
+      >
+        <Layout className="h-5 w-5" />
+        {isSidebarOpen && <span className="ml-3 text-sm">進行状況</span>}
       </button>
     </li>
   </ul>

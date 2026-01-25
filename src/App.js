@@ -14,6 +14,8 @@ import NewContractProjectPage from './pages/NewContractProjectPage';
 import WorkManagementPage from './pages/WorkManagementPage';
 import MarketCommandUIPage from './pages/MarketCommandUIPage';
 import JobsSearchPage from './pages/JobsSearchPage';
+import PendingApplicationsPage from './pages/PendingApplicationsPage';
+import ProgressDashboard from './pages/ProgressDashboard';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -324,6 +326,8 @@ export default function App() {
             <Route path="/work-management" element={<WorkManagementPage />} />
             <Route path="/command-ui" element={<MarketCommandUIPage />} />
             <Route path="/jobs" element={<JobsSearchPage />} />
+            <Route path="/pending-applications" element={<PendingApplicationsPage />} />
+              <Route path="/progress-dashboard" element={<ProgressDashboard />} />
           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />
