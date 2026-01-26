@@ -11,6 +11,13 @@ export default function JobsSearchPage() {
   useEffect(() => {
     setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
   }, []);
+
+  // 応募状態がグローバルで変わったら反映
+  useEffect(() => {
+    const handler = () => setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+    window.addEventListener('updatePendingApplications', handler);
+    return () => window.removeEventListener('updatePendingApplications', handler);
+  }, []);
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -479,10 +486,10 @@ export default function JobsSearchPage() {
 /* Job Card Component */
 function JobCard({ job, pendingApplications = [], onApply }) {
   // 応募状態取得
-  const [applicationStatus, setApplicationStatus] = useState(() => {
+  const applicationStatus = React.useMemo(() => {
     const found = pendingApplications.find(j => j.jobId === job.id);
     return found ? found.status : null;
-  });
+  }, [pendingApplications, job.id]);
 
   // テスト用: 状態変更ボタン
   const [isExpanded, setIsExpanded] = useState(false);
@@ -499,8 +506,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   const sScoreIcon = getScoreIcon(job.sScore);
   const ambiguityIcon = getScoreIcon(job.ambiguityScore);
   const recommendationIcon = getScoreIcon(job.recommendationScore);
-
-  // ...existing code...
 
   // AI Flag styling
   const getFlagStyle = () => {
@@ -538,15 +543,20 @@ function JobCard({ job, pendingApplications = [], onApply }) {
       } else if (typeof addPendingApplicationJob === 'function') {
         addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
       }
-      setApplicationStatus('pending');
+      // グローバル状態更新を通知
+      window.dispatchEvent(new Event('updatePendingApplications'));
       setShowApplyModal(false);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        // Do not navigate to work management immediately; wait for acceptance
       }, 1200);
     }
   };
+
+  // トーストが残らないようにアンマウント時に消す
+  useEffect(() => {
+    return () => setShowToast(false);
+  }, []);
 
   return (
     <>
@@ -560,23 +570,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
               {applicationStatus && (
                 <span className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${applicationStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' : applicationStatus === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                   {applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用' : '不採用'}
-                <>
-                  <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-                    ...existing code...
-                  </div>
-                  {/* Apply Modal */}
-                  <ApplyJobModal
-                    isOpen={showApplyModal}
-                    onClose={handleApplyModalClose}
-                    onSubmit={handleApplyModalSubmit}
-                    job={job}
-                  />
-                  {showToast && (
-                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
-                      応募が完了しました！
-                    </div>
-                  )}
-                </>
                 </span>
               )}
               {firstShift && (

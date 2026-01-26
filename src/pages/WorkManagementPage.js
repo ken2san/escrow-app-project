@@ -35,17 +35,23 @@ function initCardHistoryIfNeeded(card) {
 
 // --- 2つ前のバージョンのロジック/UIをベースに ---
 function getInitialProjects() {
-    const { getPendingApplicationJobsForUser } = require('../utils/initialData');
-    const acceptedJobs = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id)
-        .filter(j => j.status === 'accepted')
-        .map(j => j.jobId);
-    const base = initialProjectsData
-        .filter(project => acceptedJobs.includes(project.id))
+    const { getPendingApplicationJobsForUser, dashboardAllProjects } = require('../utils/initialData');
+    const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
+    const pendingJobs = pendingApplications.filter(j => j.status === 'pending').map(j => j.jobId);
+    const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
+
+    // 既存プロジェクト（初期データ）
+    let base = initialProjectsData
+        .filter(project => pendingJobs.includes(project.id) || acceptedJobs.includes(project.id))
         .map(project => {
-            if (project.cards && Array.isArray(project.cards)) return project;
+            let _pendingStatus = '';
+            if (pendingJobs.includes(project.id)) _pendingStatus = 'pending';
+            if (acceptedJobs.includes(project.id)) _pendingStatus = 'accepted';
+            let proj = { ...project, _pendingStatus };
+            if (project.cards && Array.isArray(project.cards)) return proj;
             if (project.milestones && Array.isArray(project.milestones)) {
                 return {
-                    ...project,
+                    ...proj,
                     cards: project.milestones.map((m, idx) => ({
                         id: m.id || `${project.id}-m${idx+1}`,
                         projectId: project.id,
@@ -58,12 +64,93 @@ function getInitialProjects() {
                     })),
                 };
             }
-            return { ...project, cards: [] };
+            return { ...proj, cards: [] };
         });
+
+    // 応募中で初期データに存在しないjobIdはdashboardAllProjectsから生成
+    const existingIds = new Set(base.map(p => p.id));
+    const missingPending = pendingJobs.filter(jid => !existingIds.has(jid));
+    for (const jobId of missingPending) {
+        const job = dashboardAllProjects.find(j => j.id === jobId);
+        if (job) {
+            let cards = (job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0)
+                ? job.milestones.map((m, idx) => ({
+                    id: m.id || `${job.id}-m${idx+1}`,
+                    projectId: job.id,
+                    title: m.name || m.title || `マイルストーン ${idx+1}`,
+                    status: 'unsent',
+                    reward: m.amount || 0,
+                    startDate: m.dueDate || '',
+                    duration: '',
+                    order: idx+1,
+                }))
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+            base.push({
+                id: job.id,
+                name: job.name || job.title || '新規案件',
+                client: job.clientName || job.client || 'クライアント',
+                totalBudget: job.totalAmount || job.budget || 0,
+                deadline: job.dueDate || '',
+                duration: '',
+                description: job.description || '',
+                cards,
+                _pendingStatus: 'pending',
+            });
+        }
+    }
+    // acceptedも同様に（ただしpending→acceptedに昇格した場合のみ）
+    const missingAccepted = acceptedJobs.filter(jid => !existingIds.has(jid) && !missingPending.includes(jid));
+    for (const jobId of missingAccepted) {
+        const job = dashboardAllProjects.find(j => j.id === jobId);
+        if (job) {
+            let cards = (job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0)
+                ? job.milestones.map((m, idx) => ({
+                    id: m.id || `${job.id}-m${idx+1}`,
+                    projectId: job.id,
+                    title: m.name || m.title || `マイルストーン ${idx+1}`,
+                    status: 'unsent',
+                    reward: m.amount || 0,
+                    startDate: m.dueDate || '',
+                    duration: '',
+                    order: idx+1,
+                }))
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+            base.push({
+                id: job.id,
+                name: job.name || job.title || '新規案件',
+                client: job.clientName || job.client || 'クライアント',
+                totalBudget: job.totalAmount || job.budget || 0,
+                deadline: job.dueDate || '',
+                duration: '',
+                description: job.description || '',
+                cards,
+                _pendingStatus: 'accepted',
+            });
+        }
+    }
     return base;
 }
 
 export default function WorkManagementPage() {
+            // 応募状態がグローバルで変わったら反映
+            useEffect(() => {
+                const handler = () => setProjects(getInitialProjects());
+                window.addEventListener('updatePendingApplications', handler);
+                return () => window.removeEventListener('updatePendingApplications', handler);
+            }, []);
+        // Demo: Accept job (move from pending to inprogress)
+        const handleAcceptJob = React.useCallback((jobId) => {
+            // グローバル応募状態も更新
+            const { updateApplicationJobStatus } = require('../utils/initialData');
+            updateApplicationJobStatus(jobId, 'accepted', loggedInUserDataGlobal.id);
+            setProjects(getInitialProjects());
+        }, []);
+
+        // window経由でSortableCardからhandleAcceptJobを呼べるようにする（デモ用）
+        React.useEffect(() => {
+            window.handleAcceptJob = handleAcceptJob;
+            return () => { delete window.handleAcceptJob; };
+        }, [handleAcceptJob]);
     const { t } = useTranslation();
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     useEffect(() => {
@@ -73,8 +160,8 @@ export default function WorkManagementPage() {
         main.addEventListener('openNewProjectModal', handler);
         return () => main.removeEventListener('openNewProjectModal', handler);
     }, []);
-    const initialProjects = useMemo(() => getInitialProjects(), []);
-    const [projects, setProjects] = useState(initialProjects);
+    // const initialProjects = useMemo(() => getInitialProjects(), []);
+    // 上記は不要。下でuseState(getInitialProjects())を使う。
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     const handleConfirmNewProject = (newProject) => {
         setProjects(prev => [...prev, newProject]);
@@ -89,15 +176,35 @@ export default function WorkManagementPage() {
     const [projectTab, setProjectTab] = useState('inprogress');
     // --- ダミー案件を必ず初期表示 ---
     // getInitialProjects()の返り値をそのまま使う
-    const allProjects = useMemo(() => getInitialProjects(), []);
-    // タブやフィルタに関係なく全案件を表示
-    const filteredProjects = allProjects;
+    // localStorageキー
+    const PROJECTS_STORAGE_KEY = 'workManagementProjects_v2';
+    // 初期化: localStorage→なければgetInitialProjects()
+    const [projects, setProjects] = useState(getInitialProjects());
+
+    // projectsが変化するたびにlocalStorageへ保存
+    useEffect(() => {
+        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+    }, [projects]);
+    // タブごとに案件を正しく分類するフィルタロジックを復活
+    const filteredProjects = useMemo(() => {
+        // "pending"タブ: _pendingStatusが"pending"かつstatusが"完了"以外
+        if (projectTab === 'pending') return projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
+        // "completed"タブ: _pendingStatusが"accepted"かつstatusが"完了"
+        if (projectTab === 'completed') return projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了');
+        // "inprogress"タブ: _pendingStatusが"accepted"かつstatusが"完了"以外
+        return projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了');
+    }, [projects, projectTab]);
+
+    // --- 応募中タブで何も表示されない場合の案内 ---
+    const showNoPendingMessage = projectTab === 'pending' && filteredProjects.length === 0;
 
     // 応募中タブで「仕事管理に登録」ボタンを表示
+    // 応募完了後にpendingタブに案件が入るように修正
     const handleRegisterPendingJob = (jobId) => {
+        // グローバル応募状態も更新
         const { addPendingApplicationJob } = require('../utils/initialData');
         addPendingApplicationJob(jobId, loggedInUserDataGlobal.id);
-        window.location.reload();
+        setProjects(getInitialProjects());
     };
     // cardsもfilteredProjectsから生成
     const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
@@ -207,6 +314,13 @@ export default function WorkManagementPage() {
     // --- Main return block ---
     return (
         <div className="flex h-screen overflow-hidden">
+            {showNoPendingMessage && (
+                <div className="fixed top-32 left-1/2 -translate-x-1/2 z-50 bg-white border border-yellow-300 rounded-lg shadow-lg px-8 py-6 text-center">
+                    <div className="text-2xl mb-2">🕒</div>
+                    <div className="text-lg font-bold text-yellow-700 mb-1">応募済みの仕事はまだクライアントの審査中です</div>
+                    <div className="text-sm text-slate-600">採用されると「進行中」タブに自動で表示されます。<br/>しばらくお待ちください。</div>
+                </div>
+            )}
             {/* 応募中タブで「仕事管理に登録」ボタン */}
             {projectTab === 'pending' && (
                 <div className="fixed top-20 right-8 z-40">
@@ -968,6 +1082,14 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     }
 
     // --- JSX return for SortableCard ---
+    // Acceptボタン（pending状態の案件のみ）
+    const showAcceptButton = card._pendingStatus === 'pending';
+    // handleAcceptJobは親から渡せないのでwindow経由で呼び出し
+    const handleAccept = () => {
+        if (typeof window !== 'undefined' && typeof window.handleAcceptJob === 'function') {
+            window.handleAcceptJob(card.id);
+        }
+    };
     return (
         <div
             ref={combinedRef}
@@ -992,6 +1114,16 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                 {card.reward && <span>報酬: ¥{Number(card.reward).toLocaleString()}</span>}
             </div>
             {nextStepGuide}
+            {/* 応募中タブのみ「採用」ボタンを表示 */}
+            {showAcceptButton && (
+                <button
+                    className="mt-2 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+                    onClick={e => { e.stopPropagation(); handleAccept(); }}
+                >
+                    採用する
+                </button>
+            )}
         </div>
     );
+    // ...existing code...（useEffectは削除）
 }

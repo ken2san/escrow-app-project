@@ -365,6 +365,8 @@ export const workManagementProjects = [
       deadline: '2026-02-28',
       duration: 30,
       description: '既存WebアプリのUI/UXを全面刷新し、ユーザー体験を向上させるプロジェクト。',
+      _pendingStatus: 'accepted', // 初期状態で進行中に表示
+      status: '',
       cards: [
         { id: 'job2-m1', projectId: 'job2', title: '要件定義', status: 'approved', reward: 100000, startDate: '2026-02-01', duration: 5, order: 1 },
         { id: 'job2-m2', projectId: 'job2', title: 'UIデザイン', status: 'awaiting_approval', reward: 200000, startDate: '2026-02-06', duration: 10, order: 2 },
