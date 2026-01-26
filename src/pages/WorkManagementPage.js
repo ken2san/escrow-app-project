@@ -198,14 +198,7 @@ export default function WorkManagementPage() {
     // --- 応募中タブで何も表示されない場合の案内 ---
     const showNoPendingMessage = projectTab === 'pending' && filteredProjects.length === 0;
 
-    // 応募中タブで「仕事管理に登録」ボタンを表示
-    // 応募完了後にpendingタブに案件が入るように修正
-    const handleRegisterPendingJob = (jobId) => {
-        // グローバル応募状態も更新
-        const { addPendingApplicationJob } = require('../utils/initialData');
-        addPendingApplicationJob(jobId, loggedInUserDataGlobal.id);
-        setProjects(getInitialProjects());
-    };
+    // ...existing code...
     // cardsもfilteredProjectsから生成
     const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
     useEffect(() => {
@@ -321,20 +314,7 @@ export default function WorkManagementPage() {
                     <div className="text-sm text-slate-600">採用されると「進行中」タブに自動で表示されます。<br/>しばらくお待ちください。</div>
                 </div>
             )}
-            {/* 応募中タブで「仕事管理に登録」ボタン */}
-            {projectTab === 'pending' && (
-                <div className="fixed top-20 right-8 z-40">
-                    {filteredProjects.map(project => (
-                        <button
-                            key={project.id}
-                            className="mb-2 px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-600"
-                            onClick={() => handleRegisterPendingJob(project.id)}
-                        >
-                            この仕事を仕事管理に登録
-                        </button>
-                    ))}
-                </div>
-            )}
+            {/* 応募中タブの手動登録ボタンは不要のため削除 */}
             {/* New Project Modal (ProjectFlowDemo style) */}
             <NewProjectModal
                 open={showNewProjectModal}
