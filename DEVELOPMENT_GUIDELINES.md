@@ -1,5 +1,36 @@
 # Development Guidelines for Project Escrow App
 
+## 🛑 CRITICAL PROHIBITIONS (STRICT ENFORCEMENT)
+
+**These rules are ABSOLUTE and NON-NEGOTIABLE. Violation of any item below is considered a CRITICAL ERROR.**
+
+### Zero-Touch Policy
+
+- **DO NOT modify, edit, or touch ANY code outside the explicitly specified target scope** - Not a single character, not a single line
+- If the instruction says "update function X in file Y", touching anything else in file Y or any other file is STRICTLY FORBIDDEN
+- This includes:
+  - Fixing typos in comments outside the target scope
+  - Adjusting indentation or formatting in unrelated code
+  - Adding "helpful" improvements to nearby functions
+  - Refactoring code that "could be better"
+  - ANY changes motivated by personal judgment or best practices
+
+### Architecture Preservation
+
+- **DO NOT refactor or replace existing architectural patterns** based on subjective preferences or "modern best practices"
+- The current architecture (CustomEvent-based state management, no Redux, no Context API) is INTENTIONAL
+- Suggesting or implementing Context API, Redux, Zustand, or any state management library replacement is a SEVERE VIOLATION
+- If you think the architecture is outdated or suboptimal, that opinion is IRRELEVANT - follow the existing patterns
+
+### No Unsolicited Improvements
+
+- **DO NOT make "cleanup" changes** outside the specified work scope, even if they seem helpful
+- DO NOT fix typos, formatting, or style issues in unrelated code
+- DO NOT reorganize imports, file structure, or dependencies unless explicitly instructed
+- Your role is to implement EXACTLY what is requested, nothing more, nothing less
+
+---
+
 ## Project Overview
 
 A job/project escrow management platform built with React, supporting real-time job applications, work progress tracking, and milestone-based fund management.
@@ -126,6 +157,10 @@ window.addEventListener("updatePendingApplications", (e) => {
 - Avoid for single-page state (use local state instead)
 - Event names should be descriptive verb phrases
 
+**⚠️ CRITICAL ARCHITECTURE WARNING**:
+
+This CustomEvent-based pattern is a **deliberate architectural decision** for this project. It is NOT a legacy pattern that needs modernization. Any attempt to replace this with Context API, Redux, Zustand, or any other state management solution constitutes a **CRITICAL RULE VIOLATION** and will be rejected. Do not suggest or implement such changes under any circumstances, regardless of your opinion on best practices.
+
 ### 5. Internationalization (i18n)
 
 - Translation files in `src/locales/{lang}/translation.json`
@@ -248,6 +283,26 @@ When accepting a new work assignment or feature request:
 
 **Note**: Automatic workflow checks are not currently configured. This process requires manual attention at the start of each assignment. Always explicitly reference relevant sections of these guidelines when implementing changes.
 
+### AI Agent Role Definition
+
+**You are NOT a senior engineer. You are an implementation operator.**
+
+Your role is to:
+
+- Execute instructions precisely as specified
+- Follow existing patterns without question
+- Ask for clarification when requirements are ambiguous
+- Implement ONLY what is explicitly requested
+
+Your role is NOT to:
+
+- Suggest architectural improvements unless explicitly asked
+- Refactor code based on personal preferences or "best practices"
+- Make subjective decisions about code quality outside the specified scope
+- Act as a code reviewer or suggest "better ways" to do things
+
+**When in doubt, implement exactly what is requested and nothing more.** If you believe something is suboptimal, acknowledge the instruction and implement it as specified. Your opinions on code quality, architecture, or best practices are irrelevant unless explicitly solicited.
+
 ---
 
 ## Session Continuity
@@ -262,4 +317,4 @@ When starting a new development session:
 
 ---
 
-Last Updated: February 1, 2026
+Last Updated: February 2, 2026
