@@ -200,11 +200,9 @@ const _pendingApplicationJobsByUser = {
 
 // Received applications: { [projectId]: [{ applicantId, applicantName, appliedAt, status: 'pending'|'accepted'|'rejected' }] }
 const _receivedApplicationsByProjectId = {
-  '1': [
+  'job2': [
     { applicantId: 'user001', applicantName: '山田太郎', appliedAt: '2026-01-28T14:00:00Z', status: 'pending' },
     { applicantId: 'user002', applicantName: '鈴木花子', appliedAt: '2026-01-29T10:15:00Z', status: 'pending' },
-  ],
-  '2': [
     { applicantId: 'user003', applicantName: '佐藤次郎', appliedAt: '2026-01-30T09:30:00Z', status: 'accepted' },
   ],
 };
@@ -249,16 +247,19 @@ export function getPendingApplicationJobsForUser(userId = loggedInUserDataGlobal
 // Normalize a dashboard project into WorkManagement-like project shape
 // Get applications received for a project
 export function getReceivedApplicationsForProject(projectId) {
-  return _receivedApplicationsByProjectId[projectId] ? [..._receivedApplicationsByProjectId[projectId]] : [];
+  // Convert projectId to string to match keys in _receivedApplicationsByProjectId
+  const key = String(projectId);
+  return _receivedApplicationsByProjectId[key] ? [..._receivedApplicationsByProjectId[key]] : [];
 }
 
 // Add an application to received applications
 export function addReceivedApplication(projectId, applicantId, applicantName) {
-  if (!_receivedApplicationsByProjectId[projectId]) _receivedApplicationsByProjectId[projectId] = [];
+  const key = String(projectId);
+  if (!_receivedApplicationsByProjectId[key]) _receivedApplicationsByProjectId[key] = [];
 
   // Check if already applied
-  if (!_receivedApplicationsByProjectId[projectId].some(app => app.applicantId === applicantId)) {
-    _receivedApplicationsByProjectId[projectId].push({
+  if (!_receivedApplicationsByProjectId[key].some(app => app.applicantId === applicantId)) {
+    _receivedApplicationsByProjectId[key].push({
       applicantId,
       applicantName,
       appliedAt: new Date().toISOString(),
@@ -269,8 +270,9 @@ export function addReceivedApplication(projectId, applicantId, applicantName) {
 
 // Update received application status
 export function updateReceivedApplicationStatus(projectId, applicantId, status) {
-  if (!_receivedApplicationsByProjectId[projectId]) return;
-  const app = _receivedApplicationsByProjectId[projectId].find(a => a.applicantId === applicantId);
+  const key = String(projectId);
+  if (!_receivedApplicationsByProjectId[key]) return;
+  const app = _receivedApplicationsByProjectId[key].find(a => a.applicantId === applicantId);
   if (app) {
     app.status = status;
   }

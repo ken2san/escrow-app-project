@@ -454,6 +454,9 @@ export default function WorkManagementPage() {
                             tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了').length;
                         } else if (tab.key === 'completed') {
                             tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了').length;
+                        } else if (tab.key === 'received') {
+                            const { getReceivedApplicationsForProject } = require('../utils/initialData');
+                            tabCount = projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0).length;
                         }
                         return (
                             <button
