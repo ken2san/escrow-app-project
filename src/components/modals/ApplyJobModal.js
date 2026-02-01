@@ -7,6 +7,9 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
   // Stage 2: Allow user to input custom deadline with default value
   const [customDeadline, setCustomDeadline] = useState('');
 
+  // Stage 3: Milestone selection
+  const [selectedMilestones, setSelectedMilestones] = useState([]);
+
   // Calculate default deadline (7 days from now)
   const getDefaultDeadline = () => {
     const date = new Date();
@@ -20,25 +23,38 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
     return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
   };
 
-  // Set default deadline when modal opens
+  // Set default deadline and milestones when modal opens
   useEffect(() => {
     if (isOpen) {
       setCustomDeadline(getDefaultDeadline());
+      // Select all milestones by default
+      if (job?.milestones && Array.isArray(job.milestones)) {
+        setSelectedMilestones(job.milestones.map((_, idx) => idx));
+      } else {
+        setSelectedMilestones([]);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, job]);
+
+  // Toggle milestone selection
+  const toggleMilestone = (idx) => {
+    setSelectedMilestones(prev =>
+      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+    );
+  };
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    // Pass both appliedAt and custom deadline to the handler
+    // Pass appliedAt, deadline, and selected milestones to the handler
     const deadline = customDeadline || getDefaultDeadline();
     const deadlineISO = new Date(deadline).toISOString();
-    onSubmit(job, appliedAt, deadlineISO);
+    onSubmit(job, appliedAt, deadlineISO, selectedMilestones);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 relative animate-fadeIn">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 relative animate-fadeIn max-h-96 overflow-y-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
           onClick={onClose}
@@ -55,7 +71,32 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
           <div className="text-sm text-gray-600">{job?.description?.substring(0, 80)}{job?.description?.length > 80 ? '...' : ''}</div>
         </div>
 
-        {/* Stage 2: Deadline input field with default value and flexible range */}
+        {/* Stage 3: Milestone selection UI */}
+        {job?.milestones && Array.isArray(job.milestones) && job.milestones.length > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              対応するマイルストーン（複数選択可）
+            </label>
+            <div className="space-y-2">
+              {job.milestones.map((milestone, idx) => (
+                <label key={idx} className="flex items-start gap-2 cursor-pointer hover:bg-blue-100 p-2 rounded transition">
+                  <input
+                    type="checkbox"
+                    checked={selectedMilestones.includes(idx)}
+                    onChange={() => toggleMilestone(idx)}
+                    className="mt-1 w-4 h-4 rounded"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-slate-900">{milestone.name || milestone.title}</div>
+                    <div className="text-xs text-slate-600">¥{milestone.amount?.toLocaleString()}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Deadline input */}
         <div className="mb-4 p-3 bg-slate-50 rounded-lg">
           <label className="block text-sm font-medium text-slate-700 mb-2">
             応募期限（デフォルト: 7日後）

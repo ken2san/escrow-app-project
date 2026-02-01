@@ -222,7 +222,7 @@ export function updateApplicationJobStatus(jobId, status, userId = loggedInUserD
 // ...existing code...
 // Add a job to the pending application list for a user
 // Stage 2: Add support for custom responseDeadline
-export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id, appliedAt = null, customDeadline = null) {
+export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id, appliedAt = null, customDeadline = null, selectedMilestones = []) {
   if (!_pendingApplicationJobsByUser[userId]) _pendingApplicationJobsByUser[userId] = [];
   // Add only if it does not already exist
   if (!_pendingApplicationJobsByUser[userId].some(j => j.jobId === jobId)) {
@@ -234,6 +234,7 @@ export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.
       status: 'pending',
       appliedAt: appliedAt || now.toISOString(),
       responseDeadline: deadline.toISOString(),
+      selectedMilestones: Array.isArray(selectedMilestones) ? selectedMilestones : [],
     });
   }
 }

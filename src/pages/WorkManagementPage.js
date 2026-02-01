@@ -40,6 +40,14 @@ function getInitialProjects() {
     const pendingJobs = pendingApplications.filter(j => j.status === 'pending').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
 
+    // Map to get selectedMilestones for each job
+    const selectedMilestonesMap = {};
+    pendingApplications.forEach(app => {
+        if (app.selectedMilestones && Array.isArray(app.selectedMilestones) && app.selectedMilestones.length > 0) {
+            selectedMilestonesMap[app.jobId] = app.selectedMilestones;
+        }
+    });
+
     // Existing projects (initial data)
     let base = initialProjectsData
         .filter(project => pendingJobs.includes(project.id) || acceptedJobs.includes(project.id))
@@ -50,18 +58,23 @@ function getInitialProjects() {
             let proj = { ...project, _pendingStatus };
             if (project.cards && Array.isArray(project.cards)) return proj;
             if (project.milestones && Array.isArray(project.milestones)) {
+                let allCards = project.milestones.map((m, idx) => ({
+                    id: m.id || `${project.id}-m${idx+1}`,
+                    projectId: project.id,
+                    title: m.name || m.title,
+                    status: m.status || 'unsent',
+                    reward: m.amount || 0,
+                    startDate: m.dueDate || '',
+                    duration: '',
+                    order: idx+1,
+                }));
+                // Filter cards based on selectedMilestones if in pending status
+                if (_pendingStatus === 'pending' && selectedMilestonesMap[project.id]) {
+                    allCards = allCards.filter((_, idx) => selectedMilestonesMap[project.id].includes(idx));
+                }
                 return {
                     ...proj,
-                    cards: project.milestones.map((m, idx) => ({
-                        id: m.id || `${project.id}-m${idx+1}`,
-                        projectId: project.id,
-                        title: m.name || m.title,
-                        status: m.status || 'unsent',
-                        reward: m.amount || 0,
-                        startDate: m.dueDate || '',
-                        duration: '',
-                        order: idx+1,
-                    })),
+                    cards: allCards,
                 };
             }
             return { ...proj, cards: [] };
@@ -85,6 +98,12 @@ function getInitialProjects() {
                     order: idx+1,
                 }))
                 : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+
+            // Filter cards based on selectedMilestones
+            if (selectedMilestonesMap[jobId]) {
+                cards = cards.filter((_, idx) => selectedMilestonesMap[jobId].includes(idx));
+            }
+
             base.push({
                 id: job.id,
                 name: job.name || job.title || '新規案件',
