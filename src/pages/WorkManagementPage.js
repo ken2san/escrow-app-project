@@ -189,6 +189,11 @@ export default function WorkManagementPage() {
     }, [projects]);
     // Restore filter logic that classifies projects by tab
     const filteredProjects = useMemo(() => {
+        // "received" tab: Show projects that have received applications
+        if (projectTab === 'received') {
+            const { getReceivedApplicationsForProject } = require('../utils/initialData');
+            return projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0);
+        }
         // "pending" tab: _pendingStatus is "pending" and status is not completed
         if (projectTab === 'pending') return projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
         // "completed" tab: _pendingStatus is "accepted" and status is completed
@@ -298,7 +303,58 @@ export default function WorkManagementPage() {
         { key: 'inprogress', label: '進行中' },
         { key: 'pending', label: '応募中' },
         { key: 'completed', label: '完了' },
+        { key: 'received', label: '受け取った応募' },
     ];
+    const normalizeProjectId = (value) => {
+        if (!value) return value;
+        if (typeof value === 'string' && value.startsWith('project-')) {
+            return value.replace('project-', '');
+        }
+        return value;
+    };
+
+    const formatDateForDisplay = (isoString) => {
+        if (!isoString) return '未設定';
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        } catch {
+            return isoString;
+        }
+    };
+
+    const renderReceivedApplications = (projectId) => {
+        const normalizedProjectId = normalizeProjectId(projectId);
+        const { getReceivedApplicationsForProject } = require('../utils/initialData');
+        const receivedApps = getReceivedApplicationsForProject(normalizedProjectId);
+
+        if (!receivedApps.length) {
+            return (
+                <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 text-sm text-slate-500">
+                    受け取った応募はありません
+                </div>
+            );
+        }
+
+        return receivedApps.map(app => (
+            <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
+                <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-800">{app.applicantName}</span>
+                    <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
+                        app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
+                        'bg-red-100 text-red-700'
+                    }`}>
+                        {app.status === 'pending' ? '検討中' : app.status === 'accepted' ? '採用' : '不採用'}
+                    </span>
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                    応募日: {formatDateForDisplay(app.appliedAt)}
+                </div>
+            </div>
+        ));
+    };
+
     // --- Main return block ---
     return (
         <div className="flex h-screen overflow-hidden">
@@ -800,9 +856,11 @@ export default function WorkManagementPage() {
                                                                         </div>
                                                                     );
                                                                 })
-                                                                : groupCards.map((card, idx) => (
-                                                                    <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
-                                                                ))}
+                                                                : projectTab === 'received'
+                                                                    ? renderReceivedApplications(groupCards[0]?.projectId || groupKey)
+                                                                    : groupCards.map((card, idx) => (
+                                                                        <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                    ))}
                                                     </div>
                                                 </SortableContext>
                                             </div>
