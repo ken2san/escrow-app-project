@@ -144,6 +144,8 @@ export default function WorkManagementPage() {
             const { updateApplicationJobStatus } = require('../utils/initialData');
             updateApplicationJobStatus(jobId, 'accepted', loggedInUserDataGlobal.id);
             setProjects(getInitialProjects());
+            // Dispatch event to trigger UI sync across all listeners
+            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
         }, []);
 
         // window経由でSortableCardからhandleAcceptJobを呼べるようにする（デモ用）
