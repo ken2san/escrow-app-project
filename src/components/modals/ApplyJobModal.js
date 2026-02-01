@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
   // Stage 1: Automatically track appliedAt timestamp
   const [appliedAt] = useState(() => new Date().toISOString());
 
-  // Stage 2: Allow user to input custom deadline
+  // Stage 2: Allow user to input custom deadline with default value
   const [customDeadline, setCustomDeadline] = useState('');
 
   // Calculate default deadline (7 days from now)
@@ -13,6 +13,19 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
     date.setDate(date.getDate() + 7);
     return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
   };
+
+  // Get today's date
+  const getTodayDate = () => {
+    const date = new Date();
+    return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  };
+
+  // Set default deadline when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCustomDeadline(getDefaultDeadline());
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -42,7 +55,7 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
           <div className="text-sm text-gray-600">{job?.description?.substring(0, 80)}{job?.description?.length > 80 ? '...' : ''}</div>
         </div>
 
-        {/* Stage 2: Deadline input field */}
+        {/* Stage 2: Deadline input field with default value and flexible range */}
         <div className="mb-4 p-3 bg-slate-50 rounded-lg">
           <label className="block text-sm font-medium text-slate-700 mb-2">
             応募期限（デフォルト: 7日後）
@@ -51,11 +64,11 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
             type="date"
             value={customDeadline}
             onChange={(e) => setCustomDeadline(e.target.value)}
-            min={getDefaultDeadline()}
+            min={getTodayDate()}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
           <p className="text-xs text-slate-500 mt-1">
-            最小期限: {new Date(getDefaultDeadline()).toLocaleDateString('ja-JP')}
+            本日以降の日付を選択できます
           </p>
         </div>
 
