@@ -592,7 +592,11 @@ function JobCard({ job, pendingApplications = [], onApply }) {
           </div>
           <button
             onClick={handleApply}
-            className="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+            className={`w-full md:w-auto px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition whitespace-nowrap ${
+              applicationStatus
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-60'
+                : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl'
+            }`}
             disabled={!!applicationStatus}
           >
             {applicationStatus ? (applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用済み' : '不採用') : 'このお仕事を見る'}
