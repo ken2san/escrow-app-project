@@ -381,6 +381,15 @@ export default function WorkManagementPage() {
                         </button>
                     ))}
                 </div>
+                {projectTab === 'pending' && (
+                    <div className="w-full max-w-4xl mx-auto px-4 md:px-0 -mt-1 mb-3">
+                        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                            <div className="font-semibold text-slate-700">応募後の流れ</div>
+                            <div className="mt-1">クライアント確認後、採用されると「進行中」へ自動で移動します。</div>
+                            <div className="mt-2 text-xs text-slate-500">応募中: {filteredProjects.length}件</div>
+                        </div>
+                    </div>
+                )}
                 <div className="flex-1 overflow-y-auto p-4 md:p-8">
                         {/* View Settings Panel - Mobile optimized with hamburger menu */}
                         <div className="sticky top-12 z-20 bg-slate-100 py-1 mb-0" style={{marginLeft: window.innerWidth < 768 ? 0 : '-2rem', marginRight: window.innerWidth < 768 ? 0 : '-2rem', paddingLeft: window.innerWidth < 768 ? '1rem' : '2rem', paddingRight: window.innerWidth < 768 ? '1rem' : '2rem'}}>
@@ -750,15 +759,24 @@ export default function WorkManagementPage() {
                                                         {isEmpty
                                                             ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
                                                             : projectTab === 'pending'
-                                                                ? groupCards.map((card, idx) => (
-                                                                    <div key={card.id} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-2 flex flex-col">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="font-semibold text-slate-800">{card.title}</span>
-                                                                            <span className="ml-2 text-xs font-bold text-yellow-700 bg-yellow-100 rounded px-2 py-0.5">審査中</span>
+                                                                ? groupCards.map((card, idx) => {
+                                                                    const project = projects.find(p => String(p.id) === String(card.projectId));
+                                                                    const appliedDate = card.appliedDate || card.startDate || project?.appliedDate || '未設定';
+                                                                    const clientName = project?.client || project?.clientName || 'クライアント';
+                                                                    return (
+                                                                        <div key={card.id} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="font-semibold text-slate-800">{card.title}</span>
+                                                                                <span className="ml-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded px-2 py-0.5">確認中</span>
+                                                                            </div>
+                                                                            <div className="text-xs text-slate-500 mt-1">クライアントが確認中です。次の操作は不要です。</div>
+                                                                            <div className="text-xs text-slate-500 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
+                                                                                <span>応募先: {clientName}</span>
+                                                                                <span>応募日: {appliedDate}</span>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="text-xs text-slate-500 mt-1">この仕事は現在クライアントの審査中です。編集・操作はできません。</div>
-                                                                    </div>
-                                                                ))
+                                                                    );
+                                                                })
                                                                 : groupCards.map((card, idx) => (
                                                                     <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
                                                                 ))}
