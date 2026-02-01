@@ -534,13 +534,13 @@ function JobCard({ job, pendingApplications = [], onApply }) {
     setShowApplyModal(true);
   };
   const handleApplyModalClose = () => setShowApplyModal(false);
-  const handleApplyModalSubmit = () => {
+  const handleApplyModalSubmit = (jobData, appliedAt, customDeadline) => {
     if (job?.id) {
-      // Add to pending applications
+      // Add to pending applications with custom deadline
       if (typeof window.addPendingApplicationJob === 'function') {
-        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id);
+        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id, appliedAt, customDeadline);
       } else if (typeof addPendingApplicationJob === 'function') {
-        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, customDeadline);
       }
       // Notify global state update
       window.dispatchEvent(new Event('updatePendingApplications'));

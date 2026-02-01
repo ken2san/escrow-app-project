@@ -766,7 +766,24 @@ export default function WorkManagementPage() {
                                                             : projectTab === 'pending'
                                                                 ? groupCards.map((card, idx) => {
                                                                     const project = projects.find(p => String(p.id) === String(card.projectId));
-                                                                    const appliedDate = card.appliedDate || card.startDate || project?.appliedDate || '未設定';
+                                                                    const jobId = project?.id;
+                                                                    const { getPendingApplicationJobsForUser } = require('../utils/initialData');
+                                                                    const currentPendingApps = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
+                                                                    const applicationData = currentPendingApps.find(app => app.jobId === jobId);
+
+                                                                    // Format dates from ISO strings
+                                                                    const formatDate = (isoString) => {
+                                                                        if (!isoString) return '未設定';
+                                                                        try {
+                                                                            const date = new Date(isoString);
+                                                                            return date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+                                                                        } catch {
+                                                                            return isoString;
+                                                                        }
+                                                                    };
+
+                                                                    const appliedDate = formatDate(applicationData?.appliedAt) || card.appliedDate || card.startDate || project?.appliedDate || '未設定';
+                                                                    const deadline = formatDate(applicationData?.responseDeadline);
                                                                     const clientName = project?.client || project?.clientName || 'クライアント';
                                                                     return (
                                                                         <div key={card.id} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
@@ -778,6 +795,7 @@ export default function WorkManagementPage() {
                                                                             <div className="text-xs text-slate-500 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                                                                 <span>応募先: {clientName}</span>
                                                                                 <span>応募日: {appliedDate}</span>
+                                                                                <span>回答期限: {deadline}</span>
                                                                             </div>
                                                                         </div>
                                                                     );

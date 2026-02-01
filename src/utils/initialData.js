@@ -189,12 +189,12 @@ export function getMyProjectCards(userId) {
 // In-memory proposals/drafts/pending applications store (demo only)
 const _proposedProjectsByUser = {};
 const _draftProjectsByUser = {};
-// { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected' }] }
+// { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected', appliedAt, responseDeadline }] }
 const _pendingApplicationJobsByUser = {
   'user555': [
-    { jobId: 'job1', status: 'pending' }, // ← add pending status
-    { jobId: 'job2', status: 'accepted' },
-    { jobId: 'job3', status: 'accepted' },
+    { jobId: 'job1', status: 'pending', appliedAt: '2026-01-26T10:30:00Z', responseDeadline: '2026-02-02T10:30:00Z' },
+    { jobId: 'job2', status: 'accepted', appliedAt: '2026-01-20T14:15:00Z', responseDeadline: '2026-01-27T14:15:00Z' },
+    { jobId: 'job3', status: 'accepted', appliedAt: '2026-01-15T09:00:00Z', responseDeadline: '2026-01-22T09:00:00Z' },
   ]
 };
 // Update application status (accepted/rejected/pending) and append history
@@ -212,12 +212,20 @@ export function updateApplicationJobStatus(jobId, status, userId = loggedInUserD
 }
 // ...existing code...
 // Add a job to the pending application list for a user
-// Add to pending application list (default is pending)
-export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id) {
+// Stage 2: Add support for custom responseDeadline
+export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id, appliedAt = null, customDeadline = null) {
   if (!_pendingApplicationJobsByUser[userId]) _pendingApplicationJobsByUser[userId] = [];
   // Add only if it does not already exist
   if (!_pendingApplicationJobsByUser[userId].some(j => j.jobId === jobId)) {
-    _pendingApplicationJobsByUser[userId].push({ jobId, status: 'pending' });
+    const now = new Date();
+    const deadline = customDeadline ? new Date(customDeadline) : new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    _pendingApplicationJobsByUser[userId].push({
+      jobId,
+      status: 'pending',
+      appliedAt: appliedAt || now.toISOString(),
+      responseDeadline: deadline.toISOString(),
+    });
   }
 }
 

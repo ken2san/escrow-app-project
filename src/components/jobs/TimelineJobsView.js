@@ -91,12 +91,12 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 
   const handleApply = () => setShowApplyModal(true);
   const handleApplyModalClose = () => setShowApplyModal(false);
-  const handleApplyModalSubmit = () => {
+  const handleApplyModalSubmit = (jobData, appliedAt, customDeadline) => {
     if (job?.id) {
       if (typeof window.addPendingApplicationJob === 'function') {
-        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id);
+        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id, appliedAt, customDeadline);
       } else if (typeof addPendingApplicationJob === 'function') {
-        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, customDeadline);
       }
       setApplicationStatus('pending');
       setShowApplyModal(false);
@@ -211,10 +211,14 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
     setJobToApply(null);
   };
 
-  const handleApplyModalSubmit = (job) => {
+  const handleApplyModalSubmit = (jobData, appliedAt, customDeadline) => {
     // Add to pending applications list
-    if (job?.id) {
-      addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
+    if (jobData?.id) {
+      if (typeof window.addPendingApplicationJob === 'function') {
+        window.addPendingApplicationJob(jobData.id, window.loggedInUserDataGlobal.id, appliedAt, customDeadline);
+      } else if (typeof addPendingApplicationJob === 'function') {
+        addPendingApplicationJob(jobData.id, loggedInUserDataGlobal.id, appliedAt, customDeadline);
+      }
     }
     setShowApplyModal(false);
     setJobToApply(null);
