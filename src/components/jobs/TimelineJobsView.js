@@ -87,7 +87,6 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
   const ambiguityIcon = getScoreIcon(job.ambiguityScore);
   const recommendationIcon = getScoreIcon(job.recommendationScore);
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState(null);
 
   const handleApply = () => setShowApplyModal(true);
@@ -101,10 +100,6 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
       }
       setApplicationStatus('pending');
       setShowApplyModal(false);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 1200);
     }
   };
 
@@ -192,11 +187,6 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
           onSubmit={handleApplyModalSubmit}
           job={job}
         />
-        {showToast && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
-            応募が完了しました！
-          </div>
-        )}
       </div>
     </div>
   );
@@ -221,7 +211,6 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
     setJobToApply(null);
   };
 
-  const [showToast, setShowToast] = useState(false);
   const handleApplyModalSubmit = (job) => {
     // Add to pending applications list
     if (job?.id) {
@@ -229,11 +218,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
     }
     setShowApplyModal(false);
     setJobToApply(null);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      navigate('/work-management');
-    }, 1200);
+    navigate('/work-management');
   };
 
   // Like/save: stay in immersive and go to next (looping)
@@ -311,11 +296,6 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
         job={jobToApply}
         t={t}
       />
-      {showToast && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
-          {t ? t('applicationComplete', '応募が完了しました！') : '応募が完了しました！'}
-        </div>
-      )}
     </>
   );
 }

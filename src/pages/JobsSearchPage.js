@@ -494,7 +494,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   // Test-only: status change button
   const [isExpanded, setIsExpanded] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   const getScoreIcon = (score) => {
     if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
@@ -546,17 +545,10 @@ function JobCard({ job, pendingApplications = [], onApply }) {
       // Notify global state update
       window.dispatchEvent(new Event('updatePendingApplications'));
       setShowApplyModal(false);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 1200);
     }
   };
 
-  // Clear toast on unmount
-  useEffect(() => {
-    return () => setShowToast(false);
-  }, []);
+
 
   return (
     <>
@@ -567,11 +559,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <h3 className="text-base md:text-lg font-bold text-slate-900 truncate">{job.title}</h3>
-              {applicationStatus && (
-                <span className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${applicationStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' : applicationStatus === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                  {applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用' : '不採用'}
-                </span>
-              )}
               {firstShift && (
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                   {firstShift.start}–{firstShift.end}
@@ -941,11 +928,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
       onSubmit={handleApplyModalSubmit}
       job={job}
     />
-    {showToast && (
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg text-base font-bold animate-fadeIn">
-        応募が完了しました！
-      </div>
-    )}
   </>
   );
 }
