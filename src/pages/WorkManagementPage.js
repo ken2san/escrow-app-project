@@ -749,9 +749,19 @@ export default function WorkManagementPage() {
                                                     <div className="space-y-0">
                                                         {isEmpty
                                                             ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
-                                                            : groupCards.map((card, idx) => (
-                                                                <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
-                                                            ))}
+                                                            : projectTab === 'pending'
+                                                                ? groupCards.map((card, idx) => (
+                                                                    <div key={card.id} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-2 flex flex-col">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="font-semibold text-slate-800">{card.title}</span>
+                                                                            <span className="ml-2 text-xs font-bold text-yellow-700 bg-yellow-100 rounded px-2 py-0.5">審査中</span>
+                                                                        </div>
+                                                                        <div className="text-xs text-slate-500 mt-1">この仕事は現在クライアントの審査中です。編集・操作はできません。</div>
+                                                                    </div>
+                                                                ))
+                                                                : groupCards.map((card, idx) => (
+                                                                    <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                ))}
                                                     </div>
                                                 </SortableContext>
                                             </div>
