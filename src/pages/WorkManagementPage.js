@@ -200,18 +200,11 @@ export default function WorkManagementPage() {
     // --- 応募中タブで何も表示されない場合の案内 ---
     const showNoPendingMessage = projectTab === 'pending' && filteredProjects.length === 0;
 
-    // ...existing code...
-    // cardsもfilteredProjectsから生成
+    // Cards are derived from filteredProjects
     const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
     useEffect(() => {
         setCards(filteredProjects.flatMap(p => p.cards || []));
     }, [filteredProjects]);
-    // projectsはfilteredProjectsを参照
-    // const projects = filteredProjects;
-    // Handler to confirm new project from modal
-    // 新規プロジェクトはallProjectsに追加（本来はDB/API）
-    // 今回はreloadで反映
-    // ...existing code...
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -1145,5 +1138,5 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             )}
         </div>
     );
-    // ...existing code...（useEffectは削除）
+    // ...existing code...
 }
