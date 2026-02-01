@@ -323,6 +323,14 @@ export default function WorkManagementPage() {
         }
     };
 
+    const handleApplicationAction = (projectId, applicantId, action) => {
+        const normalizedProjectId = normalizeProjectId(projectId);
+        const { updateReceivedApplicationStatus } = require('../utils/initialData');
+        updateReceivedApplicationStatus(normalizedProjectId, applicantId, action);
+        // Force re-render by updating projects state
+        setProjects([...projects]);
+    };
+
     const renderReceivedApplications = (projectId) => {
         const normalizedProjectId = normalizeProjectId(projectId);
         const { getReceivedApplicationsForProject } = require('../utils/initialData');
@@ -351,6 +359,22 @@ export default function WorkManagementPage() {
                 <div className="text-xs text-slate-500 mt-2">
                     応募日: {formatDateForDisplay(app.appliedAt)}
                 </div>
+                {app.status === 'pending' && (
+                    <div className="flex gap-2 mt-3">
+                        <button
+                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'accepted')}
+                            className="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded hover:bg-emerald-700 transition"
+                        >
+                            採用する
+                        </button>
+                        <button
+                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'rejected')}
+                            className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
+                        >
+                            不採用
+                        </button>
+                    </div>
+                )}
             </div>
         ));
     };
