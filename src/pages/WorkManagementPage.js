@@ -371,15 +371,25 @@ export default function WorkManagementPage() {
             {/* Main Content */}
             <main className="flex-1 flex flex-col">
                 <div className="w-full max-w-4xl mx-auto mt-4 mb-2 flex gap-2">
-                    {tabDefs.map(tab => (
-                        <button
-                            key={tab.key}
-                            className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all ${projectTab === tab.key ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 bg-slate-100 hover:bg-slate-200'}`}
-                            onClick={() => setProjectTab(tab.key)}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    {tabDefs.map(tab => {
+                        let tabCount = 0;
+                        if (tab.key === 'pending') {
+                            tabCount = projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了').length;
+                        } else if (tab.key === 'inprogress') {
+                            tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了').length;
+                        } else if (tab.key === 'completed') {
+                            tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了').length;
+                        }
+                        return (
+                            <button
+                                key={tab.key}
+                                className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all ${projectTab === tab.key ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 bg-slate-100 hover:bg-slate-200'}`}
+                                onClick={() => setProjectTab(tab.key)}
+                            >
+                                {tab.label} <span className="text-xs text-slate-500 ml-1">({tabCount})</span>
+                            </button>
+                        );
+                    })}
                 </div>
                 {projectTab === 'pending' && (
                     <div className="w-full max-w-4xl mx-auto px-4 md:px-0 -mt-1 mb-3">
