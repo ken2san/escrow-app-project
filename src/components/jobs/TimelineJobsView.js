@@ -223,7 +223,7 @@ function ImmersiveJobsView({ jobs, navigate, onExitImmersive, t }) {
 
   const [showToast, setShowToast] = useState(false);
   const handleApplyModalSubmit = (job) => {
-    // 応募中リストに追加
+    // Add to pending applications list
     if (job?.id) {
       addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
     }

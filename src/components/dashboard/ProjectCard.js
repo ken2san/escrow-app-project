@@ -48,7 +48,7 @@ const ProjectCard = ({
     (prop) => prop.contractorId === currentUser.id && prop.status !== 'archived'
   );
 
-  // 英語対応: 表示フィールドを言語で切り替え
+  // English support: switch display fields based on language
   const getField = (obj, key) => {
     if (currentLanguage === 'en' && obj[key + '_en'] !== undefined && obj[key + '_en'] !== null && obj[key + '_en'] !== '') {
       return obj[key + '_en'];

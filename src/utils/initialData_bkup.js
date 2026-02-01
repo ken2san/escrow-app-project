@@ -1,4 +1,4 @@
-// ユーザー自身の依頼・販売案件をタイムラインカード形式で返す関数
+// Return user's own request/offer projects as timeline cards
 export function getMyProjectCards(userId = loggedInUserDataGlobal.id) {
   return dashboardAllProjects
     .filter(p => p.clientId === userId || p.contractorId === userId)
@@ -37,7 +37,7 @@ export const loggedInUserDataGlobal = {
   name_en: 'Satoshi Tanaka',
 };
 
-// --- ダミーデータ ---
+// --- Dummy data ---
 export const workManagementProjects = [
   {
     id: 1,
@@ -80,7 +80,7 @@ export const workManagementProjects = [
   },
 ];
 
-// 既存の案件データは jobs 配列としてエクスポート
+// Export existing project data as the jobs array
 export const jobs = [
   {
     id: 1,
@@ -522,7 +522,7 @@ export const jobs = [
 //---------------------------------------------------------------------------------------------------------
 
 
-// 仕事管理ページでは必ずworkManagementProjectsを参照してください。
+// Work management page should always reference workManagementProjects.
 export const dashboardAllProjects = [
   // job101
   {
@@ -1176,14 +1176,14 @@ export const dashboardAllProjects = [
 ];
 
 // --- Exports for each app section (after dashboardAllProjects definition) ---
-// Dashboard: 案件一覧や進捗表示用
+// Dashboard: for project list and progress display
 export const dashboardProjects = dashboardAllProjects.filter(p => [
   'job101', 'job103', 1, 4, 'job_dispute_01'
 ].includes(p.id));
 
 
 
-// // Command UI: コマンドUI用の案件
+// // Command UI: projects for Command UI
 // export const commandUIProjects = dashboardAllProjects.filter(p => [
 //   'job106'
 // ].includes(p.id));

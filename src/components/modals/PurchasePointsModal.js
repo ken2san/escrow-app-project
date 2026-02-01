@@ -21,13 +21,13 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
   const [bankInfo, setBankInfo] = useState({ name: '', ref: '' });
   const [txState, setTxState] = useState('idle'); // idle | sending | block | done
   if (!isOpen) return null;
-  // 進行状況メッセージ
+  // Progress messages
   const txMessages = {
     sending: t('sendingTx') || 'Sending transaction...',
     block: t('blockGenerating') || 'Block being generated...',
     done: t('onChainDone') || 'Recorded on blockchain!'
   };
-  // 進行状況アニメーション
+  // Progress animation
   const renderTxProgress = () => {
     if (txState === 'idle') return null;
     if (txState === 'done') {
@@ -45,7 +45,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
       </div>
     );
   };
-  // 購入処理
+  // Purchase flow
   const handlePurchase = () => {
     if (!amount || amount <= 0) return;
     setTxState('sending');
@@ -69,7 +69,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
         <h2 className="text-xl font-bold mb-5 text-gray-800 dark:text-gray-100 text-center">
           {t('purchasePoints') || 'ポイント購入'}
         </h2>
-        {/* 決済方法選択 */}
+        {/* Payment method selection */}
         <div className="mb-4 flex flex-wrap gap-2 justify-center">
           {paymentMethods.map((m) => (
             <button
@@ -95,7 +95,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
           placeholder={t('enterPointsAmount') || '例: 100'}
           disabled={isProcessing}
         />
-        {/* 決済方法ごとの入力欄 */}
+        {/* Payment method-specific input fields */}
         {method === 'creditCard' && (
           <div className="mb-4 space-y-2">
             <input type="text" className="w-full border rounded px-3 py-2 text-sm" placeholder="Card Number" value={card.number} onChange={e => setCard({ ...card, number: e.target.value })} />

@@ -28,7 +28,7 @@ const MarketCommandUIPage = () => {
 
 
 
-  // スラッシュ検索用 state
+  // State for slash search
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // Command execution (English only)
@@ -62,7 +62,7 @@ const MarketCommandUIPage = () => {
         setSearchKeyword('__MY_CARDS_ONLY__');
         setMarketView('timeline');
       } else {
-        // --- スラッシュ検索: /<keyword> で検索 ---
+        // --- Slash search: /<keyword> ---
         const keyword = valRaw.replace(/^\//, '').trim();
         setSearchKeyword(keyword);
         setMarketView('timeline');
@@ -82,7 +82,7 @@ const MarketCommandUIPage = () => {
   const [archivedIds, setArchivedIds] = useState([]);
   const timelineRef = useRef(null);
   const loadingRef = useRef(false);
-  // コメントいいね・わるいね状態を全体で管理
+  // Track comment like/dislike state globally
   const [commentLikesMap, setCommentLikesMap] = useState({});
 
   // Infinite scroll: add more dummy cards when near bottom
@@ -126,11 +126,11 @@ const MarketCommandUIPage = () => {
     setArchivedIds(ids => [...ids, item.id]);
   };
 
-  // 各タイムラインアイテムごとに「もっと見る」状態を管理
+  // Track "show more" state per timeline item
   const [showAllComments, setShowAllComments] = useState({});
 
   const renderTimeline = () => {
-    // --- 検索キーワードがあればフィルタ ---
+    // --- Filter when a search keyword is provided ---
     let filteredMarketItems;
     if (searchKeyword === '__MY_CARDS_ONLY__') {
       // Dummy: filter to only my cards (by userId, with 'my-' prefix)
@@ -153,7 +153,7 @@ const MarketCommandUIPage = () => {
         return { ...prev, [itemId]: arr };
       });
     };
-    // 日付フォーマット関数
+    // Date formatting helper
     const formatDate = (dateStr) => {
       if (!dateStr) return '';
       const d = new Date(dateStr);
@@ -164,25 +164,25 @@ const MarketCommandUIPage = () => {
       <div className="relative py-12 px-2 md:px-0 bg-gradient-to-b from-indigo-50 via-white to-indigo-100 min-h-[100vh]">
         <h3 className="text-2xl font-bold text-indigo-700 mb-12 text-center tracking-wide drop-shadow-sm">Timeline</h3>
         <div className="relative max-w-3xl mx-auto">
-          {/* 中心ライン */}
+          {/* Center line */}
           <div className="hidden md:block absolute left-1/2 top-0 h-full w-1 bg-gradient-to-b from-indigo-200 via-indigo-300 to-indigo-200 -translate-x-1/2 z-0 rounded-full" />
           <div className="flex flex-col gap-20">
             {timelineItems.map((item, idx) => {
               const isLeft = idx % 2 === 0;
               return (
                 <div key={item.id} className="relative min-h-[140px]">
-                  {/* 枝ライン */}
+                  {/* Branch line */}
                   <div className={`hidden md:block absolute top-1/2 w-16 h-1 bg-indigo-200 z-0 rounded-full ${isLeft ? 'right-1/2 mr-2' : 'left-1/2 ml-2'}`}
                     style={{transform: 'translateY(-50%)'}} />
-                  {/* タイムラインノード */}
+                  {/* Timeline node */}
                   <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white border-2 border-indigo-400 rounded-full shadow-md z-0">
                     <span className="text-indigo-400 text-lg">★</span>
                   </div>
-                  {/* ジグザグ: PCはflex-row, モバイルはflex-colで縦積み */}
+                  {/* Zigzag: flex-row on desktop, flex-col on mobile */}
                   <div className={`flex flex-col md:flex-row w-full max-w-3xl mx-auto ${isLeft ? '' : 'md:flex-row-reverse'}`}>
-                    {/* カード本体 */}
+                    {/* Card body */}
                     <div className={`z-0 w-full max-w-xs md:w-[340px] md:max-w-md ${isLeft ? 'md:mr-auto md:pr-12' : 'md:ml-auto md:pl-12'}`}>
-                      {/* 案件ユーザー名・アイコン・日付（バブルと同じ並び） */}
+                      {/* User name/icon/date (aligned with bubble) */}
                       <div className="flex items-center gap-2 mb-1 ml-1">
                         {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
                         <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
@@ -197,10 +197,10 @@ const MarketCommandUIPage = () => {
                         size="sm"
                       />
                     </div>
-                    {/* コメントバブル群 */}
+                    {/* Comment bubbles */}
                     <div className={`flex flex-col gap-4 mt-2 w-full max-w-xs md:w-[360px] md:max-w-[600px] animate-fadein ${isLeft ? 'md:ml-12 md:ml-20' : 'md:mr-12 md:mr-20'}`}>
                       {Array.isArray(item.userComments) && item.userComments.length > 0 ? (() => {
-                        // いいね順でソート
+                        // Sort by likes
                         const commentsWithLikes = item.userComments.map((commentObj, cidx) => {
                           let comment = commentObj;
                           let date = undefined;
@@ -347,13 +347,13 @@ const MarketCommandUIPage = () => {
                   setSuggestIdx(idx => (idx - 1 + suggestItems.length) % suggestItems.length);
                   e.preventDefault();
                 } else if (e.key === 'Tab') {
-                  // Tab: 選択内容を入力欄に反映しサジェストを閉じるだけ
+                  // Tab: fill input with selection and close suggestions
                   setPrompt(suggestItems[suggestIdx].cmd);
                   setShowSuggest(false);
                   e.preventDefault();
                   return;
                 } else if (e.key === 'Enter') {
-                  // Enter: 選択内容を入力欄に反映し即コマンド実行
+                  // Enter: fill input with selection and execute command
                   setPrompt(suggestItems[suggestIdx].cmd);
                   setShowSuggest(false);
                   handleCommand(suggestItems[suggestIdx].cmd);

@@ -60,7 +60,7 @@ export function groupAndSortCards(cards, viewSettings, projects) {
     } else if (viewSettings.sortBy === 'reward') {
       groups[key].sort((a, b) => b.reward - a.reward);
     }
-    // sortBy === null の場合はソートしない（カード配列の順序を維持）
+    // Do not sort when sortBy === null (preserve original card order)
   });
 
   return groups;

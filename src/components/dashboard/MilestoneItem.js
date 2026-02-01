@@ -43,7 +43,7 @@ const MilestoneItem = ({ milestone, project, userRole, lang, t, onUpdateMileston
           {milestone.description}
         </p>
       )}
-      {/* 支払いボタン（クライアントで未払い・承認済みの場合のみ表示） */}
+      {/* Payment button (client only, unpaid + approved) */}
       {userRole === 'client' && milestone.status === 'approved' && project.fundsDeposited >= milestone.amount && (
         <button
           className="mt-2 px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded transition"

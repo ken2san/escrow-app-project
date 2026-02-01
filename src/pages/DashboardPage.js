@@ -34,7 +34,7 @@ const DashboardPage = ({
     );
   }, [currentViewMode]);
 
-  // props.projectsが未指定ならdashboardAllProjectsを使う
+  // Use dashboardAllProjects when props.projects is not provided
   // Fallback for loggedInUser and searchTerm
   const safeLoggedInUser = loggedInUser || { id: '', name: '' };
   const safeSearchTerm = typeof searchTerm === 'string' ? searchTerm : '';
@@ -124,12 +124,12 @@ const DashboardPage = ({
     }
   })();
 
-  // 修正: この関数はリストが空でなければタイトルとカードを表示するだけにする
+  // Fix: only render title and cards when the list is not empty
   const renderProjectList = (list, title, isRecommended = false) => {
     if (!list || list.length === 0) {
       return null;
     }
-    // handleProjectClickが未定義の場合はダミー関数を使う
+    // Use a no-op if handleProjectClick is undefined
     const safeHandleProjectClick = typeof handleProjectClick === 'function' ? handleProjectClick : () => {};
     return (
       <>
@@ -156,9 +156,9 @@ const DashboardPage = ({
         ))}
       </>
     );
-  } // ←ここでrenderProjectListを閉じる
+  } // ← renderProjectList ends here
 
-  // 修正: 「案件なし」メッセージを表示するためのコンポーネント
+  // Fix: component for displaying the "no projects" message
   const NoProjectsMessage = () => (
     <div className="text-center py-10 col-span-full">
       <Briefcase size={40} className="mx-auto text-gray-400 mb-4" />

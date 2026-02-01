@@ -95,7 +95,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
       <nav className="flex-grow">
   <div className="bg-gray-800/80 rounded-2xl shadow-lg border border-gray-700 px-2 py-4 mb-4">
   <ul>
-    {/* コマンドUI（ホーム・検索アイコン） */}
+    {/* Command UI (home/search icon) */}
     <li className="mb-1">
       <button
         onClick={() => navigate('/jobs')}
@@ -110,8 +110,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         {isSidebarOpen && <span className="ml-3 text-sm">{t('jobsSearch', '仕事を探す')}</span>}
       </button>
     </li>
-    {/* 応募中（タブ化のためサイドバーから削除） */}
-    {/* 仕事管理 */}
+    {/* Pending (removed from sidebar due to tabbed UI) */}
+    {/* Work management */}
     <li className="mb-1">
       <button
         onClick={() => navigate('/work-management')}
@@ -126,7 +126,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
       </button>
     </li>
-    {/* メッセージ */}
+    {/* Messages */}
     <li className="mb-1">
       <button
         onClick={() => navigate(getPath('messages'))}
@@ -141,7 +141,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('messages')}</span>}
       </button>
     </li>
-    {/* 協議中の案件 */}
+    {/* Disputes */}
     <li className="mb-1">
       <button
         onClick={() => navigate(getPath('disputes'))}
@@ -156,7 +156,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('disputes')}</span>}
       </button>
     </li>
-    {/* 設定 */}
+    {/* Settings */}
     <li className="mb-1">
       <button
         onClick={() => navigate(getPath('settings'))}
@@ -186,7 +186,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('projectOverview')}</span>}
       </button>
     </li>
-    {/* ダッシュボード */}
+    {/* Dashboard */}
     <li>
       <button
         onClick={() => navigate(getPath('dashboard'))}
@@ -201,7 +201,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
         {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboardLegacy')}</span>}
       </button>
     </li>
-    {/* 進行状況ダッシュボード */}
+    {/* Progress dashboard */}
     <li>
       <button
         onClick={() => navigate('/progress-dashboard')}
@@ -213,7 +213,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
       </button>
     </li>
   </ul>
-      </div> {/* ←div閉じタグ追加 */}
+      </div> {/* ← added closing div tag */}
       </nav>
       <div className="mt-auto border-t border-gray-700 pt-3 flex flex-col gap-2">
         <button
@@ -234,7 +234,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
 export default Sidebar;
 
 
-// ドロップダウン式ポイント操作ボタン群
+// Dropdown point action buttons
 
 function DropdownPointsActions({ onShowPointsHistory, onSendPointsClick, onReceivePointsClick }) {
   const { t } = useTranslation();

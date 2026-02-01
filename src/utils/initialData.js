@@ -46,7 +46,7 @@ export function getProjectsForUser(userId) {
         const twoDaysLater = new Date();
         twoDaysLater.setDate(twoDaysLater.getDate() + 2);
         dueDate = twoDaysLater.toISOString().split('T')[0];
-        // Keep status as '募集中' for demo purposes (shown in Jobs Search)
+        // Keep status as open for demo purposes (shown in Jobs Search)
       } else if (p.id === 'job1') {
         // Completed logo project - needs evaluation
         status = 'completed';
@@ -84,7 +84,7 @@ export function getProjectsForUser(userId) {
     });
 }
 
-// Job Discovery用：すべての募集中の仕事を返す関数（ユーザー制限なし）
+// Job Discovery: return all open jobs (no user restrictions)
 export function getAvailableJobsForDiscovery() {
   const seenIds = new Set();
   return dashboardAllProjects
@@ -192,17 +192,17 @@ const _draftProjectsByUser = {};
 // { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected' }] }
 const _pendingApplicationJobsByUser = {
   'user555': [
-    { jobId: 'job1', status: 'pending' }, // ← pending状態を追加
+    { jobId: 'job1', status: 'pending' }, // ← add pending status
     { jobId: 'job2', status: 'accepted' },
     { jobId: 'job3', status: 'accepted' },
   ]
 };
-// 応募状態を更新（accepted/rejected/pending）＋履歴も追記
+// Update application status (accepted/rejected/pending) and append history
 export function updateApplicationJobStatus(jobId, status, userId = loggedInUserDataGlobal.id) {
   if (!_pendingApplicationJobsByUser[userId]) return;
   const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
   if (job) {
-    // ステータス変更時のみ履歴を追加
+    // Append history only when status changes
     if (job.status !== status) {
       if (!job.history) job.history = [];
       job.history.push(`${new Date().toLocaleString()} ステータスが「${status === 'accepted' ? '採用' : status === 'rejected' ? '不採用' : '応募中'}」になりました`);
@@ -212,17 +212,17 @@ export function updateApplicationJobStatus(jobId, status, userId = loggedInUserD
 }
 // ...existing code...
 // Add a job to the pending application list for a user
-// 応募中リストに追加（デフォルトはpending）
+// Add to pending application list (default is pending)
 export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.id) {
   if (!_pendingApplicationJobsByUser[userId]) _pendingApplicationJobsByUser[userId] = [];
-  // 既存がなければ追加
+  // Add only if it does not already exist
   if (!_pendingApplicationJobsByUser[userId].some(j => j.jobId === jobId)) {
     _pendingApplicationJobsByUser[userId].push({ jobId, status: 'pending' });
   }
 }
 
 
-// Get all application jobs for a user（状態付き）
+// Get all application jobs for a user (with status)
 export function getPendingApplicationJobsForUser(userId = loggedInUserDataGlobal.id) {
   return _pendingApplicationJobsByUser[userId] ? [..._pendingApplicationJobsByUser[userId]] : [];
 }
@@ -353,10 +353,10 @@ export const loggedInUserDataGlobal = {
   role: 'contractor', // 'client' or 'contractor'
 };
 
-// --- ダミーデータ ---
-// --- WorkManagementPage用のプロジェクト配列（バックアップと同じ構造） ---
+// --- Dummy data ---
+// --- Project array for WorkManagementPage (same structure as backup) ---
 export const workManagementProjects = [
-    // job2: accepted状態の案件（応募中データと連携）
+  // job2: accepted project (linked with pending application data)
     {
       id: 'job2',
       name: 'WebアプリUI改善プロジェクト',
@@ -415,7 +415,7 @@ export const workManagementProjects = [
 ];
 export const dashboardAllProjects = [
   // job101
-  // id: job1（完了済みロゴリニューアル案件）
+  // id: job1 (completed logo renewal project)
   {
     id: 'job1',
     name: '企業ロゴリニューアルプロジェクト',
@@ -1213,7 +1213,7 @@ export const dashboardAllProjects = [
     aiRecommendationReason_en: 'Your SEO analysis and reporting skills are ideal. Extensive experience with mid-size companies.',
     proposals: [],
   },
-  // job201 - 飲食アルバイト（カフェ）
+  // job201 - Food service part-time (cafe)
   {
     id: 'job201',
     name: 'カフェスタッフ（レジ・ドリンク作成）',
@@ -1247,7 +1247,7 @@ export const dashboardAllProjects = [
     aiRecommendationScore: 0.65,
     proposals: [],
   },
-  // job202 - 物流アルバイト（倉庫ピッキング）
+  // job202 - Logistics part-time (warehouse picking)
   {
     id: 'job202',
     name: '倉庫内ピッキング・梱包スタッフ',
@@ -1282,7 +1282,7 @@ export const dashboardAllProjects = [
     aiRecommendationScore: 0.6,
     proposals: [],
   },
-  // job203 - 小売（アパレル販売）
+  // job203 - Retail (apparel sales)
   {
     id: 'job203',
     name: 'アパレル販売スタッフ（週末のみ）',
@@ -1527,14 +1527,14 @@ export const dashboardAllProjects = [
 
 
 // --- Exports for each app section (after dashboardAllProjects definition) ---
-// Dashboard: 案件一覧や進捗表示用
+// Dashboard: for project list and progress display
 export const dashboardProjects = dashboardAllProjects.filter(p => [
   'job101', 'job103', 'job1', 'job4', 'job_dispute_01'
 ].includes(p.id));
 
 
 
-// // Command UI: コマンドUI用の案件
+// // Command UI: projects for Command UI
 // export const commandUIProjects = dashboardAllProjects.filter(p => [
 //   'job106'
 // ].includes(p.id));

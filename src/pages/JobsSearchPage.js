@@ -6,13 +6,13 @@ import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
-  // 応募中リスト取得
+  // Fetch pending applications
   const [pendingApplications, setPendingApplications] = useState([]);
   useEffect(() => {
     setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
   }, []);
 
-  // 応募状態がグローバルで変わったら反映
+  // Reflect changes when application status updates globally
   useEffect(() => {
     const handler = () => setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
     window.addEventListener('updatePendingApplications', handler);
@@ -485,13 +485,13 @@ export default function JobsSearchPage() {
 
 /* Job Card Component */
 function JobCard({ job, pendingApplications = [], onApply }) {
-  // 応募状態取得
+  // Resolve application status
   const applicationStatus = React.useMemo(() => {
     const found = pendingApplications.find(j => j.jobId === job.id);
     return found ? found.status : null;
   }, [pendingApplications, job.id]);
 
-  // テスト用: 状態変更ボタン
+  // Test-only: status change button
   const [isExpanded, setIsExpanded] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -543,7 +543,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
       } else if (typeof addPendingApplicationJob === 'function') {
         addPendingApplicationJob(job.id, loggedInUserDataGlobal.id);
       }
-      // グローバル状態更新を通知
+      // Notify global state update
       window.dispatchEvent(new Event('updatePendingApplications'));
       setShowApplyModal(false);
       setShowToast(true);
@@ -553,7 +553,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
     }
   };
 
-  // トーストが残らないようにアンマウント時に消す
+  // Clear toast on unmount
   useEffect(() => {
     return () => setShowToast(false);
   }, []);

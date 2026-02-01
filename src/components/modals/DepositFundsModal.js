@@ -2,7 +2,7 @@ import React from 'react';
 import { X, AlertTriangle, Coins } from 'lucide-react';
 
 const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit }) => {
-  // 支払い方法選択は不要のため削除
+  // Payment method selection removed as unnecessary
 
   if (!isOpen || !project) return null;
 
@@ -67,7 +67,7 @@ const DepositFundsModal = ({ isOpen, onClose, project, lang, t, onSubmitDeposit 
               </div>
             </div>
           )}
-          {/* 支払い方法選択UIは省略（ポイントのみ） */}
+          {/* Payment method UI omitted (points only) */}
           <p className="text-xs text-gray-500 mt-2">
             （
             {lang === 'ja'

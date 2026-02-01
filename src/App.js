@@ -61,7 +61,7 @@ export default function App() {
   const [projects, setProjects] = useState(dashboardAllProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  // モバイルなら初期状態でサイドバーを閉じる
+  // Close sidebar by default on mobile
   const getInitialSidebarOpen = () => {
     if (typeof window !== 'undefined') {
       return window.innerWidth >= 768; // md: 768px
@@ -304,7 +304,7 @@ export default function App() {
       />
       <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
         <Header t={t} isSidebarOpen={isSidebarOpen} activePage={activePage} currentViewMode={currentViewMode} toggleViewMode={toggleViewMode} toggleLanguage={toggleLanguage} currentLanguage={currentLanguage} onNewProject={() => {
-          // WorkManagementPageの新規プロジェクトモーダルを開くためのイベントを発火
+          // Dispatch event to open WorkManagementPage's new project modal
           const main = document.querySelector('main');
           if (main) {
             const event = new CustomEvent('openNewProjectModal');

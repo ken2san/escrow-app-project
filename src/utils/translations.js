@@ -78,7 +78,7 @@ export const translations = {
     statusInProgress: '作業中',
     statusInReview: '承認待ち',
     statusPaymentWaiting: '支払い待ち',
-  // statusCompleted: '完了',
+  // statusCompleted: 'Completed',
     statusInDispute: '協議中',
     statusPending: '未着手',
     statusRejected: '差戻し',
@@ -137,8 +137,8 @@ export const translations = {
     depositFundsTitle: '資金をデポジット',
     amountToDeposit: 'デポジット金額',
     paymentMethod: '支払い方法',
-  // creditCard: 'クレジットカード', // duplicate removed
-  // bankTransfer: '銀行振込', // duplicate removed
+  // creditCard: 'Credit Card', // duplicate removed
+  // bankTransfer: 'Bank Transfer', // duplicate removed
     executeDeposit: 'デポジットを実行する',
     depositCompletedMessage: '資金がデポジットされました。作業を開始できます。',
     resellingAlertTitle: '警告：',
@@ -207,25 +207,25 @@ export const translations = {
     contractorOpenForProposals: '提案可能な案件',
     aiRecommendedProjectsTitle: 'AIおすすめ案件 ✨',
     aiRecommendationReasonPrefix: '推薦理由: ',
-    // エラーメッセージ
-  // tabCompletedHistory: '完了・履歴',
-    // エラーメッセージ
+    // Error messages
+  // tabCompletedHistory: 'Completed / History',
+    // Error messages
     errorGeneric: '予期せぬエラーが発生しました',
     errorUpdateMilestone: 'マイルストーンの更新中にエラーが発生しました',
     errorCreateProject: '案件の作成中にエラーが発生しました',
 
-    // ステータス
+    // Status
     statusOpen: '募集中',
     statusCompleted: '完了',
     tabRecommended: 'おすすめ',
     tabMyTasks: 'マイタスク',
     tabCompletedHistory: '完了・履歴',
 
-  // マイルストーン
+  // Milestones
   milestoneSubmissionComment: '{name}が成果物を提出しました',
   milestoneApprovalComment: '{name}がマイルストーンを承認しました',
 
-  // ポイント購入モーダル
+  // Points purchase modal
   purchasePoints: 'ポイント購入',
   walletAddress: 'ウォレットアドレス',
   onChainBalance: 'オンチェーン残高',

@@ -2,16 +2,16 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPendingApplicationJobsForUser, getAvailableJobsForDiscovery, loggedInUserDataGlobal, updateApplicationJobStatus } from '../utils/initialData';
 
-// 応募中管理ページ: 応募中の案件と進捗を一覧表示
+// Pending applications management page: list pending projects and their progress
 export default function PendingApplicationsPage() {
   const navigate = useNavigate();
   const [showStatusToast, setShowStatusToast] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  // 応募中の案件データ取得
+  // Fetch pending applications data
   const [pendingApplications, setPendingApplications] = useState(() => getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
   const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
 
-  // 応募中の案件詳細を取得
+  // Fetch details for pending application jobs
   const pendingJobs = pendingApplications
     .filter(app => app.status === 'pending')
     .map(app => {
@@ -20,11 +20,11 @@ export default function PendingApplicationsPage() {
     })
     .filter(Boolean);
 
-  // デモ: 応募中の案件があれば5秒後に自動でステータス変更
+  // Demo: auto-change status after 5 seconds if there is a pending job
   useEffect(() => {
     if (pendingJobs.length > 0) {
       const timer = setTimeout(() => {
-        // ランダムでaccepted/rejected
+        // Randomly set accepted/rejected
         const newStatus = Math.random() > 0.5 ? 'accepted' : 'rejected';
         updateApplicationJobStatus(pendingJobs[0].id, newStatus, loggedInUserDataGlobal.id);
         setStatusMessage(newStatus === 'accepted' ? 'Congratulations! Your application was accepted.' : 'Sorry, your application was rejected.');
@@ -63,7 +63,7 @@ export default function PendingApplicationsPage() {
                 <div><span className="font-bold">応募日時:</span> {job.appliedAt || '2026/01/25 12:00'}</div>
                 <div><span className="font-bold">案件ID:</span> {job.id}</div>
               </div>
-              {/* 進捗バー・履歴 */}
+              {/* Progress bar and history */}
               <div className="flex items-center gap-2 mb-2">
                 <ProgressBar status={job.applicationStatus} />
                 <span className="text-xs text-slate-500">クライアント確認中</span>
@@ -91,9 +91,9 @@ export default function PendingApplicationsPage() {
   );
 }
 
-// 応募中進捗バーコンポーネント
+// Pending application progress bar component
 function ProgressBar({ status }) {
-  // 今後ステータスが増えたら拡張可
+  // Extend when more statuses are added in the future
   const steps = [
     { key: 'pending', label: '応募受付' },
     { key: 'accepted', label: '採用' },

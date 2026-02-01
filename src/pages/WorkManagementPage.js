@@ -10,8 +10,8 @@ import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal }
 import EmptyDropzone from '../components/common/EmptyDropzone';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 
-// --- カードごとの履歴管理 ---
-// メモリ上でカードIDごとに履歴を保持（本来はDB/API管理）
+// --- Card history management ---
+// Store card history in-memory by cardId (should be managed by DB/API in production)
 const cardHistoryMapRef = typeof window !== 'undefined' ? (window.__cardHistoryMapRef = window.__cardHistoryMapRef || {}) : {};
 function getCardHistory(cardId) {
     return cardHistoryMapRef[cardId] || [];
@@ -22,10 +22,10 @@ function addCardHistory(cardId, entry) {
 }
 function initCardHistoryIfNeeded(card) {
     if (!cardHistoryMapRef[card.id]) {
-        // 初期履歴（作成時）
+        // Initial history (on creation)
         cardHistoryMapRef[card.id] = [{
             type: 'created',
-            text: 'カード作成',
+            text: 'Card created',
             date: card.startDate || new Date().toISOString(),
             userName: loggedInUserDataGlobal.name,
             userIcon: '📝',
@@ -33,14 +33,14 @@ function initCardHistoryIfNeeded(card) {
     }
 }
 
-// --- 2つ前のバージョンのロジック/UIをベースに ---
+// --- Based on logic/UI from two versions ago ---
 function getInitialProjects() {
     const { getPendingApplicationJobsForUser, dashboardAllProjects } = require('../utils/initialData');
     const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
     const pendingJobs = pendingApplications.filter(j => j.status === 'pending').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
 
-    // 既存プロジェクト（初期データ）
+    // Existing projects (initial data)
     let base = initialProjectsData
         .filter(project => pendingJobs.includes(project.id) || acceptedJobs.includes(project.id))
         .map(project => {
@@ -67,7 +67,7 @@ function getInitialProjects() {
             return { ...proj, cards: [] };
         });
 
-    // 応募中で初期データに存在しないjobIdはdashboardAllProjectsから生成
+    // Generate missing jobIds from dashboardAllProjects that are not in initial data
     const existingIds = new Set(base.map(p => p.id));
     const missingPending = pendingJobs.filter(jid => !existingIds.has(jid));
     for (const jobId of missingPending) {
@@ -98,7 +98,7 @@ function getInitialProjects() {
             });
         }
     }
-    // acceptedも同様に（ただしpending→acceptedに昇格した場合のみ）
+    // Same for accepted (only when promoted from pending to accepted)
     const missingAccepted = acceptedJobs.filter(jid => !existingIds.has(jid) && !missingPending.includes(jid));
     for (const jobId of missingAccepted) {
         const job = dashboardAllProjects.find(j => j.id === jobId);
@@ -132,7 +132,7 @@ function getInitialProjects() {
 }
 
 export default function WorkManagementPage() {
-            // 応募状態がグローバルで変わったら反映
+            // Reflect changes if application status changes globally
             useEffect(() => {
                 const handler = () => setProjects(getInitialProjects());
                 window.addEventListener('updatePendingApplications', handler);
@@ -140,7 +140,7 @@ export default function WorkManagementPage() {
             }, []);
         // Demo: Accept job (move from pending to inprogress)
         const handleAcceptJob = React.useCallback((jobId) => {
-            // グローバル応募状態も更新
+            // Also update global application status
             const { updateApplicationJobStatus } = require('../utils/initialData');
             updateApplicationJobStatus(jobId, 'accepted', loggedInUserDataGlobal.id);
             setProjects(getInitialProjects());
@@ -148,7 +148,7 @@ export default function WorkManagementPage() {
             window.dispatchEvent(new CustomEvent('updatePendingApplications'));
         }, []);
 
-        // window経由でSortableCardからhandleAcceptJobを呼べるようにする（デモ用）
+        // Expose handleAcceptJob via window for SortableCard (demo)
         React.useEffect(() => {
             window.handleAcceptJob = handleAcceptJob;
             return () => { delete window.handleAcceptJob; };
@@ -163,7 +163,7 @@ export default function WorkManagementPage() {
         return () => main.removeEventListener('openNewProjectModal', handler);
     }, []);
     // const initialProjects = useMemo(() => getInitialProjects(), []);
-    // 上記は不要。下でuseState(getInitialProjects())を使う。
+    // Above is unnecessary; use useState(getInitialProjects()) below.
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     const handleConfirmNewProject = (newProject) => {
         setProjects(prev => [...prev, newProject]);
@@ -172,32 +172,32 @@ export default function WorkManagementPage() {
         }
         setShowNewProjectModal(false);
     };
-    // --- 2つ前のバージョンのロジック/UIをベースに ---
+    // --- Based on logic/UI from two versions ago ---
     // --- Hybrid logic/UI, all inside WorkManagementPage function ---
     // --- State for tab switching ---
     const [projectTab, setProjectTab] = useState('inprogress');
-    // --- ダミー案件を必ず初期表示 ---
-    // getInitialProjects()の返り値をそのまま使う
-    // localStorageキー
+    // --- Always display dummy projects initially ---
+    // Use return value from getInitialProjects() directly
+    // localStorage key
     const PROJECTS_STORAGE_KEY = 'workManagementProjects_v2';
-    // 初期化: localStorage→なければgetInitialProjects()
+    // Initialize: localStorage → if empty, use getInitialProjects()
     const [projects, setProjects] = useState(getInitialProjects());
 
-    // projectsが変化するたびにlocalStorageへ保存
+    // Persist to localStorage whenever projects changes
     useEffect(() => {
         localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
     }, [projects]);
-    // タブごとに案件を正しく分類するフィルタロジックを復活
+    // Restore filter logic that classifies projects by tab
     const filteredProjects = useMemo(() => {
-        // "pending"タブ: _pendingStatusが"pending"かつstatusが"完了"以外
+        // "pending" tab: _pendingStatus is "pending" and status is not completed
         if (projectTab === 'pending') return projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
-        // "completed"タブ: _pendingStatusが"accepted"かつstatusが"完了"
+        // "completed" tab: _pendingStatus is "accepted" and status is completed
         if (projectTab === 'completed') return projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了');
-        // "inprogress"タブ: _pendingStatusが"accepted"かつstatusが"完了"以外
+        // "inprogress" tab: _pendingStatus is "accepted" and status is not completed
         return projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了');
     }, [projects, projectTab]);
 
-    // --- 応募中タブで何も表示されない場合の案内 ---
+    // --- Message when pending tab is empty ---
     const showNoPendingMessage = projectTab === 'pending' && filteredProjects.length === 0;
 
     // Cards are derived from filteredProjects
@@ -270,7 +270,7 @@ export default function WorkManagementPage() {
         setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
         setUndoToast({ open: true, message: 'カードを編集しました', id: Date.now() });
         setCards(prev => prev.map(card => card.id === editingCard.id ? { ...editingCard, status: 'edited' } : card));
-        // 履歴追加
+                // Add history entry
         addCardHistory(editingCard.id, {
           type: 'edited',
           text: 'カード内容を編集',
@@ -293,7 +293,7 @@ export default function WorkManagementPage() {
             setUndoToast({ open: false, message: '', id: null });
         }
     };
-    // --- タブ切り替えUI ---
+    // --- Tab switch UI ---
     const tabDefs = [
         { key: 'inprogress', label: '進行中' },
         { key: 'pending', label: '応募中' },
@@ -309,7 +309,7 @@ export default function WorkManagementPage() {
                     <div className="text-sm text-slate-600">採用されると「進行中」タブに自動で表示されます。<br/>しばらくお待ちください。</div>
                 </div>
             )}
-            {/* 応募中タブの手動登録ボタンは不要のため削除 */}
+            {/* Remove manual add button for pending tab */}
             {/* New Project Modal (ProjectFlowDemo style) */}
             <NewProjectModal
                 open={showNewProjectModal}
@@ -349,7 +349,7 @@ export default function WorkManagementPage() {
                                         {editErrors.duration && <p className="text-xs text-red-500 mt-1">{editErrors.duration}</p>}
                                     </div>
                                 </div>
-                                {/* --- 履歴タイムライン --- */}
+                                {/* --- History timeline --- */}
                                 <div className="mt-6">
                                     <label className="block text-sm font-bold text-slate-700 mb-2">アクション履歴</label>
                                     <CardHistoryTimeline history={getCardHistory(editingCard.id)} />
@@ -508,7 +508,7 @@ export default function WorkManagementPage() {
                           )}
                         </div>
                         <div className="h-16"></div>
-                        {/* View Area: レイアウト切り替え */}
+                        {/* View Area: layout switch */}
                         {viewSettings.layout === 'list' ? (
                             <>
                             <DndContext
@@ -516,7 +516,7 @@ export default function WorkManagementPage() {
                                 collisionDetection={closestCenter}
                                 onDragStart={e => setActiveId(e.active.id)}
                                 onDragOver={e => {
-                                    // ドラッグオーバー時のカラム/リスト・インデックスを記録
+                                    // Record column/list index on drag over
                                     const { over } = e;
                                     if (!over) return setDragOverInfo({ groupKey: null, overIndex: null });
                                     let targetGroupKey = null;
@@ -539,7 +539,7 @@ export default function WorkManagementPage() {
                                     if (!over || active.id === over.id) return;
                                     let targetGroupKey = null;
                                     let overIndex = null;
-                                    // 空リストDnD対応
+                                    // Handle empty list DnD
                                     if (typeof over.id === 'string' && over.id.startsWith('empty-dropzone-')) {
                                         targetGroupKey = over.id.replace('empty-dropzone-', '');
                                         overIndex = 0;
@@ -557,9 +557,9 @@ export default function WorkManagementPage() {
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
-                                    // グループがdueDateの場合はグループ間移動禁止
+                                    // If groupBy is dueDate, disallow cross-group moves
                                     if (viewSettings.groupBy === 'dueDate') {
-                                        // 移動前後のグループが異なる場合は何もしない
+                                        // Do nothing if source and target groups differ
                                         let fromGroupKey = null;
                                         for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
                                             if (groupCards.some(card => card.id === movingCard.id)) {
@@ -570,7 +570,7 @@ export default function WorkManagementPage() {
                                         if (fromGroupKey !== targetGroupKey) return;
                                     }
                                     // const targetCards = groupedCards[targetGroupKey];
-                                    // overIndex: 空リストDnD時は0、通常DnD時は既存カードのindex
+                                    // overIndex: 0 for empty list DnD, otherwise index of existing card
                                     setCards(prev => {
                                         let updated = [...prev];
                                         if (viewSettings.groupBy === 'project') {
@@ -582,16 +582,16 @@ export default function WorkManagementPage() {
                                                 card.id === movingCard.id ? { ...card, status: targetGroupKey } : card
                                             );
                                         } else if (viewSettings.groupBy === 'dueDate') {
-                                            // グループ間移動は既に禁止済みなので、ここは同一グループ内DnDのみ
-                                            // 期日未設定グループはstartDate空欄維持、他はstartDateを新しい順序で再計算
+                                            // Cross-group moves are already blocked; only same-group DnD here
+                                            // Keep empty startDate for "no due date" group; otherwise recalc startDate in new order
                                             if (targetGroupKey === '期日未設定') {
-                                                // 何もしない（updated = prev;）
+                                                // Do nothing (updated = prev)
                                                 return updated;
                                             } else {
-                                                // 新しい順序でstartDateを再計算
-                                                // targetGroupKeyは日付文字列
-                                                // 並び順の先頭がtargetGroupKeyの日付、以降はdurationで順次加算
-                                                // グループ内カード配列を直接使う
+                                                // Recalculate startDate in new order
+                                                // targetGroupKey is a date string
+                                                // First item uses targetGroupKey date, then add duration sequentially
+                                                // Use the group card array directly
                                                 const groupCardsArr = groupedCards[targetGroupKey] || [];
                                                 let movingIdx = groupCardsArr.findIndex(card => card.id === movingCard.id);
                                                 let overIdx = groupCardsArr.findIndex(card => card.id === over.id);
@@ -607,7 +607,7 @@ export default function WorkManagementPage() {
                                                     baseDate.setDate(baseDate.getDate() + duration);
                                                     reordered[i] = card;
                                                 }
-                                                // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
+                                                // Keep overall card order, replace only target group with reordered
                                                 let result = [];
                                                 let usedIds = new Set(reordered.map(c => c.id));
                                                 for (let card of updated) {
@@ -623,7 +623,7 @@ export default function WorkManagementPage() {
                                             }
                                         } else {
                                         }
-                                        // グループ内の新しい順序をcards全体に反映
+                                        // Apply new in-group order to the full cards list
                                         let newTargetCards = updated.filter(card =>
                                             viewSettings.groupBy === 'project' ? card.projectId === targetGroupKey :
                                             viewSettings.groupBy === 'status' ? card.status === targetGroupKey :
@@ -633,7 +633,7 @@ export default function WorkManagementPage() {
                                         const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
                                         let reordered = arrayMove(newTargetCards, movingIdx, overIndex);
                                         if (viewSettings.groupBy === 'project') {
-                                            // プロジェクトグループの場合、元のグループ内で一番古い開始日を基準にして計算
+                                            // For project group, recalc dates based on earliest start date in group
                                             let baseDate = null;
                                             for (const card of newTargetCards) {
                                                 if (card.startDate) {
@@ -668,7 +668,7 @@ export default function WorkManagementPage() {
                                     });
                                 }}
                             >
-                                {/* DragOverlay: ドラッグ中のカードをbody直下に描画し、枠外でも消えないようにする */}
+                                {/* DragOverlay: render dragging card at body root so it stays visible */}
                                 <DragOverlay dropAnimation={null}>
                                     {activeCard && (
                                         <SortableCard card={activeCard} activeId={activeId} projects={projects} layout={viewSettings.layout} />
@@ -676,7 +676,7 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="view-area" className="flex flex-col gap-8">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        // groupKeyはそのまま使う
+                                        // Use groupKey as-is
                                         // --- Group title, subtitle, warning ---
                                         let groupTitle = groupKey;
                                         let subTitle = '';
@@ -743,7 +743,7 @@ export default function WorkManagementPage() {
                                                         {groupTitle}
                                                         {subTitle && <span className="text-xs text-slate-400 ml-2">{subTitle}</span>}
                                                     </h3>
-                                                    {/* プロジェクト属性表示 */}
+                                                    {/* Project attributes */}
                                                     {viewSettings.groupBy === 'project' && (
                                                         <div className="flex flex-wrap gap-2 mt-1">
                                                             <span className="text-xs text-green-700 bg-green-100 rounded px-2 py-0.5">{budgetDisplay}</span>
@@ -823,7 +823,7 @@ export default function WorkManagementPage() {
                                 }}
                                 onDragEnd={e => {
                                     const { active, over } = e;
-                                    // overがnullになるケースに備え、最後にホバーしていたgroupをフォールバックに使う
+                                    // Use last hovered group as fallback if over is null
                                     let fallbackOver = over;
                                     if (!fallbackOver && dragOverInfo.groupKey) {
                                         fallbackOver = { id: `column-dropzone-${dragOverInfo.groupKey}` };
@@ -832,15 +832,15 @@ export default function WorkManagementPage() {
                                     setDragOverInfo({ groupKey: null, overIndex: null });
                                     if (!fallbackOver || active.id === fallbackOver.id) return;
 
-                                    // ドロップ先のカラムを特定
+                                    // Identify target column
                                     let targetGroupKey = null;
-                                    // 空カラム/カラム末尾DnD対応
+                                    // Handle empty column / end-of-column DnD
                                     if (typeof fallbackOver.id === 'string' && fallbackOver.id.startsWith('empty-dropzone-')) {
                                         targetGroupKey = fallbackOver.id.replace('empty-dropzone-', '');
                                     } else if (typeof fallbackOver.id === 'string' && fallbackOver.id.startsWith('column-dropzone-')) {
                                         targetGroupKey = fallbackOver.id.replace('column-dropzone-', '');
                                     } else {
-                                        // カード上にドロップした場合、そのカードが所属するカラムを特定
+                                        // If dropped on a card, resolve its column
                                         for (const [groupKey, groupCards] of Object.entries(groupedCards)) {
                                             if (groupCards.some(card => card.id.toString() === fallbackOver.id.toString())) {
                                                 targetGroupKey = groupKey;
@@ -851,7 +851,7 @@ export default function WorkManagementPage() {
                                     if (!targetGroupKey) return;
                                     const movingCard = cards.find(card => card.id === active.id);
                                     if (!movingCard) return;
-                                    // ボードビューではprojectIdまたはstatusのみ変更（日付計算なし）
+                                    // Board view: update projectId or status only (no date recalculation)
                                     setCards(prev => {
                                         let updated = [...prev];
                                         if (viewSettings.groupBy === 'project') {
@@ -864,7 +864,7 @@ export default function WorkManagementPage() {
                                             );
                                         }
 
-                                        // グループ内での並び順を反映（日付再計算なし）
+                                        // Apply in-group ordering (no date recalculation)
                                         let newTargetCards = updated.filter(card =>
                                             viewSettings.groupBy === 'project' ? card.projectId === targetGroupKey :
                                             viewSettings.groupBy === 'status' ? card.status === targetGroupKey :
@@ -873,7 +873,7 @@ export default function WorkManagementPage() {
                                         const movingIdx = newTargetCards.findIndex(card => card.id === movingCard.id);
                                         if (movingIdx === -1) return updated;
 
-                                        // overがカードIDの場合はそのインデックスを取得
+                                        // If over is a card ID, use its index
                                         let targetOverIndex = 0;
                                         if (fallbackOver && !fallbackOver.id.toString().startsWith('empty-dropzone-') && !fallbackOver.id.toString().startsWith('column-dropzone-')) {
                                             targetOverIndex = newTargetCards.findIndex(card => card.id.toString() === fallbackOver.id.toString());
@@ -882,7 +882,7 @@ export default function WorkManagementPage() {
 
                                         let reordered = arrayMove(newTargetCards, movingIdx, targetOverIndex);
 
-                                        // プロジェクトグループの場合、日付を再計算（リストビューと同じロジック）
+                                        // For project group, recalc dates (same logic as list view)
                                         if (viewSettings.groupBy === 'project') {
                                             let baseDate = null;
                                             for (const card of newTargetCards) {
@@ -904,7 +904,7 @@ export default function WorkManagementPage() {
                                             }
                                         }
 
-                                        // cards全体の順序を維持しつつ、該当グループだけreorderedで置き換え
+                                        // Keep overall card order, replace only target group with reordered
                                         let result = [];
                                         let usedIds = new Set(reordered.map(c => c.id));
                                         for (let card of updated) {
@@ -920,7 +920,7 @@ export default function WorkManagementPage() {
                                     });
                                 }}
                             >
-                                {/* DragOverlay: ドラッグ中のカードをbody直下に描画し、枠外でも消えないようにする（ボードビュー） */}
+                                {/* DragOverlay: render dragging card at body root (board view) */}
                                 <DragOverlay dropAnimation={null}>
                                     {activeCard && (
                                         <SortableCard card={activeCard} activeId={activeId} projects={projects} layout={viewSettings.layout} />
@@ -928,7 +928,7 @@ export default function WorkManagementPage() {
                                 </DragOverlay>
                                 <div id="board-area" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {Object.entries(groupedCards).map(([groupKey, groupCards]) => {
-                                        // groupKeyはそのまま使う
+                                        // Use groupKey as-is
                                         // Column title and project attributes
                                         let groupTitle = groupKey;
                                         let subTitle = '';
@@ -974,7 +974,7 @@ export default function WorkManagementPage() {
                                             };
                                             groupTitle = dueLabels[groupKey] || groupKey;
                                         }
-                                        // 表示時は元データのstartDateをそのまま使う（ボードビューで日付を再計算しない）
+                                        // Use original startDate when rendering (no recalc in board view)
                                         const displayCards = groupCards;
                                         const isEmpty = displayCards.length === 0;
                                         return (
@@ -1023,18 +1023,18 @@ export default function WorkManagementPage() {
                             </>
                         )}
                     </div>
-                {/* 編集・Undo・トースト等は一時的に無効化（DnD安定化のため） */}
+                {/* Editing/Undo/Toasts temporarily disabled (for DnD stability) */}
             </main>
         </div>
     );
 }
 
 
-// --- ファイル末尾に移動 ---
+// --- Moved to end of file ---
 
 function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: externalSetNodeRef }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
-    // refを外部からも渡せるように
+    // Allow external ref passthrough
     const combinedRef = node => {
         setNodeRef(node);
         if (externalSetNodeRef) externalSetNodeRef(node);
@@ -1059,7 +1059,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none',
     };
-    // --- ステータスバッジ＋アクションアイコンを右上で横並びに ---
+    // --- Align status badge and action icons at top-right ---
     const { t } = require('react-i18next').useTranslation();
     const statusInfo = {
         unsent: { label: t('statusUnsent', '未編集'), bg: 'bg-slate-200', text: 'text-slate-600' },
@@ -1084,7 +1084,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         );
     }
 
-    // nextStepGuideの定義を復元
+    // Restore nextStepGuide definition
     let nextStepGuide = null;
     if (card._pendingStatus === 'pending') {
         nextStepGuide = <span className="block text-xs text-yellow-700 mt-1">{t('nextStepPending', 'クライアントの採用連絡をお待ちください。')}</span>;
@@ -1095,9 +1095,9 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     }
 
     // --- JSX return for SortableCard ---
-    // Acceptボタン（pending状態の案件のみ）
+    // Accept button (only for pending)
     const showAcceptButton = card._pendingStatus === 'pending';
-    // handleAcceptJobは親から渡せないのでwindow経由で呼び出し
+    // handleAcceptJob cannot be passed from parent, call via window
     const handleAccept = () => {
         if (typeof window !== 'undefined' && typeof window.handleAcceptJob === 'function') {
             window.handleAcceptJob(card.id);
@@ -1120,14 +1120,14 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                 </div>
             </div>
             <div className="text-xs text-slate-600 truncate mb-1">{card.description}</div>
-            {/* 日付・期間・報酬など */}
+            {/* Dates, duration, reward */}
             <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-1">
                 {card.startDate && <span>開始日: {card.startDate}</span>}
                 {card.duration && <span>期間: {card.duration}日</span>}
                 {card.reward && <span>報酬: ¥{Number(card.reward).toLocaleString()}</span>}
             </div>
             {nextStepGuide}
-            {/* 応募中タブのみ「採用」ボタンを表示 */}
+            {/* Show "Accept" button only in pending tab */}
             {showAcceptButton && (
                 <button
                     className="mt-2 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"

@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { dashboardProjects } from '../utils/initialData';
 import { translations } from '../utils/translations';
 
-// LocalStorage用のキー
+// LocalStorage key
 const STORAGE_KEY = 'escrow_app_projects';
 
-// プロジェクトデータをLocalStorageから取得
+// Load project data from LocalStorage
 const getStoredProjects = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -17,7 +17,7 @@ const getStoredProjects = () => {
   }
 };
 
-// プロジェクトデータをLocalStorageに保存
+// Save project data to LocalStorage
 const storeProjects = (projects) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
@@ -33,12 +33,12 @@ const useProjects = (navigate, currentViewMode, loggedInUser, setActiveProjectDe
 
   const t = translations[currentLanguage];
 
-  // projectsが更新されたらLocalStorageに保存
+  // Save to LocalStorage whenever projects updates
   useEffect(() => {
     storeProjects(projects);
   }, [projects]);
 
-  // エラーがセットされたら3秒後にクリア
+  // Clear error after 3 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 3000);

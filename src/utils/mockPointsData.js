@@ -1,5 +1,5 @@
 // mockPointsData.js
-// ダミーのポイント残高・トランザクション履歴データ
+// Dummy points balance and transaction history data
 
 export const mockUserPoints = {
   userId: 'user_001',

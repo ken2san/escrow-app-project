@@ -1,7 +1,7 @@
 import React from 'react';
 import { getPendingApplicationJobsForUser, loggedInUserDataGlobal } from '../utils/initialData';
 
-// 進行状況ダッシュボード（全案件の進捗・重要通知を俯瞰）
+// Progress dashboard (overview of all project progress and important notices)
 export default function ProgressDashboard() {
   const jobs = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
   const accepted = jobs.filter(j => j.status === 'accepted').length;
@@ -16,11 +16,11 @@ export default function ProgressDashboard() {
         <StatusCard label="応募中" count={pending} color="yellow" />
         <StatusCard label="不採用" count={rejected} color="rose" />
       </div>
-      {/* 重要通知エリア（例: 納期迫る、未読メッセージ等） */}
+      {/* Important notice area (e.g., upcoming deadlines, unread messages) */}
       <div className="mb-6">
         <ImportantNotice />
       </div>
-      {/* 案件ごとの進捗リスト */}
+      {/* Per-project progress list */}
       <div>
         <h2 className="text-lg font-semibold mb-2">案件ごとの進捗</h2>
         <ul className="space-y-3">
@@ -62,7 +62,7 @@ function statusColor(status) {
 }
 
 function ImportantNotice() {
-  // デモ: 納期迫る通知
+  // Demo: upcoming deadline notice
   return (
     <div className="bg-orange-100 border-l-4 border-orange-400 text-orange-800 p-4 rounded mb-2">
       <span className="font-bold">納期が近い案件があります！</span> 2日以内に対応が必要です。
