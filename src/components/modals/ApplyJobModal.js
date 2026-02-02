@@ -45,7 +45,12 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
 
   if (!isOpen) return null;
 
+  // Validation: check if at least one milestone is selected when milestones exist
+  const hasMilestones = job?.milestones && Array.isArray(job.milestones) && job.milestones.length > 0;
+  const isMilestoneSelectionValid = !hasMilestones || selectedMilestones.length > 0;
+
   const handleSubmit = () => {
+    if (!isMilestoneSelectionValid) return;
     // Pass appliedAt, deadline, and selected milestones to the handler
     const deadline = customDeadline || getDefaultDeadline();
     const deadlineISO = new Date(deadline).toISOString();
@@ -93,6 +98,9 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
                 </label>
               ))}
             </div>
+            {!isMilestoneSelectionValid && (
+              <p className="text-xs text-red-500 mt-2">少なくとも1つのマイルストーンを選択してください</p>
+            )}
           </div>
         )}
 
@@ -121,8 +129,13 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
             {t ? t('cancel', 'キャンセル') : 'キャンセル'}
           </button>
           <button
-            className="flex-1 py-2 rounded bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition"
+            className={`flex-1 py-2 rounded font-bold transition ${
+              isMilestoneSelectionValid
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-60'
+            }`}
             onClick={handleSubmit}
+            disabled={!isMilestoneSelectionValid}
           >
             {t ? t('apply', '応募する') : '応募する'}
           </button>

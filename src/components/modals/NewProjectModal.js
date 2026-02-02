@@ -18,10 +18,31 @@ export default function NewProjectModal({
   const [aiGenerating, setAiGenerating] = useState(false);
   const [tempProject, setTempProject] = useState({ name: '', client: '', totalBudget: '', deadline: '', duration: '', description: '' });
   const [milestones, setMilestones] = useState([]);
+  const [showStep1Errors, setShowStep1Errors] = useState(false);
+  const [showStep2Errors, setShowStep2Errors] = useState(false);
+
+  const hasValidBudget = Number(tempProject.totalBudget) > 0;
+  const hasValidDuration = Number(tempProject.duration) > 0;
+  const step1Valid =
+    tempProject.name.trim() &&
+    tempProject.client.trim() &&
+    hasValidBudget &&
+    tempProject.deadline &&
+    hasValidDuration &&
+    tempProject.description.trim();
+
+  const milestonesValid =
+    milestones.length > 0 &&
+    milestones.every(m => m.title && m.title.trim());
 
   if (!open) return null;
 
   const handleNextStep = () => {
+    if (!step1Valid) {
+      setShowStep1Errors(true);
+      return;
+    }
+    setShowStep2Errors(false);
     setStep(2);
     setAiGenerating(true);
     setTimeout(() => {
@@ -41,6 +62,10 @@ export default function NewProjectModal({
   };
 
   const handleConfirm = () => {
+    if (!milestonesValid) {
+      setShowStep2Errors(true);
+      return;
+    }
     const newProject = {
       id: nextProjectId,
       name: tempProject.name,
@@ -62,6 +87,8 @@ export default function NewProjectModal({
     setStep(1);
     setMilestones([]);
     setTempProject({ name: '', client: '', totalBudget: '', deadline: '', duration: '', description: '' });
+    setShowStep1Errors(false);
+    setShowStep2Errors(false);
   };
 
   return (
@@ -77,10 +104,16 @@ export default function NewProjectModal({
               <div>
                 <label className="block text-sm font-medium text-slate-700">プロジェクト名</label>
                 <input type="text" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" value={tempProject.name} onChange={e => setTempProject({ ...tempProject, name: e.target.value })} />
+                {showStep1Errors && !tempProject.name.trim() && (
+                  <p className="text-xs text-red-500 mt-1">必須項目です</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">クライアント</label>
                 <input type="text" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" value={tempProject.client} onChange={e => setTempProject({ ...tempProject, client: e.target.value })} placeholder="例：株式会社NextGen Mart" />
+                {showStep1Errors && !tempProject.client.trim() && (
+                  <p className="text-xs text-red-500 mt-1">必須項目です</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">総予算</label>
@@ -88,20 +121,32 @@ export default function NewProjectModal({
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <span className="text-gray-500 sm:text-sm">¥</span>
                   </div>
-                  <input type="number" className="block w-full rounded-md border-slate-300 pl-7 pr-12 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0" value={tempProject.totalBudget} onChange={e => setTempProject({ ...tempProject, totalBudget: e.target.value })} />
+                  <input type="number" min="1" className="block w-full rounded-md border-slate-300 pl-7 pr-12 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0" value={tempProject.totalBudget} onChange={e => setTempProject({ ...tempProject, totalBudget: e.target.value })} />
                 </div>
+                {showStep1Errors && !hasValidBudget && (
+                  <p className="text-xs text-red-500 mt-1">1以上の金額を入力してください</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">期日</label>
                 <input type="date" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" value={tempProject.deadline} onChange={e => setTempProject({ ...tempProject, deadline: e.target.value })} />
+                {showStep1Errors && !tempProject.deadline && (
+                  <p className="text-xs text-red-500 mt-1">必須項目です</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">期間（日数）</label>
                 <input type="number" min="1" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" value={tempProject.duration} onChange={e => setTempProject({ ...tempProject, duration: e.target.value })} />
+                {showStep1Errors && !hasValidDuration && (
+                  <p className="text-xs text-red-500 mt-1">1以上の日数を入力してください</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700">プロジェクトの概要</label>
                 <textarea rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="例：新しいEコマースサイトを構築し、ユーザーが商品を閲覧・購入できるようにする。" value={tempProject.description} onChange={e => setTempProject({ ...tempProject, description: e.target.value })} />
+                {showStep1Errors && !tempProject.description.trim() && (
+                  <p className="text-xs text-red-500 mt-1">必須項目です</p>
+                )}
               </div>
             </div>
           </div>
@@ -117,9 +162,15 @@ export default function NewProjectModal({
                   {milestones.map((m, i) => (
                     <div key={i} className="milestone-gen-card flex items-center bg-slate-100 p-2 rounded-lg mb-1">
                       <input type="text" value={m.title} className="flex-1 bg-transparent focus:bg-white focus:ring-1 focus:ring-indigo-500 rounded-md p-1" onChange={e => handleMilestoneTitleChange(i, e.target.value)} />
+                      {showStep2Errors && (!m.title || !m.title.trim()) && (
+                        <span className="text-xs text-red-500 ml-2">必須</span>
+                      )}
                       <button className="remove-milestone-btn p-1 text-slate-400 hover:text-red-500" onClick={() => handleRemoveMilestone(i)}><svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg></button>
                     </div>
                   ))}
+                  {showStep2Errors && !milestonesValid && (
+                    <p className="text-xs text-red-500 mt-2">マイルストーン名を入力してください</p>
+                  )}
                   <button className="w-full text-sm text-slate-500 font-semibold py-2 px-4 rounded-lg hover:bg-slate-200 transition-colors" onClick={handleAddMilestone}>+ マイルストーンを追加</button>
                 </>
               )}
@@ -132,7 +183,7 @@ export default function NewProjectModal({
             <button onClick={handleNextStep} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700">マイルストーン設定へ &rarr;</button>
           )}
           {step === 2 && (
-            <button onClick={handleConfirm} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700" disabled={milestones.length === 0}>登録して確定</button>
+            <button onClick={handleConfirm} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700" disabled={!milestonesValid}>登録して確定</button>
           )}
         </div>
       </div>

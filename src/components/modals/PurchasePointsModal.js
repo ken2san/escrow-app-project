@@ -21,6 +21,15 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
   const [bankInfo, setBankInfo] = useState({ name: '', ref: '' });
   const [txState, setTxState] = useState('idle'); // idle | sending | block | done
   if (!isOpen) return null;
+  const isAmountValid = Number(amount) > 0;
+  const isCardValid = card.number.trim() && card.expiry.trim() && card.cvc.trim();
+  const isPaypalValid = paypalEmail.trim().includes('@');
+  const isBankValid = bankInfo.name.trim() && bankInfo.ref.trim();
+  const isMethodValid =
+    (method === 'creditCard' && isCardValid) ||
+    (method === 'paypal' && isPaypalValid) ||
+    (method === 'bankTransfer' && isBankValid) ||
+    method === 'crypto';
   // Progress messages
   const txMessages = {
     sending: t('sendingTx') || 'Sending transaction...',
@@ -47,7 +56,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
   };
   // Purchase flow
   const handlePurchase = () => {
-    if (!amount || amount <= 0) return;
+    if (!isAmountValid || !isMethodValid) return;
     setTxState('sending');
     setTimeout(() => {
       setTxState('block');
@@ -63,6 +72,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
     }, 1200);
   };
   const isProcessing = txState !== 'idle';
+  const canPurchase = isAmountValid && isMethodValid && !isProcessing;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-7 w-full max-w-xs border border-gray-200 dark:border-gray-700">
@@ -103,12 +113,18 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
               <input type="text" className="flex-1 border rounded px-3 py-2 text-sm min-w-0" placeholder="MM/YY" value={card.expiry} onChange={e => setCard({ ...card, expiry: e.target.value })} />
               <input type="text" className="border rounded px-3 py-2 text-sm min-w-0 max-w-[80px]" placeholder="CVC" value={card.cvc} onChange={e => setCard({ ...card, cvc: e.target.value })} />
             </div>
+            {!isCardValid && (
+              <p className="text-xs text-red-500">カード情報を入力してください</p>
+            )}
           </div>
         )}
         {method === 'paypal' && (
           <div className="mb-4">
             <input type="email" className="w-full border rounded px-3 py-2 text-sm" placeholder="PayPal Email" value={paypalEmail} onChange={e => setPaypalEmail(e.target.value)} />
             <p className="text-xs text-gray-500 mt-1">{t('paypalInstruction') || 'You will be redirected to PayPal after clicking Purchase.'}</p>
+            {!isPaypalValid && (
+              <p className="text-xs text-red-500 mt-1">有効なメールアドレスを入力してください</p>
+            )}
           </div>
         )}
         {method === 'bankTransfer' && (
@@ -116,6 +132,9 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
             <input type="text" className="w-full border rounded px-3 py-2 text-sm mb-2" placeholder="Bank Name" value={bankInfo.name} onChange={e => setBankInfo({ ...bankInfo, name: e.target.value })} />
             <input type="text" className="w-full border rounded px-3 py-2 text-sm" placeholder="Reference Code" value={bankInfo.ref} onChange={e => setBankInfo({ ...bankInfo, ref: e.target.value })} />
             <p className="text-xs text-gray-500 mt-1">{t('bankInstruction') || 'Transfer to the designated bank account. Enter the reference code above.'}</p>
+            {!isBankValid && (
+              <p className="text-xs text-red-500 mt-1">銀行名と参照コードを入力してください</p>
+            )}
           </div>
         )}
         {method === 'crypto' && (
@@ -139,7 +158,7 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
           <button
             className={`px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-sm transition border border-indigo-500 ${(!amount || amount <= 0 || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handlePurchase}
-            disabled={!amount || amount <= 0 || isProcessing}
+            disabled={!canPurchase}
           >
             {isProcessing ? t('processing') || '処理中...' : (t('purchase') || '購入')}
           </button>

@@ -6,6 +6,8 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
   const [amount, setAmount] = useState('');
   const [txState, setTxState] = useState('idle'); // idle | sending | block | done
   const [txHash, setTxHash] = useState('');
+  const isRecipientValid = recipient.trim().length > 0;
+  const isAmountValid = Number(amount) > 0;
 
   if (!isOpen) return null;
 
@@ -35,6 +37,7 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
   };
 
   const handleSend = () => {
+    if (!isRecipientValid || !isAmountValid) return;
     setTxState('sending');
     setTimeout(() => {
       setTxState('block');
@@ -54,6 +57,7 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
     }, 1200);
   };
   const isProcessing = txState !== 'idle';
+  const canSend = isRecipientValid && isAmountValid && !isProcessing;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -72,6 +76,9 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
           placeholder="0x..."
           disabled={isProcessing}
         />
+        {!isRecipientValid && (
+          <p className="text-xs text-red-500 -mt-3 mb-3">宛先アドレスを入力してください</p>
+        )}
         <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
           {t('amount') || '金額'}
         </label>
@@ -84,6 +91,9 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
           placeholder="例: 100"
           disabled={isProcessing}
         />
+        {!isAmountValid && (
+          <p className="text-xs text-red-500 -mt-3 mb-3">1以上の金額を入力してください</p>
+        )}
         {renderTxProgress()}
         <div className="flex justify-end gap-2 mt-2">
           <button
@@ -96,7 +106,7 @@ const SendPointsModal = ({ isOpen, onClose, onSend, walletAddress, t }) => {
           <button
             className={`px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-sm transition border border-indigo-500 ${(!recipient || !amount || amount <= 0 || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handleSend}
-            disabled={!recipient || !amount || amount <= 0 || isProcessing}
+            disabled={!canSend}
           >
             {isProcessing ? t('processing') || '処理中...' : (t('send') || '送信')}
           </button>
