@@ -7,7 +7,6 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal } from '../utils/initialData';
-import EmptyDropzone from '../components/common/EmptyDropzone';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 
 // --- Card history management ---
@@ -48,6 +47,14 @@ function getInitialProjects() {
         }
     });
 
+    // Map to get acceptedMilestones for each job
+    const acceptedMilestonesMap = {};
+    pendingApplications.forEach(app => {
+        if (app.acceptedMilestones && Array.isArray(app.acceptedMilestones) && app.acceptedMilestones.length > 0) {
+            acceptedMilestonesMap[app.jobId] = app.acceptedMilestones;
+        }
+    });
+
     // Collect projects with received applications (client side)
     const projectsWithReceivedApps = new Set();
     dashboardAllProjects.forEach(project => {
@@ -65,7 +72,13 @@ function getInitialProjects() {
             if (pendingJobs.includes(project.id)) _pendingStatus = 'pending';
             if (acceptedJobs.includes(project.id)) _pendingStatus = 'accepted';
             let proj = { ...project, _pendingStatus };
-            if (project.cards && Array.isArray(project.cards)) return proj;
+            if (project.cards && Array.isArray(project.cards)) {
+                const cardsWithStatus = project.cards.map(card => ({
+                    ...card,
+                    _pendingStatus: acceptedMilestonesMap[project.id]?.includes(card.id) ? 'accepted' : _pendingStatus || 'pending',
+                }));
+                return { ...proj, cards: cardsWithStatus };
+            }
             if (project.milestones && Array.isArray(project.milestones)) {
                 let allCards = project.milestones.map((m, idx) => ({
                     id: m.id || `${project.id}-m${idx+1}`,
@@ -76,6 +89,7 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: acceptedMilestonesMap[project.id]?.includes(m.id || `${project.id}-m${idx+1}`) ? 'accepted' : 'pending',
                 }));
                 // Filter cards based on selectedMilestones if in pending status
                 if (_pendingStatus === 'pending' && selectedMilestonesMap[project.id]) {
@@ -105,8 +119,9 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: acceptedMilestonesMap[job.id]?.includes(m.id || `${job.id}-m${idx+1}`) ? 'accepted' : 'pending',
                 }))
-                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: acceptedMilestonesMap[job.id]?.includes(`${job.id}-m1`) ? 'accepted' : 'pending' }];
 
             // Filter cards based on selectedMilestones
             if (selectedMilestonesMap[jobId]) {
@@ -141,8 +156,9 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: 'accepted',
                 }))
-                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: 'accepted' }];
             base.push({
                 id: job.id,
                 name: job.name || job.title || '新規案件',
@@ -173,8 +189,9 @@ function getInitialProjects() {
                         startDate: m.dueDate || '',
                         duration: '',
                         order: idx+1,
+                        _pendingStatus: 'pending',
                     }))
-                    : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                    : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: 'pending' }];
                 base.push({
                     id: job.id,
                     name: job.name || job.title || '新規案件',
@@ -256,6 +273,13 @@ export default function WorkManagementPage() {
     useEffect(() => {
         localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
     }, [projects]);
+    const getCardStatusInfo = (project) => {
+        const cards = project.cards || [];
+        const hasAccepted = cards.some(card => card._pendingStatus === 'accepted');
+        const hasPending = cards.some(card => card._pendingStatus !== 'accepted');
+        return { hasAccepted, hasPending };
+    };
+
     // Restore filter logic that classifies projects by tab
     const filteredProjects = useMemo(() => {
         // "received" tab: Show projects that have received applications
@@ -263,12 +287,20 @@ export default function WorkManagementPage() {
             const { getReceivedApplicationsForProject } = require('../utils/initialData');
             return projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0);
         }
-        // "pending" tab: _pendingStatus is "pending" and status is not completed
-        if (projectTab === 'pending') return projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
+        // "pending" tab: show projects with any pending cards
+        if (projectTab === 'pending') {
+            return projects.filter(p => {
+                const { hasPending } = getCardStatusInfo(p);
+                return hasPending && p.status !== '完了';
+            });
+        }
         // "completed" tab: _pendingStatus is "accepted" and status is completed
         if (projectTab === 'completed') return projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了');
-        // "inprogress" tab: _pendingStatus is "accepted" and status is not completed
-        return projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了');
+        // "inprogress" tab: show projects with any accepted cards
+        return projects.filter(p => {
+            const { hasAccepted } = getCardStatusInfo(p);
+            return hasAccepted && p.status !== '完了';
+        });
     }, [projects, projectTab]);
 
     // --- Message when pending tab is empty ---
@@ -277,8 +309,17 @@ export default function WorkManagementPage() {
     // Cards are derived from filteredProjects
     const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
     useEffect(() => {
-        setCards(filteredProjects.flatMap(p => p.cards || []));
-    }, [filteredProjects]);
+        const allCards = filteredProjects.flatMap(p => p.cards || []);
+        if (projectTab === 'inprogress') {
+            setCards(allCards.filter(card => card._pendingStatus === 'accepted'));
+            return;
+        }
+        if (projectTab === 'pending') {
+            setCards(allCards.filter(card => card._pendingStatus !== 'accepted'));
+            return;
+        }
+        setCards(allCards);
+    }, [filteredProjects, projectTab]);
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -539,9 +580,15 @@ export default function WorkManagementPage() {
                     {tabDefs.map(tab => {
                         let tabCount = 0;
                         if (tab.key === 'pending') {
-                            tabCount = projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了').length;
+                            tabCount = projects.filter(p => {
+                                const cards = p.cards || [];
+                                return cards.some(card => card._pendingStatus !== 'accepted') && p.status !== '完了';
+                            }).length;
                         } else if (tab.key === 'inprogress') {
-                            tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了').length;
+                            tabCount = projects.filter(p => {
+                                const cards = p.cards || [];
+                                return cards.some(card => card._pendingStatus === 'accepted') && p.status !== '完了';
+                            }).length;
                         } else if (tab.key === 'completed') {
                             tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了').length;
                         } else if (tab.key === 'received') {
@@ -935,7 +982,7 @@ export default function WorkManagementPage() {
                                                     >
                                                     <div className="space-y-0">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? null
                                                             : projectTab === 'pending'
                                                                 ? groupCards.map((card, idx) => {
                                                                     const project = projects.find(p => String(p.id) === String(card.projectId));
@@ -999,8 +1046,8 @@ export default function WorkManagementPage() {
                                                                                 <div className="flex gap-2 mt-3">
                                                                                     <button
                                                                                         onClick={() => {
-                                                                                            const { acceptOfferedJob } = require('../utils/initialData');
-                                                                                            acceptOfferedJob(jobId, loggedInUserDataGlobal.id);
+                                                                                            const { acceptOfferedMilestone } = require('../utils/initialData');
+                                                                                            acceptOfferedMilestone(jobId, card.id, loggedInUserDataGlobal.id);
                                                                                             setProjects(getInitialProjects());
                                                                                             window.dispatchEvent(new CustomEvent('updatePendingApplications'));
                                                                                         }}
@@ -1245,7 +1292,7 @@ export default function WorkManagementPage() {
                                                 >
                                                     <div className="space-y-3 card-list-container flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 pr-1">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? null
                                                             : displayCards.map((card) => (
                                                                 <SortableCard
                                                                     key={card.id}

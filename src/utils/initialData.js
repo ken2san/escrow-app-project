@@ -189,12 +189,12 @@ export function getMyProjectCards(userId) {
 // In-memory proposals/drafts/pending applications store (demo only)
 const _proposedProjectsByUser = {};
 const _draftProjectsByUser = {};
-// { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected', appliedAt, responseDeadline }] }
+// { [userId]: [{ jobId, status: 'pending'|'offered'|'accepted'|'rejected', appliedAt, responseDeadline, acceptedMilestones: [] }] }
 const _pendingApplicationJobsByUser = {
   'user555': [
-    { jobId: 'job1', status: 'pending', appliedAt: '2026-01-26T10:30:00Z', responseDeadline: '2026-02-02T10:30:00Z', _pendingStatus: 'pending' },
-    { jobId: 'job2', status: 'offered', appliedAt: '2026-01-20T14:15:00Z', responseDeadline: '2026-02-03T14:15:00Z', _pendingStatus: 'pending' },
-    { jobId: 'job3', status: 'accepted', appliedAt: '2026-01-15T09:00:00Z', responseDeadline: '2026-01-22T09:00:00Z', _pendingStatus: 'accepted' },
+    { jobId: 'job1', status: 'pending', appliedAt: '2026-01-26T10:30:00Z', responseDeadline: '2026-02-02T10:30:00Z', _pendingStatus: 'pending', acceptedMilestones: [] },
+    { jobId: 'job2', status: 'offered', appliedAt: '2026-01-20T14:15:00Z', responseDeadline: '2026-02-03T14:15:00Z', _pendingStatus: 'pending', acceptedMilestones: [] },
+    { jobId: 'job3', status: 'accepted', appliedAt: '2026-01-15T09:00:00Z', responseDeadline: '2026-01-22T09:00:00Z', _pendingStatus: 'accepted', acceptedMilestones: ['job3-m1', 'job3-m2', 'job3-m3'] },
   ]
 };
 
@@ -233,15 +233,17 @@ export function updateApplicationJobStatus(jobId, newStatus, userId = loggedInUs
   }
 }
 
-// Accept an offered job (move from offered to accepted, and update _pendingStatus)
-export function acceptOfferedJob(jobId, userId = loggedInUserDataGlobal.id) {
+// Accept a specific milestone (move only that card to inprogress)
+export function acceptOfferedMilestone(jobId, milestoneId, userId = loggedInUserDataGlobal.id) {
   if (!_pendingApplicationJobsByUser[userId]) return;
   const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
   if (job && job.status === 'offered') {
-    job.status = 'accepted';
-    job._pendingStatus = 'accepted'; // Move to inprogress tab
+    if (!job.acceptedMilestones) job.acceptedMilestones = [];
+    if (!job.acceptedMilestones.includes(milestoneId)) {
+      job.acceptedMilestones.push(milestoneId);
+    }
     if (!job.history) job.history = [];
-    job.history.push(`${new Date().toLocaleString()} 採用を受け入れました`);
+    job.history.push(`${new Date().toLocaleString()} マイルストーン「${milestoneId}」を採用受諾しました`);
   }
 }
 // ...existing code...
@@ -260,6 +262,7 @@ export function addPendingApplicationJob(jobId, userId = loggedInUserDataGlobal.
       appliedAt: appliedAt || now.toISOString(),
       responseDeadline: deadline.toISOString(),
       selectedMilestones: Array.isArray(selectedMilestones) ? selectedMilestones : [],
+      acceptedMilestones: [],
     });
   }
 }
