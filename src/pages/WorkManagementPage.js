@@ -185,10 +185,10 @@ export default function WorkManagementPage() {
     // Above is unnecessary; use useState(getInitialProjects()) below.
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     const handleConfirmNewProject = (newProject) => {
-        // Add _pendingStatus to show in 'inprogress' tab
+        // newProject already has _pendingStatus set from NewProjectModal
+        // 'pending' = 募集中, 'accepted' = 進行中
         const projectWithStatus = {
             ...newProject,
-            _pendingStatus: 'accepted',
             status: ''
         };
         setProjects(prev => [...prev, projectWithStatus]);

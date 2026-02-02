@@ -18,6 +18,7 @@ export default function NewProjectModal({
   const [aiGenerating, setAiGenerating] = useState(false);
   const [tempProject, setTempProject] = useState({ name: '', client: '', totalBudget: '', deadline: '', duration: '', description: '' });
   const [milestones, setMilestones] = useState([]);
+  const [initialStatus, setInitialStatus] = useState('recruiting'); // 'recruiting' | 'inprogress'
   const [showStep1Errors, setShowStep1Errors] = useState(false);
   const [showStep2Errors, setShowStep2Errors] = useState(false);
 
@@ -74,6 +75,7 @@ export default function NewProjectModal({
       deadline: tempProject.deadline,
       duration: tempProject.duration,
       description: tempProject.description,
+      _pendingStatus: initialStatus === 'recruiting' ? 'pending' : 'accepted',
       cards: milestones.map((m, i) => ({
         id: nextCardId + i,
         projectId: nextProjectId,
@@ -86,6 +88,7 @@ export default function NewProjectModal({
     onConfirm(newProject);
     setStep(1);
     setMilestones([]);
+    setInitialStatus('recruiting');
     setTempProject({ name: '', client: '', totalBudget: '', deadline: '', duration: '', description: '' });
     setShowStep1Errors(false);
     setShowStep2Errors(false);
@@ -177,13 +180,53 @@ export default function NewProjectModal({
             </div>
           </div>
         )}
+        {step === 3 && (
+          <div className="p-6 flex-1 overflow-y-auto">
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-slate-700 mb-4">このプロジェクトの初期ステータスを選択してください</p>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition hover:bg-blue-50" style={{ borderColor: initialStatus === 'recruiting' ? '#4f46e5' : '#e5e7eb' }}>
+                  <input
+                    type="radio"
+                    name="status"
+                    value="recruiting"
+                    checked={initialStatus === 'recruiting'}
+                    onChange={(e) => setInitialStatus(e.target.value)}
+                    className="w-5 h-5"
+                  />
+                  <div>
+                    <p className="font-semibold text-slate-900">募集中（応募受付）</p>
+                    <p className="text-xs text-slate-600">應募者からの提案を受け付けます。後で採用者を選択できます。</p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition hover:bg-green-50" style={{ borderColor: initialStatus === 'inprogress' ? '#16a34a' : '#e5e7eb' }}>
+                  <input
+                    type="radio"
+                    name="status"
+                    value="inprogress"
+                    checked={initialStatus === 'inprogress'}
+                    onChange={(e) => setInitialStatus(e.target.value)}
+                    className="w-5 h-5"
+                  />
+                  <div>
+                    <p className="font-semibold text-slate-900">進行中（契約者確定）</p>
+                    <p className="text-xs text-slate-600">既に契約者が決まっている場合、直接プロジェクトを開始できます。</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="p-6 bg-slate-50 border-t flex justify-end space-x-3">
           <button onClick={onClose} className="bg-white border border-slate-300 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-slate-50">キャンセル</button>
           {step === 1 && (
             <button onClick={handleNextStep} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700">マイルストーン設定へ &rarr;</button>
           )}
           {step === 2 && (
-            <button onClick={handleConfirm} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700" disabled={!milestonesValid}>登録して確定</button>
+            <button onClick={() => setStep(3)} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700" disabled={!milestonesValid}>初期ステータスを選択へ &rarr;</button>
+          )}
+          {step === 3 && (
+            <button onClick={handleConfirm} className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-indigo-700">登録して確定</button>
           )}
         </div>
       </div>
