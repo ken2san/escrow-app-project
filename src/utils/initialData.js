@@ -192,31 +192,56 @@ const _draftProjectsByUser = {};
 // { [userId]: [{ jobId, status: 'pending'|'accepted'|'rejected', appliedAt, responseDeadline }] }
 const _pendingApplicationJobsByUser = {
   'user555': [
-    { jobId: 'job1', status: 'pending', appliedAt: '2026-01-26T10:30:00Z', responseDeadline: '2026-02-02T10:30:00Z' },
-    { jobId: 'job2', status: 'accepted', appliedAt: '2026-01-20T14:15:00Z', responseDeadline: '2026-01-27T14:15:00Z' },
-    { jobId: 'job3', status: 'accepted', appliedAt: '2026-01-15T09:00:00Z', responseDeadline: '2026-01-22T09:00:00Z' },
+    { jobId: 'job1', status: 'pending', appliedAt: '2026-01-26T10:30:00Z', responseDeadline: '2026-02-02T10:30:00Z', _pendingStatus: 'pending' },
+    { jobId: 'job2', status: 'offered', appliedAt: '2026-01-20T14:15:00Z', responseDeadline: '2026-02-03T14:15:00Z', _pendingStatus: 'pending' },
+    { jobId: 'job3', status: 'accepted', appliedAt: '2026-01-15T09:00:00Z', responseDeadline: '2026-01-22T09:00:00Z', _pendingStatus: 'accepted' },
   ]
 };
 
-// Received applications: { [projectId]: [{ applicantId, applicantName, appliedAt, status: 'pending'|'accepted'|'rejected' }] }
+// Received applications: { [projectId]: [{ applicantId, applicantName, appliedAt, status: 'pending'|'offered'|'accepted'|'rejected' }] }
 const _receivedApplicationsByProjectId = {
   'job2': [
     { applicantId: 'user001', applicantName: '山田太郎', appliedAt: '2026-01-28T14:00:00Z', status: 'pending' },
     { applicantId: 'user002', applicantName: '鈴木花子', appliedAt: '2026-01-29T10:15:00Z', status: 'pending' },
-    { applicantId: 'user003', applicantName: '佐藤次郎', appliedAt: '2026-01-30T09:30:00Z', status: 'accepted' },
+    { applicantId: 'user003', applicantName: '佐藤次郎', appliedAt: '2026-01-30T09:30:00Z', status: 'pending' },
   ],
 };
-// Update application status (accepted/rejected/pending) and append history
-export function updateApplicationJobStatus(jobId, status, userId = loggedInUserDataGlobal.id) {
+// Update application status
+// Status flow for contractor:
+// - pending: 応募中
+// - offered: クライアントから採用提示を受けている
+// - accepted: 採用を受け入れた → 進行中へ移動
+// - rejected: 不採用
+export function updateApplicationJobStatus(jobId, newStatus, userId = loggedInUserDataGlobal.id) {
   if (!_pendingApplicationJobsByUser[userId]) return;
   const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
   if (job) {
+    const oldStatus = job.status;
+    job.status = newStatus;
+
     // Append history only when status changes
-    if (job.status !== status) {
+    if (oldStatus !== newStatus) {
       if (!job.history) job.history = [];
-      job.history.push(`${new Date().toLocaleString()} ステータスが「${status === 'accepted' ? '採用' : status === 'rejected' ? '不採用' : '応募中'}」になりました`);
+      const statusLabels = {
+        'pending': '応募中',
+        'offered': '採用提示中',
+        'accepted': '採用',
+        'rejected': '不採用',
+      };
+      job.history.push(`${new Date().toLocaleString()} ステータスが「${statusLabels[newStatus] || newStatus}」になりました`);
     }
-    job.status = status;
+  }
+}
+
+// Accept an offered job (move from offered to accepted, and update _pendingStatus)
+export function acceptOfferedJob(jobId, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) return;
+  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+  if (job && job.status === 'offered') {
+    job.status = 'accepted';
+    job._pendingStatus = 'accepted'; // Move to inprogress tab
+    if (!job.history) job.history = [];
+    job.history.push(`${new Date().toLocaleString()} 採用を受け入れました`);
   }
 }
 // ...existing code...
@@ -270,13 +295,76 @@ export function addReceivedApplication(projectId, applicantId, applicantName) {
 }
 
 // Update received application status
+// Status flow: pending -> offered (client accepts) | rejected
+//              offered -> accepted (contractor accepts) | rejected
 export function updateReceivedApplicationStatus(projectId, applicantId, status) {
   const key = String(projectId);
   if (!_receivedApplicationsByProjectId[key]) return;
   const app = _receivedApplicationsByProjectId[key].find(a => a.applicantId === applicantId);
   if (app) {
+    const oldStatus = app.status;
     app.status = status;
+
+    // Record status change history
+    if (!app.statusHistory) app.statusHistory = [];
+    app.statusHistory.push({
+      timestamp: new Date().toISOString(),
+      fromStatus: oldStatus,
+      toStatus: status,
+      note: getStatusChangeNote(oldStatus, status),
+    });
   }
+}
+
+// Helper to get status change note
+function getStatusChangeNote(fromStatus, toStatus) {
+  if (toStatus === 'offered') return 'クライアントが採用を提示しました';
+  if (toStatus === 'accepted' && fromStatus === 'offered') return 'Contractorが採用を受け入れました';
+  if (toStatus === 'rejected') return '不採用になりました';
+  return `ステータスが${fromStatus}から${toStatus}に変更されました`;
+}
+
+
+// Milestone progress management: { [cardId]: { status: 'notStarted'|'inProgress'|'completed', history: [...] } }
+const _milestoneProgressMap = {};
+
+// Get milestone progress
+export function getMilestoneProgress(cardId) {
+  if (!_milestoneProgressMap[cardId]) {
+    _milestoneProgressMap[cardId] = {
+      status: 'notStarted',
+      history: [{
+        type: 'created',
+        timestamp: new Date().toISOString(),
+        status: 'notStarted',
+        note: 'マイルストーン作成',
+      }],
+    };
+  }
+  return _milestoneProgressMap[cardId];
+}
+
+// Update milestone status and record history
+export function updateMilestoneStatus(cardId, newStatus, note = '') {
+  const progress = getMilestoneProgress(cardId);
+  const oldStatus = progress.status;
+
+  if (oldStatus !== newStatus) {
+    progress.status = newStatus;
+    progress.history.push({
+      type: 'statusChanged',
+      timestamp: new Date().toISOString(),
+      fromStatus: oldStatus,
+      toStatus: newStatus,
+      note,
+    });
+  }
+}
+
+// Get milestone history
+export function getMilestoneHistory(cardId) {
+  const progress = getMilestoneProgress(cardId);
+  return progress.history || [];
 }
 
 function _toWorkManagementProject(p) {

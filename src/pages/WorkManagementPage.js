@@ -35,9 +35,9 @@ function initCardHistoryIfNeeded(card) {
 
 // --- Based on logic/UI from two versions ago ---
 function getInitialProjects() {
-    const { getPendingApplicationJobsForUser, dashboardAllProjects } = require('../utils/initialData');
+    const { getPendingApplicationJobsForUser, getReceivedApplicationsForProject, dashboardAllProjects } = require('../utils/initialData');
     const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
-    const pendingJobs = pendingApplications.filter(j => j.status === 'pending').map(j => j.jobId);
+    const pendingJobs = pendingApplications.filter(j => j.status === 'pending' || j.status === 'offered').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
 
     // Map to get selectedMilestones for each job
@@ -45,6 +45,15 @@ function getInitialProjects() {
     pendingApplications.forEach(app => {
         if (app.selectedMilestones && Array.isArray(app.selectedMilestones) && app.selectedMilestones.length > 0) {
             selectedMilestonesMap[app.jobId] = app.selectedMilestones;
+        }
+    });
+
+    // Collect projects with received applications (client side)
+    const projectsWithReceivedApps = new Set();
+    dashboardAllProjects.forEach(project => {
+        const received = getReceivedApplicationsForProject(project.id);
+        if (received.length > 0) {
+            projectsWithReceivedApps.add(project.id);
         }
     });
 
@@ -147,6 +156,41 @@ function getInitialProjects() {
             });
         }
     }
+
+    // Add projects with received applications (client side projects)
+    const receivedAppsIds = new Set();
+    projectsWithReceivedApps.forEach(projectId => {
+        if (!existingIds.has(projectId)) {
+            const job = dashboardAllProjects.find(j => j.id === projectId);
+            if (job) {
+                let cards = (job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0)
+                    ? job.milestones.map((m, idx) => ({
+                        id: m.id || `${job.id}-m${idx+1}`,
+                        projectId: job.id,
+                        title: m.name || m.title || `マイルストーン ${idx+1}`,
+                        status: 'unsent',
+                        reward: m.amount || 0,
+                        startDate: m.dueDate || '',
+                        duration: '',
+                        order: idx+1,
+                    }))
+                    : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                base.push({
+                    id: job.id,
+                    name: job.name || job.title || '新規案件',
+                    client: job.clientName || job.client || 'クライアント',
+                    totalBudget: job.totalAmount || job.budget || 0,
+                    deadline: job.dueDate || '',
+                    duration: '',
+                    description: job.description || '',
+                    cards,
+                    _pendingStatus: 'received', // Special status for client-side projects
+                });
+                receivedAppsIds.add(projectId);
+            }
+        }
+    });
+
     return base;
 }
 
@@ -299,8 +343,16 @@ export default function WorkManagementPage() {
         if (!validateEdit(editingCard)) return;
         setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
         setUndoToast({ open: true, message: 'カードを編集しました', id: Date.now() });
+
+        // Update milestone progress status if it changed
+        if (editingCard.progressStatus) {
+            const { updateMilestoneStatus } = require('../utils/initialData');
+            const statusMap = { 'notStarted': 'notStarted', 'inProgress': 'inProgress', 'completed': 'completed' };
+            updateMilestoneStatus(editingCard.id, statusMap[editingCard.progressStatus], '進捗ステータスを更新');
+        }
+
         setCards(prev => prev.map(card => card.id === editingCard.id ? { ...editingCard, status: 'edited' } : card));
-                // Add history entry
+        // Add history entry
         addCardHistory(editingCard.id, {
           type: 'edited',
           text: 'カード内容を編集',
@@ -375,10 +427,11 @@ export default function WorkManagementPage() {
                     <span className="font-semibold text-slate-800">{app.applicantName}</span>
                     <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
                         app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
                         app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
                         'bg-red-100 text-red-700'
                     }`}>
-                        {app.status === 'pending' ? '検討中' : app.status === 'accepted' ? '採用' : '不採用'}
+                        {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
                     </span>
                 </div>
                 <div className="text-xs text-slate-500 mt-2">
@@ -387,10 +440,10 @@ export default function WorkManagementPage() {
                 {app.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
                         <button
-                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'accepted')}
+                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'offered')}
                             className="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded hover:bg-emerald-700 transition"
                         >
-                            採用する
+                            採用を提示
                         </button>
                         <button
                             onClick={() => handleApplicationAction(projectId, app.applicantId, 'rejected')}
@@ -455,6 +508,16 @@ export default function WorkManagementPage() {
                                         <input type="number" name="duration" min="1" value={editingCard.duration} onChange={handleEditInputChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
                                         {editErrors.duration && <p className="text-xs text-red-500 mt-1">{editErrors.duration}</p>}
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mt-4">進捗ステータス</label>
+                                    <select name="progressStatus" value={editingCard.progressStatus || 'notStarted'} onChange={(e) => {
+                                        setEditingCard(prev => ({ ...prev, progressStatus: e.target.value }));
+                                    }} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="notStarted">未開始</option>
+                                        <option value="inProgress">進捗中</option>
+                                        <option value="completed">完了</option>
+                                    </select>
                                 </div>
                                 {/* --- History timeline --- */}
                                 <div className="mt-6">
@@ -895,18 +958,69 @@ export default function WorkManagementPage() {
                                                                     const appliedDate = formatDate(applicationData?.appliedAt) || card.appliedDate || card.startDate || project?.appliedDate || '未設定';
                                                                     const deadline = formatDate(applicationData?.responseDeadline);
                                                                     const clientName = project?.client || project?.clientName || 'クライアント';
+                                                                    const appStatus = applicationData?.status || 'pending';
+
+                                                                    // Status display
+                                                                    let statusDisplay = '確認中';
+                                                                    let statusBg = 'bg-slate-100';
+                                                                    let statusText = 'text-slate-600';
+                                                                    let statusMessage = 'クライアントが確認中です。次の操作は不要です。';
+
+                                                                    if (appStatus === 'offered') {
+                                                                        statusDisplay = '採用提示';
+                                                                        statusBg = 'bg-blue-100';
+                                                                        statusText = 'text-blue-700';
+                                                                        statusMessage = 'クライアントから採用の提示を受けています。受け入れるかどうか選択してください。';
+                                                                    } else if (appStatus === 'accepted') {
+                                                                        statusDisplay = '採用';
+                                                                        statusBg = 'bg-green-100';
+                                                                        statusText = 'text-green-700';
+                                                                        statusMessage = '採用を受け入れました。進行中タブに移動しています。';
+                                                                    } else if (appStatus === 'rejected') {
+                                                                        statusDisplay = '不採用';
+                                                                        statusBg = 'bg-red-100';
+                                                                        statusText = 'text-red-700';
+                                                                        statusMessage = '申し訳ございません。今回は選考に進みませんでした。';
+                                                                    }
+
                                                                     return (
                                                                         <div key={card.id} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="font-semibold text-slate-800">{card.title}</span>
-                                                                                <span className="ml-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded px-2 py-0.5">確認中</span>
+                                                                                <span className={`ml-2 text-xs font-semibold rounded px-2 py-0.5 ${statusBg} ${statusText}`}>{statusDisplay}</span>
                                                                             </div>
-                                                                            <div className="text-xs text-slate-500 mt-1">クライアントが確認中です。次の操作は不要です。</div>
+                                                                            <div className="text-xs text-slate-500 mt-1">{statusMessage}</div>
                                                                             <div className="text-xs text-slate-500 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                                                                 <span>応募先: {clientName}</span>
                                                                                 <span>応募日: {appliedDate}</span>
                                                                                 <span>回答期限: {deadline}</span>
                                                                             </div>
+                                                                            {appStatus === 'offered' && (
+                                                                                <div className="flex gap-2 mt-3">
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            const { acceptOfferedJob } = require('../utils/initialData');
+                                                                                            acceptOfferedJob(jobId, loggedInUserDataGlobal.id);
+                                                                                            setProjects(getInitialProjects());
+                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+                                                                                        }}
+                                                                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition"
+                                                                                    >
+                                                                                        採用を受ける
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            const { updateApplicationJobStatus } = require('../utils/initialData');
+                                                                                            updateApplicationJobStatus(jobId, 'rejected', loggedInUserDataGlobal.id);
+                                                                                            setProjects(getInitialProjects());
+                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+                                                                                        }}
+                                                                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
+                                                                                    >
+                                                                                        辞退する
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     );
                                                                 })
@@ -1189,6 +1303,16 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none',
     };
+
+    // Get milestone progress status
+    const { getMilestoneProgress } = require('../utils/initialData');
+    const milestoneProgress = getMilestoneProgress(card.id);
+    const progressStatusMap = {
+        'notStarted': { label: '未開始', bg: 'bg-gray-100', text: 'text-gray-600' },
+        'inProgress': { label: '進捗中', bg: 'bg-blue-100', text: 'text-blue-700' },
+        'completed': { label: '完了', bg: 'bg-green-100', text: 'text-green-700' }
+    };
+    const progressStatusInfo = progressStatusMap[milestoneProgress?.status] || progressStatusMap['notStarted'];
     // --- Align status badge and action icons at top-right ---
     const { t } = require('react-i18next').useTranslation();
     const statusInfo = {
@@ -1245,6 +1369,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             <div className="flex justify-between items-start">
                 <span className="font-semibold text-slate-800 flex-1 pr-2 text-base truncate">{card.title}</span>
                 <div className="flex items-center space-x-2">
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${progressStatusInfo.bg} ${progressStatusInfo.text} whitespace-nowrap`}>{progressStatusInfo.label}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>{statusInfo.label}</span>
                     {actionIcon}
                 </div>
