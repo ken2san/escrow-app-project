@@ -185,7 +185,13 @@ export default function WorkManagementPage() {
     // Above is unnecessary; use useState(getInitialProjects()) below.
     const handleCloseNewProject = () => setShowNewProjectModal(false);
     const handleConfirmNewProject = (newProject) => {
-        setProjects(prev => [...prev, newProject]);
+        // Add _pendingStatus to show in 'inprogress' tab
+        const projectWithStatus = {
+            ...newProject,
+            _pendingStatus: 'accepted',
+            status: ''
+        };
+        setProjects(prev => [...prev, projectWithStatus]);
         if (newProject.cards && newProject.cards.length > 0) {
             setCards(prev => [...prev, ...newProject.cards]);
         }
@@ -414,6 +420,8 @@ export default function WorkManagementPage() {
                 open={showNewProjectModal}
                 onClose={handleCloseNewProject}
                 onConfirm={handleConfirmNewProject}
+                nextProjectId={`project-${projects.length + 1}`}
+                nextCardId={`card-${cards.length + 1}`}
             />
             {/* Undo Toast Notification */}
             {undoToast.open && (
