@@ -246,6 +246,31 @@ export function acceptOfferedMilestone(jobId, milestoneId, userId = loggedInUser
     job.history.push(`${new Date().toLocaleString()} マイルストーン「${milestoneId}」を採用受諾しました`);
   }
 }
+
+// Complete a milestone (mark as completed and release payment)
+export function completeMilestone(jobId, milestoneId, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) return;
+  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+  if (job) {
+    if (!job.completedMilestones) job.completedMilestones = [];
+    if (!job.completedMilestones.includes(milestoneId)) {
+      job.completedMilestones.push(milestoneId);
+    }
+    if (!job.history) job.history = [];
+    job.history.push(`${new Date().toLocaleString()} マイルストーン「${milestoneId}」が完了し、支払いが処理されました`);
+
+    // Release payment from escrow (mock implementation)
+    // In production, this would trigger actual payment processing
+    console.log(`Payment released for milestone ${milestoneId} in job ${jobId}`);
+  }
+}
+
+// Get completed milestones for a job
+export function getCompletedMilestonesForJob(jobId, userId = loggedInUserDataGlobal.id) {
+  if (!_pendingApplicationJobsByUser[userId]) return [];
+  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+  return job && job.completedMilestones ? [...job.completedMilestones] : [];
+}
 // ...existing code...
 // Add a job to the pending application list for a user
 // Stage 2: Add support for custom responseDeadline
@@ -635,6 +660,104 @@ export const dashboardAllProjects = [
     needsClientRating: false,
     imageUrl:
       'https://placehold.co/600x400/10B981/FFFFFF?text=%E3%83%AD%E3%82%B4%E3%83%AA%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%A2%E3%83%AB',
+    allowSubcontracting: false,
+  },
+  {
+    id: 'job3',
+    name: 'モバイルアプリUI設計',
+    name_en: 'Mobile App UI Design',
+    clientName: 'テックスタートアップ株式会社',
+    clientName_en: 'Tech Startup Inc.',
+    clientId: 'client789',
+    contractorName: '田中 さとし',
+    contractorName_en: 'Satoshi Tanaka',
+    contractorId: 'user555',
+    contractorResellingRisk: 0,
+    clientResellingRisk: 0,
+    totalAmount: 450000,
+    fundsDeposited: 450000,
+    fundsReleased: 0,
+    status: '作業中',
+    status_en: 'In Progress',
+    description: 'スタートアップ向けモバイルアプリのUI/UX設計プロジェクト。ユーザー体験を最優先に、直感的で使いやすいインターフェースを設計します。',
+    description_en: 'Mobile app UI/UX design project for a startup. Design an intuitive and user-friendly interface with a focus on user experience.',
+    deliverables: 'UIデザインデータ（Figma）、デザインガイドライン',
+    deliverables_en: 'UI design files (Figma), design guidelines',
+    deliverableDetails: 'Figma形式での納品。主要画面デザイン、コンポーネントライブラリ、デザインガイドライン（カラー、タイポグラフィ、スペーシング）',
+    deliverableDetails_en: 'Deliver in Figma format. Main screen designs, component library, design guidelines (colors, typography, spacing)',
+    acceptanceCriteria: 'デザイン仕様書通りの実装、ユーザビリティテスト合格',
+    acceptanceCriteria_en: 'Implementation matches design specs and passes usability testing',
+    acceptanceCriteriaDetails: '各マイルストーンごとに検収を実施。最終納品後7営業日以内に検収完了。',
+    acceptanceCriteriaDetails_en: 'Inspection at each milestone. Final inspection within 7 business days after delivery.',
+    scopeOfWork_included: 'UI/UXデザイン、プロトタイプ作成、デザインガイドライン作成',
+    scopeOfWork_included_en: 'UI/UX design, prototype creation, design guidelines',
+    scopeOfWork_excluded: 'アプリ開発、バックエンド開発、ストア申請',
+    scopeOfWork_excluded_en: 'App development, backend development, store submission',
+    additionalWorkTerms: 'デザイン変更は各マイルストーンごとに2回まで対応。',
+    additionalWorkTerms_en: 'Up to 2 design revisions per milestone.',
+    agreementDocLink: 'tech_startup_agreement_v1.pdf',
+    changeOrders: [],
+    communicationLogCount: 28,
+    lastUpdate: '2026-02-01 14:30',
+    hasDispute: false,
+    milestones: [
+      { id: 'job3-m1', name: 'ワイヤーフレーム作成', amount: 150000, status: 'completed', dueDate: '2026-01-25' },
+      { id: 'job3-m2', name: 'UIデザイン初稿', amount: 150000, status: 'in_progress', dueDate: '2026-02-10' },
+      { id: 'job3-m3', name: '最終デザイン納品', amount: 150000, status: 'pending', dueDate: '2026-02-25' },
+    ],
+    contractorRating: null,
+    clientRating: { averageScore: 4.8, totalReviews: 5 },
+    needsClientRating: false,
+    imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=%E3%83%A2%E3%83%90%E3%82%A4%E3%83%ABAPP',
+    allowSubcontracting: false,
+  },
+  {
+    id: 'job2',
+    name: 'WebアプリUI改善プロジェクト',
+    name_en: 'Web App UI Improvement Project',
+    clientName: '株式会社サンプル',
+    clientName_en: 'Sample Inc.',
+    clientId: 'client456',
+    contractorName: '田中 さとし',
+    contractorName_en: 'Satoshi Tanaka',
+    contractorId: 'user555',
+    contractorResellingRisk: 0,
+    clientResellingRisk: 0,
+    totalAmount: 500000,
+    fundsDeposited: 500000,
+    fundsReleased: 100000,
+    status: '作業中',
+    status_en: 'In Progress',
+    description: '既存WebアプリのUI/UXを全面刷新し、ユーザー体験を向上させるプロジェクト。モダンなデザインと使いやすさを両立させます。',
+    description_en: 'A project to completely renovate the UI/UX of an existing web app to improve user experience. Combines modern design with ease of use.',
+    deliverables: 'UIデザインデータ（Figma）、デザインシステム、実装支援',
+    deliverables_en: 'UI design files (Figma), design system, implementation support',
+    deliverableDetails: 'Figma形式での納品。主要画面デザイン、デザインシステム（コンポーネント、カラー、タイポグラフィ）、実装ガイドライン',
+    deliverableDetails_en: 'Deliver in Figma format. Main screen designs, design system (components, colors, typography), implementation guidelines',
+    acceptanceCriteria: 'デザイン仕様書通りの実装、ユーザビリティ向上の確認',
+    acceptanceCriteria_en: 'Implementation matches design specs and confirms improved usability',
+    acceptanceCriteriaDetails: '各マイルストーンごとに検収を実施。最終納品後5営業日以内に検収完了。',
+    acceptanceCriteriaDetails_en: 'Inspection at each milestone. Final inspection within 5 business days after delivery.',
+    scopeOfWork_included: 'UI/UXデザイン、デザインシステム構築、実装支援',
+    scopeOfWork_included_en: 'UI/UX design, design system construction, implementation support',
+    scopeOfWork_excluded: 'フロントエンド実装、バックエンド開発、テスト',
+    scopeOfWork_excluded_en: 'Frontend implementation, backend development, testing',
+    additionalWorkTerms: 'デザイン変更は各マイルストーンごとに2回まで対応。',
+    additionalWorkTerms_en: 'Up to 2 design revisions per milestone.',
+    agreementDocLink: 'sample_inc_agreement_v1.pdf',
+    changeOrders: [],
+    communicationLogCount: 35,
+    lastUpdate: '2026-02-02 10:00',
+    hasDispute: false,
+    milestones: [
+      { id: 'job2-m1', name: '要件定義', amount: 100000, status: 'completed', dueDate: '2026-02-05' },
+      { id: 'job2-m2', name: 'UIデザイン', amount: 200000, status: 'in_progress', dueDate: '2026-02-15' },
+      { id: 'job2-m3', name: '実装・テスト', amount: 200000, status: 'pending', dueDate: '2026-02-28' },
+    ],
+    contractorRating: null,
+    clientRating: { averageScore: 4.9, totalReviews: 8 },
+    needsClientRating: false,
+    imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Web%E3%82%A2%E3%83%97%E3%83%AA',
     allowSubcontracting: false,
   },
   {
