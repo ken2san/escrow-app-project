@@ -1510,19 +1510,29 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                     採用する
                 </button>
             )}
-            {/* Show "Complete" button for accepted cards in inprogress tab */}
+            {/* Show "Complete" button only for cards that are ready for completion */}
             {card._pendingStatus === 'accepted' && !card._completedStatus && (
-                <button
-                    className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition"
-                    onClick={e => {
-                        e.stopPropagation();
-                        if (typeof window !== 'undefined' && typeof window.handleCompleteMilestone === 'function') {
-                            window.handleCompleteMilestone(card.id, card.projectId);
-                        }
-                    }}
-                >
-                    完了
-                </button>
+                <>
+                    {(card.status === 'approved' || card.status === 'awaiting_approval' || card.status === 'edited') ? (
+                        <button
+                            className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition"
+                            onClick={e => {
+                                e.stopPropagation();
+                                if (typeof window !== 'undefined' && typeof window.handleCompleteMilestone === 'function') {
+                                    window.handleCompleteMilestone(card.id, card.projectId);
+                                }
+                            }}
+                        >
+                            完了
+                        </button>
+                    ) : (
+                        <div className="mt-2 px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-300">
+                            {card.status === 'unsent' && '📝 編集・提出後に完了可能'}
+                            {card.status === 'revision_needed' && '🔄 修正対応後に完了可能'}
+                            {!card.status && '📝 作業完了後に完了ボタンが表示されます'}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
