@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { loggedInUserDataGlobal } from '../utils/initialData';
 
@@ -29,7 +28,6 @@ function addMessage(projectId, message) {
 }
 
 const MessagesPage = () => {
-  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedProjectId = searchParams.get('project');
 
@@ -39,13 +37,13 @@ const MessagesPage = () => {
 
   // Load projects (same as WorkManagementPage)
   useEffect(() => {
-    const { getPendingApplicationJobsForUser, dashboardAllProjects, workManagementProjects } = require('../utils/initialData');
+    const { getPendingApplicationJobsForUser, dashboardAllProjects, getWorkManagementProjectsView } = require('../utils/initialData');
     const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
 
-    // Get all projects from workManagementProjects and dashboardAllProjects
-    const allProjects = [...workManagementProjects];
+    // Phase 3: Use unified data model
+    const allProjects = getWorkManagementProjectsView(loggedInUserDataGlobal.id);
 
-    // Add projects from pending applications
+    // Add projects from pending applications (not yet in work management)
     pendingApplications.forEach(app => {
       const existingProject = allProjects.find(p => String(p.id) === String(app.jobId));
       if (!existingProject) {
