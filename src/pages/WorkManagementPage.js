@@ -7,7 +7,7 @@ import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSe
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal } from '../utils/initialData';
+import { getWorkManagementProjectsView, loggedInUserDataGlobal } from '../utils/initialData';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 
 // --- Card history management ---
@@ -36,6 +36,7 @@ function initCardHistoryIfNeeded(card) {
 // --- Based on logic/UI from two versions ago ---
 function getInitialProjects() {
     const { getPendingApplicationJobsForUser, getReceivedApplicationsForProject, dashboardAllProjects, getCompletedMilestonesForJob } = require('../utils/initialData');
+
     const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
     const pendingJobs = pendingApplications.filter(j => j.status === 'pending' || j.status === 'offered').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
@@ -74,9 +75,13 @@ function getInitialProjects() {
         }
     });
 
+    // Phase 2.5: Switch to new data source
+    // Get projects from unified data model (dashboardAllProjects)
+    const projectsFromView = getWorkManagementProjectsView(loggedInUserDataGlobal.id);
+
     // Existing projects (initial data)
-    // Include all projects from initialProjectsData, mark application-based ones with _pendingStatus
-    let base = initialProjectsData.map(project => {
+    // Include all projects from projectsFromView, mark application-based ones with _pendingStatus
+    let base = projectsFromView.map(project => {
             let _pendingStatus = '';
             if (pendingJobs.includes(project.id)) _pendingStatus = 'pending';
             if (acceptedJobs.includes(project.id)) _pendingStatus = 'accepted';

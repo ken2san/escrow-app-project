@@ -520,66 +520,63 @@ export const loggedInUserDataGlobal = {
   role: 'contractor', // 'client' or 'contractor'
 };
 
-// --- Dummy data ---
-// --- Project array for WorkManagementPage (same structure as backup) ---
-export const workManagementProjects = [
-  // job2: accepted project (linked with pending application data)
-    {
-      id: 'job2',
-      name: 'WebアプリUI改善プロジェクト',
-      client: '株式会社サンプル',
-      totalBudget: 500000,
-      deadline: '2026-02-28',
-      duration: 30,
-      description: '既存WebアプリのUI/UXを全面刷新し、ユーザー体験を向上させるプロジェクト。',
-      _pendingStatus: 'accepted', // 初期状態で進行中に表示
+// --- Data transformation functions (Phase 1: View layer separation) ---
+/**
+ * Convert dashboardAllProjects to WorkManagement view format
+ * @param {string} userId - Contractor user ID
+ * @returns {Array} Projects in workManagementProjects format
+ */
+export function getWorkManagementProjectsView(userId = loggedInUserDataGlobal.id) {
+  // Get projects where user is the contractor
+  const userProjects = dashboardAllProjects.filter(
+    project => project.contractorId === userId && project.status !== '完了' && project.status !== 'Completed'
+  );
+
+  // Transform to workManagement format
+  return userProjects.map(project => {
+    // Convert milestones to cards format
+    const cards = (project.milestones || []).map((milestone, index) => {
+      // Map dashboard milestone status to workManagement card status
+      let cardStatus = 'unsent';
+      if (milestone.status === 'completed' || milestone.status === 'released') {
+        cardStatus = 'approved';
+      } else if (milestone.status === 'in_progress') {
+        cardStatus = 'awaiting_approval';
+      } else if (milestone.status === 'pending') {
+        cardStatus = 'unsent';
+      }
+
+      return {
+        id: milestone.id,
+        projectId: project.id,
+        title: milestone.name,
+        status: cardStatus,
+        reward: milestone.amount,
+        startDate: milestone.dueDate || '',
+        duration: 0, // Not stored in dashboard data
+        order: index + 1,
+      };
+    });
+
+    return {
+      id: project.id,
+      name: project.name,
+      client: project.clientName,
+      totalBudget: project.totalAmount,
+      deadline: project.milestones?.[project.milestones.length - 1]?.dueDate || '',
+      duration: 0,
+      description: project.description,
+      _pendingStatus: 'accepted',
       status: '',
-      cards: [
-        { id: 'job2-m1', projectId: 'job2', title: '要件定義', status: 'approved', reward: 100000, startDate: '2026-02-01', duration: 5, order: 1 },
-        { id: 'job2-m2', projectId: 'job2', title: 'UIデザイン', status: 'awaiting_approval', reward: 200000, startDate: '2026-02-06', duration: 10, order: 2 },
-        { id: 'job2-m3', projectId: 'job2', title: '実装・テスト', status: 'unsent', reward: 200000, startDate: '2026-02-16', duration: 15, order: 3 },
-      ],
-    },
-  {
-    id: 1,
-    name: 'E-commerce Site',
-    client: 'NextGen Mart',
-    totalBudget: 1200000,
-    deadline: '2025-09-30',
-    duration: 40,
-    description: '',
-    cards: [
-      { id: 1, projectId: 1, title: 'UI/UXデザイン設計', status: 'approved', reward: 150000, startDate: '2025-08-11', duration: 10, order: 1 },
-      { id: 2, projectId: 1, title: 'フロントエンド開発', status: 'awaiting_approval', reward: 300000, startDate: '2025-08-25', duration: 15, order: 2 },
-      { id: 3, projectId: 1, title: 'バックエンド開発', status: 'edited', reward: 400000, startDate: '2025-09-15', duration: 15, order: 3 },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Brand Launch',
-    client: 'Creative Studio',
-    totalBudget: 350000,
-    deadline: '2025-08-31',
-    duration: 20,
-    description: '',
-    cards: [
-      { id: 4, projectId: 2, title: 'ロゴデザイン', status: 'approved', reward: 80000, startDate: '2025-08-12', duration: 8, order: 1 },
-      { id: 5, projectId: 2, title: 'LP制作', status: 'revision_needed', reward: 120000, startDate: '2025-08-22', duration: 5, order: 2 },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Autumn Sales Promotion',
-    client: 'Growth Hackers',
-    totalBudget: 200000,
-    deadline: '',
-    duration: '',
-    description: '',
-    cards: [
-      { id: 6, projectId: 3, title: 'SNSキャンペーン企画', status: 'unsent', reward: 100000, startDate: '', duration: '', order: 1 },
-    ],
-  },
-];
+      cards,
+    };
+  });
+}
+
+// --- Dummy data ---
+// Note: workManagementProjects has been removed. Use getWorkManagementProjectsView() instead.
+// All project data is now stored in dashboardAllProjects (single source of truth)
+
 export const dashboardAllProjects = [
   // job101
   // id: job1 (completed logo renewal project)
