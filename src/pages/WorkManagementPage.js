@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -7,7 +8,6 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import { workManagementProjects as initialProjectsData, loggedInUserDataGlobal } from '../utils/initialData';
-import EmptyDropzone from '../components/common/EmptyDropzone';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 
 // --- Card history management ---
@@ -35,9 +35,9 @@ function initCardHistoryIfNeeded(card) {
 
 // --- Based on logic/UI from two versions ago ---
 function getInitialProjects() {
-    const { getPendingApplicationJobsForUser, dashboardAllProjects } = require('../utils/initialData');
+    const { getPendingApplicationJobsForUser, getReceivedApplicationsForProject, dashboardAllProjects, getCompletedMilestonesForJob } = require('../utils/initialData');
     const pendingApplications = getPendingApplicationJobsForUser(loggedInUserDataGlobal.id);
-    const pendingJobs = pendingApplications.filter(j => j.status === 'pending').map(j => j.jobId);
+    const pendingJobs = pendingApplications.filter(j => j.status === 'pending' || j.status === 'offered').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
 
     // Map to get selectedMilestones for each job
@@ -48,15 +48,51 @@ function getInitialProjects() {
         }
     });
 
+    // Map to get acceptedMilestones for each job
+    const acceptedMilestonesMap = {};
+    pendingApplications.forEach(app => {
+        if (app.acceptedMilestones && Array.isArray(app.acceptedMilestones) && app.acceptedMilestones.length > 0) {
+            acceptedMilestonesMap[app.jobId] = app.acceptedMilestones;
+        }
+    });
+
+    // Map to get completedMilestones for each job
+    const completedMilestonesMap = {};
+    pendingApplications.forEach(app => {
+        const completed = getCompletedMilestonesForJob(app.jobId);
+        if (completed.length > 0) {
+            completedMilestonesMap[app.jobId] = completed;
+        }
+    });
+
+    // Collect projects with received applications (client side)
+    const projectsWithReceivedApps = new Set();
+    dashboardAllProjects.forEach(project => {
+        const received = getReceivedApplicationsForProject(project.id);
+        if (received.length > 0) {
+            projectsWithReceivedApps.add(project.id);
+        }
+    });
+
     // Existing projects (initial data)
-    let base = initialProjectsData
-        .filter(project => pendingJobs.includes(project.id) || acceptedJobs.includes(project.id))
-        .map(project => {
+    // Include all projects from initialProjectsData, mark application-based ones with _pendingStatus
+    let base = initialProjectsData.map(project => {
             let _pendingStatus = '';
             if (pendingJobs.includes(project.id)) _pendingStatus = 'pending';
             if (acceptedJobs.includes(project.id)) _pendingStatus = 'accepted';
+            // If project has explicit _pendingStatus (like job2), use it for filtering but respect accepted milestones
+            if (project._pendingStatus && !_pendingStatus) {
+                _pendingStatus = project._pendingStatus;
+            }
             let proj = { ...project, _pendingStatus };
-            if (project.cards && Array.isArray(project.cards)) return proj;
+            if (project.cards && Array.isArray(project.cards)) {
+                const cardsWithStatus = project.cards.map(card => ({
+                    ...card,
+                    _pendingStatus: acceptedMilestonesMap[project.id]?.includes(card.id) ? 'accepted' : (_pendingStatus || card._pendingStatus || 'accepted'),
+                    _completedStatus: completedMilestonesMap[project.id]?.includes(card.id) ? 'completed' : undefined,
+                }));
+                return { ...proj, cards: cardsWithStatus };
+            }
             if (project.milestones && Array.isArray(project.milestones)) {
                 let allCards = project.milestones.map((m, idx) => ({
                     id: m.id || `${project.id}-m${idx+1}`,
@@ -67,6 +103,8 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: acceptedMilestonesMap[project.id]?.includes(m.id || `${project.id}-m${idx+1}`) ? 'accepted' : (_pendingStatus || 'accepted'),
+                    _completedStatus: completedMilestonesMap[project.id]?.includes(m.id || `${project.id}-m${idx+1}`) ? 'completed' : undefined,
                 }));
                 // Filter cards based on selectedMilestones if in pending status
                 if (_pendingStatus === 'pending' && selectedMilestonesMap[project.id]) {
@@ -96,8 +134,10 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: acceptedMilestonesMap[job.id]?.includes(m.id || `${job.id}-m${idx+1}`) ? 'accepted' : 'pending',
+                    _completedStatus: completedMilestonesMap[job.id]?.includes(m.id || `${job.id}-m${idx+1}`) ? 'completed' : undefined,
                 }))
-                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: acceptedMilestonesMap[job.id]?.includes(`${job.id}-m1`) ? 'accepted' : 'pending', _completedStatus: completedMilestonesMap[job.id]?.includes(`${job.id}-m1`) ? 'completed' : undefined }];
 
             // Filter cards based on selectedMilestones
             if (selectedMilestonesMap[jobId]) {
@@ -132,8 +172,10 @@ function getInitialProjects() {
                     startDate: m.dueDate || '',
                     duration: '',
                     order: idx+1,
+                    _pendingStatus: 'accepted',
+                    _completedStatus: completedMilestonesMap[job.id]?.includes(m.id || `${job.id}-m${idx+1}`) ? 'completed' : undefined,
                 }))
-                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1 }];
+                : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: 'accepted', _completedStatus: completedMilestonesMap[job.id]?.includes(`${job.id}-m1`) ? 'completed' : undefined }];
             base.push({
                 id: job.id,
                 name: job.name || job.title || '新規案件',
@@ -147,6 +189,43 @@ function getInitialProjects() {
             });
         }
     }
+
+    // Add projects with received applications (client side projects)
+    const receivedAppsIds = new Set();
+    projectsWithReceivedApps.forEach(projectId => {
+        if (!existingIds.has(projectId)) {
+            const job = dashboardAllProjects.find(j => j.id === projectId);
+            if (job) {
+                let cards = (job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0)
+                    ? job.milestones.map((m, idx) => ({
+                        id: m.id || `${job.id}-m${idx+1}`,
+                        projectId: job.id,
+                        title: m.name || m.title || `マイルストーン ${idx+1}`,
+                        status: 'unsent',
+                        reward: m.amount || 0,
+                        startDate: m.dueDate || '',
+                        duration: '',
+                        order: idx+1,
+                        _pendingStatus: 'pending',
+                        _completedStatus: completedMilestonesMap[job.id]?.includes(m.id || `${job.id}-m${idx+1}`) ? 'completed' : undefined,
+                    }))
+                    : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: 'pending', _completedStatus: completedMilestonesMap[job.id]?.includes(`${job.id}-m1`) ? 'completed' : undefined }];
+                base.push({
+                    id: job.id,
+                    name: job.name || job.title || '新規案件',
+                    client: job.clientName || job.client || 'クライアント',
+                    totalBudget: job.totalAmount || job.budget || 0,
+                    deadline: job.dueDate || '',
+                    duration: '',
+                    description: job.description || '',
+                    cards,
+                    _pendingStatus: 'received', // Special status for client-side projects
+                });
+                receivedAppsIds.add(projectId);
+            }
+        }
+    });
+
     return base;
 }
 
@@ -167,12 +246,60 @@ export default function WorkManagementPage() {
             window.dispatchEvent(new CustomEvent('updatePendingApplications'));
         }, []);
 
-        // Expose handleAcceptJob via window for SortableCard (demo)
+        // Complete milestone and release payment
+        const handleCompleteMilestone = React.useCallback((cardId, projectId) => {
+            const { completeMilestone, loggedInUserDataGlobal } = require('../utils/initialData');
+            // Try to complete the milestone in global data (for application-based projects)
+            completeMilestone(projectId, cardId, loggedInUserDataGlobal.id);
+
+            // Update projects state directly to mark milestone as completed
+            setProjects(prev => prev.map(project => {
+                if (project.id === projectId || String(project.id) === String(projectId)) {
+                    return {
+                        ...project,
+                        cards: (project.cards || []).map(card =>
+                            card.id === cardId || String(card.id) === String(cardId)
+                                ? { ...card, _completedStatus: 'completed' }
+                                : card
+                        )
+                    };
+                }
+                return project;
+            }));
+
+            // Add history entry
+            addCardHistory(cardId, {
+                type: 'completed',
+                text: 'マイルストーン完了・支払い処理済み',
+                date: new Date().toISOString(),
+                userName: loggedInUserDataGlobal.name,
+                userIcon: '✅',
+            });
+
+            // Show toast notification
+            setUndoToast({ open: true, message: 'マイルストーンが完了し、支払いが処理されました', id: Date.now() });
+        }, []);
+
+        // Expose handleAcceptJob and handleCompleteMilestone via window for SortableCard (demo)
         React.useEffect(() => {
             window.handleAcceptJob = handleAcceptJob;
-            return () => { delete window.handleAcceptJob; };
-        }, [handleAcceptJob]);
+            window.handleCompleteMilestone = handleCompleteMilestone;
+            return () => {
+                delete window.handleAcceptJob;
+                delete window.handleCompleteMilestone;
+            };
+        }, [handleAcceptJob, handleCompleteMilestone]);
     const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    // Expose navigate to window for SortableCard
+    useEffect(() => {
+        window.__workManagementNavigate = navigate;
+        return () => {
+            delete window.__workManagementNavigate;
+        };
+    }, [navigate]);
+
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     useEffect(() => {
         const main = document.querySelector('main');
@@ -212,6 +339,14 @@ export default function WorkManagementPage() {
     useEffect(() => {
         localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
     }, [projects]);
+    const getCardStatusInfo = (project) => {
+        const cards = project.cards || [];
+        const hasAccepted = cards.some(card => card._pendingStatus === 'accepted' && !card._completedStatus);
+        const hasPending = cards.some(card => card._pendingStatus !== 'accepted');
+        const hasCompleted = cards.some(card => card._completedStatus === 'completed');
+        return { hasAccepted, hasPending, hasCompleted };
+    };
+
     // Restore filter logic that classifies projects by tab
     const filteredProjects = useMemo(() => {
         // "received" tab: Show projects that have received applications
@@ -219,12 +354,25 @@ export default function WorkManagementPage() {
             const { getReceivedApplicationsForProject } = require('../utils/initialData');
             return projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0);
         }
-        // "pending" tab: _pendingStatus is "pending" and status is not completed
-        if (projectTab === 'pending') return projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了');
-        // "completed" tab: _pendingStatus is "accepted" and status is completed
-        if (projectTab === 'completed') return projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了');
-        // "inprogress" tab: _pendingStatus is "accepted" and status is not completed
-        return projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了');
+        // "pending" tab: show projects with any pending cards
+        if (projectTab === 'pending') {
+            return projects.filter(p => {
+                const { hasPending } = getCardStatusInfo(p);
+                return hasPending && p.status !== '完了';
+            });
+        }
+        // "completed" tab: show projects with any completed cards
+        if (projectTab === 'completed') {
+            return projects.filter(p => {
+                const { hasCompleted } = getCardStatusInfo(p);
+                return hasCompleted;
+            });
+        }
+        // "inprogress" tab: show projects with any accepted cards (not completed)
+        return projects.filter(p => {
+            const { hasAccepted } = getCardStatusInfo(p);
+            return hasAccepted && p.status !== '完了';
+        });
     }, [projects, projectTab]);
 
     // --- Message when pending tab is empty ---
@@ -233,8 +381,24 @@ export default function WorkManagementPage() {
     // Cards are derived from filteredProjects
     const [cards, setCards] = useState(filteredProjects.flatMap(p => p.cards || []));
     useEffect(() => {
-        setCards(filteredProjects.flatMap(p => p.cards || []));
-    }, [filteredProjects]);
+        const allCards = filteredProjects.flatMap(p => p.cards || []);
+        if (projectTab === 'inprogress') {
+            // Show only accepted cards that are NOT completed
+            setCards(allCards.filter(card => card._pendingStatus === 'accepted' && !card._completedStatus));
+            return;
+        }
+        if (projectTab === 'pending') {
+            // Show cards that are not yet accepted
+            setCards(allCards.filter(card => card._pendingStatus !== 'accepted'));
+            return;
+        }
+        if (projectTab === 'completed') {
+            // Show only completed cards
+            setCards(allCards.filter(card => card._completedStatus === 'completed'));
+            return;
+        }
+        setCards(allCards);
+    }, [filteredProjects, projectTab]);
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -299,8 +463,16 @@ export default function WorkManagementPage() {
         if (!validateEdit(editingCard)) return;
         setUndoStack(prev => [...prev, { prevCards: cards.map(c => ({ ...c })), message: 'カードを編集しました', id: Date.now() }]);
         setUndoToast({ open: true, message: 'カードを編集しました', id: Date.now() });
+
+        // Update milestone progress status if it changed
+        if (editingCard.progressStatus) {
+            const { updateMilestoneStatus } = require('../utils/initialData');
+            const statusMap = { 'notStarted': 'notStarted', 'inProgress': 'inProgress', 'completed': 'completed' };
+            updateMilestoneStatus(editingCard.id, statusMap[editingCard.progressStatus], '進捗ステータスを更新');
+        }
+
         setCards(prev => prev.map(card => card.id === editingCard.id ? { ...editingCard, status: 'edited' } : card));
-                // Add history entry
+        // Add history entry
         addCardHistory(editingCard.id, {
           type: 'edited',
           text: 'カード内容を編集',
@@ -356,6 +528,7 @@ export default function WorkManagementPage() {
         setProjects([...projects]);
     };
 
+
     const renderReceivedApplications = (projectId) => {
         const normalizedProjectId = normalizeProjectId(projectId);
         const { getReceivedApplicationsForProject } = require('../utils/initialData');
@@ -375,10 +548,11 @@ export default function WorkManagementPage() {
                     <span className="font-semibold text-slate-800">{app.applicantName}</span>
                     <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
                         app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
                         app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
                         'bg-red-100 text-red-700'
                     }`}>
-                        {app.status === 'pending' ? '検討中' : app.status === 'accepted' ? '採用' : '不採用'}
+                        {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
                     </span>
                 </div>
                 <div className="text-xs text-slate-500 mt-2">
@@ -387,10 +561,10 @@ export default function WorkManagementPage() {
                 {app.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
                         <button
-                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'accepted')}
+                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'offered')}
                             className="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded hover:bg-emerald-700 transition"
                         >
-                            採用する
+                            採用を提示
                         </button>
                         <button
                             onClick={() => handleApplicationAction(projectId, app.applicantId, 'rejected')}
@@ -456,6 +630,16 @@ export default function WorkManagementPage() {
                                         {editErrors.duration && <p className="text-xs text-red-500 mt-1">{editErrors.duration}</p>}
                                     </div>
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mt-4">進捗ステータス</label>
+                                    <select name="progressStatus" value={editingCard.progressStatus || 'notStarted'} onChange={(e) => {
+                                        setEditingCard(prev => ({ ...prev, progressStatus: e.target.value }));
+                                    }} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="notStarted">未開始</option>
+                                        <option value="inProgress">進捗中</option>
+                                        <option value="completed">完了</option>
+                                    </select>
+                                </div>
                                 {/* --- History timeline --- */}
                                 <div className="mt-6">
                                     <label className="block text-sm font-bold text-slate-700 mb-2">アクション履歴</label>
@@ -476,11 +660,20 @@ export default function WorkManagementPage() {
                     {tabDefs.map(tab => {
                         let tabCount = 0;
                         if (tab.key === 'pending') {
-                            tabCount = projects.filter(p => p._pendingStatus === 'pending' && p.status !== '完了').length;
+                            tabCount = projects.filter(p => {
+                                const cards = p.cards || [];
+                                return cards.some(card => card._pendingStatus !== 'accepted') && p.status !== '完了';
+                            }).length;
                         } else if (tab.key === 'inprogress') {
-                            tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status !== '完了').length;
+                            tabCount = projects.filter(p => {
+                                const cards = p.cards || [];
+                                return cards.some(card => card._pendingStatus === 'accepted' && !card._completedStatus) && p.status !== '完了';
+                            }).length;
                         } else if (tab.key === 'completed') {
-                            tabCount = projects.filter(p => p._pendingStatus === 'accepted' && p.status === '完了').length;
+                            tabCount = projects.filter(p => {
+                                const cards = p.cards || [];
+                                return cards.some(card => card._completedStatus === 'completed');
+                            }).length;
                         } else if (tab.key === 'received') {
                             const { getReceivedApplicationsForProject } = require('../utils/initialData');
                             tabCount = projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0).length;
@@ -872,7 +1065,7 @@ export default function WorkManagementPage() {
                                                     >
                                                     <div className="space-y-0">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? null
                                                             : projectTab === 'pending'
                                                                 ? groupCards.map((card, idx) => {
                                                                     const project = projects.find(p => String(p.id) === String(card.projectId));
@@ -895,18 +1088,69 @@ export default function WorkManagementPage() {
                                                                     const appliedDate = formatDate(applicationData?.appliedAt) || card.appliedDate || card.startDate || project?.appliedDate || '未設定';
                                                                     const deadline = formatDate(applicationData?.responseDeadline);
                                                                     const clientName = project?.client || project?.clientName || 'クライアント';
+                                                                    const appStatus = applicationData?.status || 'pending';
+
+                                                                    // Status display
+                                                                    let statusDisplay = '確認中';
+                                                                    let statusBg = 'bg-slate-100';
+                                                                    let statusText = 'text-slate-600';
+                                                                    let statusMessage = 'クライアントが確認中です。次の操作は不要です。';
+
+                                                                    if (appStatus === 'offered') {
+                                                                        statusDisplay = '採用提示';
+                                                                        statusBg = 'bg-blue-100';
+                                                                        statusText = 'text-blue-700';
+                                                                        statusMessage = 'クライアントから採用の提示を受けています。受け入れるかどうか選択してください。';
+                                                                    } else if (appStatus === 'accepted') {
+                                                                        statusDisplay = '採用';
+                                                                        statusBg = 'bg-green-100';
+                                                                        statusText = 'text-green-700';
+                                                                        statusMessage = '採用を受け入れました。進行中タブに移動しています。';
+                                                                    } else if (appStatus === 'rejected') {
+                                                                        statusDisplay = '不採用';
+                                                                        statusBg = 'bg-red-100';
+                                                                        statusText = 'text-red-700';
+                                                                        statusMessage = '申し訳ございません。今回は選考に進みませんでした。';
+                                                                    }
+
                                                                     return (
                                                                         <div key={card.id} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
                                                                             <div className="flex items-center gap-2">
                                                                                 <span className="font-semibold text-slate-800">{card.title}</span>
-                                                                                <span className="ml-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded px-2 py-0.5">確認中</span>
+                                                                                <span className={`ml-2 text-xs font-semibold rounded px-2 py-0.5 ${statusBg} ${statusText}`}>{statusDisplay}</span>
                                                                             </div>
-                                                                            <div className="text-xs text-slate-500 mt-1">クライアントが確認中です。次の操作は不要です。</div>
+                                                                            <div className="text-xs text-slate-500 mt-1">{statusMessage}</div>
                                                                             <div className="text-xs text-slate-500 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                                                                                 <span>応募先: {clientName}</span>
                                                                                 <span>応募日: {appliedDate}</span>
                                                                                 <span>回答期限: {deadline}</span>
                                                                             </div>
+                                                                            {appStatus === 'offered' && (
+                                                                                <div className="flex gap-2 mt-3">
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            const { acceptOfferedMilestone } = require('../utils/initialData');
+                                                                                            acceptOfferedMilestone(jobId, card.id, loggedInUserDataGlobal.id);
+                                                                                            setProjects(getInitialProjects());
+                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+                                                                                        }}
+                                                                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition"
+                                                                                    >
+                                                                                        採用を受ける
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            const { updateApplicationJobStatus } = require('../utils/initialData');
+                                                                                            updateApplicationJobStatus(jobId, 'rejected', loggedInUserDataGlobal.id);
+                                                                                            setProjects(getInitialProjects());
+                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+                                                                                        }}
+                                                                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
+                                                                                    >
+                                                                                        辞退する
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     );
                                                                 })
@@ -1131,7 +1375,7 @@ export default function WorkManagementPage() {
                                                 >
                                                     <div className="space-y-3 card-list-container flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 pr-1">
                                                         {isEmpty
-                                                            ? <EmptyDropzone id={`empty-dropzone-${groupKey}`} />
+                                                            ? null
                                                             : displayCards.map((card) => (
                                                                 <SortableCard
                                                                     key={card.id}
@@ -1189,6 +1433,16 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
         WebkitUserSelect: 'none',
         WebkitTouchCallout: 'none',
     };
+
+    // Get milestone progress status
+    const { getMilestoneProgress } = require('../utils/initialData');
+    const milestoneProgress = getMilestoneProgress(card.id);
+    const progressStatusMap = {
+        'notStarted': { label: '未開始', bg: 'bg-gray-100', text: 'text-gray-600' },
+        'inProgress': { label: '進捗中', bg: 'bg-blue-100', text: 'text-blue-700' },
+        'completed': { label: '完了', bg: 'bg-green-100', text: 'text-green-700' }
+    };
+    const progressStatusInfo = progressStatusMap[milestoneProgress?.status] || progressStatusMap['notStarted'];
     // --- Align status badge and action icons at top-right ---
     const { t } = require('react-i18next').useTranslation();
     const statusInfo = {
@@ -1245,7 +1499,28 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             <div className="flex justify-between items-start">
                 <span className="font-semibold text-slate-800 flex-1 pr-2 text-base truncate">{card.title}</span>
                 <div className="flex items-center space-x-2">
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${progressStatusInfo.bg} ${progressStatusInfo.text} whitespace-nowrap`}>{progressStatusInfo.label}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>{statusInfo.label}</span>
+                    {/* Message button */}
+                    <button
+                        title="メッセージ"
+                        className="text-slate-400 hover:text-indigo-600 flex-shrink-0 pointer-events-auto"
+                        onMouseDown={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                        onClick={e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            const navigate = window.__workManagementNavigate;
+                            if (navigate) {
+                                navigate(`/messages?project=${card.projectId}`);
+                            }
+                        }}
+                    >
+                        <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                        </svg>
+                    </button>
                     {actionIcon}
                 </div>
             </div>
@@ -1265,6 +1540,30 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                 >
                     採用する
                 </button>
+            )}
+            {/* Show "Complete" button only for cards that are ready for completion */}
+            {card._pendingStatus === 'accepted' && !card._completedStatus && (
+                <>
+                    {(card.status === 'approved' || card.status === 'awaiting_approval' || card.status === 'edited') ? (
+                        <button
+                            className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition"
+                            onClick={e => {
+                                e.stopPropagation();
+                                if (typeof window !== 'undefined' && typeof window.handleCompleteMilestone === 'function') {
+                                    window.handleCompleteMilestone(card.id, card.projectId);
+                                }
+                            }}
+                        >
+                            完了
+                        </button>
+                    ) : (
+                        <div className="mt-2 px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-300">
+                            {card.status === 'unsent' && '📝 編集・提出後に完了可能'}
+                            {card.status === 'revision_needed' && '🔄 修正対応後に完了可能'}
+                            {!card.status && '📝 作業完了後に完了ボタンが表示されます'}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
