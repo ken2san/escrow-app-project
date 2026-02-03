@@ -405,6 +405,18 @@ export default function WorkManagementPage() {
         }
         setCards(allCards);
     }, [filteredProjects, projectTab]);
+
+    // Listen for payment status updates
+    useEffect(() => {
+        const handlePaymentUpdate = (event) => {
+            // Re-fetch projects to get updated milestone status
+            setProjects(getInitialProjects());
+        };
+
+        window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
+        return () => window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
+    }, []);
+
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
