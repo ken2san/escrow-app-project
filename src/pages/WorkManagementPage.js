@@ -1090,9 +1090,7 @@ export default function WorkManagementPage() {
 
                                                     const paymentStatus = getProjectPaymentStatus(fullProject);
                                                     return (
-                                                        <div className="px-4 mb-4">
-                                                            <ProjectPaymentSummary project={fullProject} paymentStatus={paymentStatus} />
-                                                        </div>
+                                                        <ProjectPaymentSummary project={fullProject} paymentStatus={paymentStatus} />
                                                     );
                                                 })()}
 
