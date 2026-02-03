@@ -249,19 +249,37 @@ export function acceptOfferedMilestone(jobId, milestoneId, userId = loggedInUser
 
 // Complete a milestone (mark as completed and release payment)
 export function completeMilestone(jobId, milestoneId, userId = loggedInUserDataGlobal.id) {
-  if (!_pendingApplicationJobsByUser[userId]) return;
-  const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
-  if (job) {
-    if (!job.completedMilestones) job.completedMilestones = [];
-    if (!job.completedMilestones.includes(milestoneId)) {
-      job.completedMilestones.push(milestoneId);
+  // Update pending application job history
+  if (_pendingApplicationJobsByUser[userId]) {
+    const job = _pendingApplicationJobsByUser[userId].find(j => j.jobId === jobId);
+    if (job) {
+      if (!job.completedMilestones) job.completedMilestones = [];
+      if (!job.completedMilestones.includes(milestoneId)) {
+        job.completedMilestones.push(milestoneId);
+      }
+      if (!job.history) job.history = [];
+      job.history.push(`${new Date().toLocaleString()} マイルストーン「${milestoneId}」が完了し、支払いが処理されました`);
     }
-    if (!job.history) job.history = [];
-    job.history.push(`${new Date().toLocaleString()} マイルストーン「${milestoneId}」が完了し、支払いが処理されました`);
+  }
 
-    // Release payment from escrow (mock implementation)
-    // In production, this would trigger actual payment processing
-    console.log(`Payment released for milestone ${milestoneId} in job ${jobId}`);
+  // Update milestone status in dashboardAllProjects (single source of truth)
+  const project = dashboardAllProjects.find(p => p.id === jobId);
+  if (project && project.milestones) {
+    const milestone = project.milestones.find(m => m.id === milestoneId);
+    if (milestone) {
+      milestone.status = 'completed';
+
+      // Release payment from escrow (mock implementation)
+      // In production, this would trigger actual payment processing
+      console.log(`Payment released for milestone ${milestoneId} (${milestone.amount} pt) in job ${jobId}`);
+
+      // Trigger payment status update event
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
+          detail: { jobId, milestoneId, amount: milestone.amount }
+        }));
+      }
+    }
   }
 }
 
@@ -571,6 +589,35 @@ export function getWorkManagementProjectsView(userId = loggedInUserDataGlobal.id
       cards,
     };
   });
+}
+
+/**
+ * Calculate payment status for a project
+ * @param {Object} project - Project from dashboardAllProjects
+ * @returns {Object} Payment summary with totalAmount, fundsDeposited, fundsReleased, fundsRemaining, completionRate
+ */
+export function getProjectPaymentStatus(project) {
+  const totalAmount = project.totalAmount || 0;
+  const fundsDeposited = project.fundsDeposited || 0;
+
+  // Calculate fundsReleased from completed/released milestones
+  let fundsReleased = 0;
+  if (project.milestones && project.milestones.length > 0) {
+    fundsReleased = project.milestones
+      .filter(m => m.status === 'completed' || m.status === 'released')
+      .reduce((sum, m) => sum + (m.amount || 0), 0);
+  }
+
+  const fundsRemaining = totalAmount - fundsReleased;
+  const completionRate = totalAmount > 0 ? Math.round((fundsReleased / totalAmount) * 100) : 0;
+
+  return {
+    totalAmount,
+    fundsDeposited,
+    fundsReleased,
+    fundsRemaining,
+    completionRate,
+  };
 }
 
 // --- Dummy data ---

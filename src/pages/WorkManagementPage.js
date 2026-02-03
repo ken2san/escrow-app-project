@@ -7,8 +7,9 @@ import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSe
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { getWorkManagementProjectsView, loggedInUserDataGlobal } from '../utils/initialData';
+import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal } from '../utils/initialData';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
+import ProjectPaymentSummary from '../components/common/ProjectPaymentSummary';
 
 // --- Card history management ---
 // Store card history in-memory by cardId (should be managed by DB/API in production)
@@ -404,6 +405,18 @@ export default function WorkManagementPage() {
         }
         setCards(allCards);
     }, [filteredProjects, projectTab]);
+
+    // Listen for payment status updates
+    useEffect(() => {
+        const handlePaymentUpdate = (event) => {
+            // Re-fetch projects to get updated milestone status
+            setProjects(getInitialProjects());
+        };
+
+        window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
+        return () => window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
+    }, []);
+
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -1064,6 +1077,23 @@ export default function WorkManagementPage() {
                                                     )}
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
                                                 </div>
+
+                                                {/* Payment Summary for project view in inprogress tab */}
+                                                {viewSettings.groupBy === 'project' && projectTab === 'inprogress' && (() => {
+                                                    const project = projects.find(p => String(p.id) === String(groupKey));
+                                                    if (!project) return null;
+
+                                                    // Get full project data from dashboardAllProjects for payment info
+                                                    const { dashboardAllProjects } = require('../utils/initialData');
+                                                    const fullProject = dashboardAllProjects.find(p => String(p.id) === String(groupKey));
+                                                    if (!fullProject) return null;
+
+                                                    const paymentStatus = getProjectPaymentStatus(fullProject);
+                                                    return (
+                                                        <ProjectPaymentSummary project={fullProject} paymentStatus={paymentStatus} />
+                                                    );
+                                                })()}
+
                                                     <SortableContext
                                                         items={isEmpty ? [`empty-dropzone-${groupKey}`] : groupCards.map(card => card.id)}
                                                         strategy={verticalListSortingStrategy}
@@ -1534,8 +1564,14 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-1">
                 {card.startDate && <span>開始日: {card.startDate}</span>}
                 {card.duration && <span>期間: {card.duration}日</span>}
-                {card.reward && <span>報酬: ¥{Number(card.reward).toLocaleString()}</span>}
             </div>
+            {/* Payment badge */}
+            {card.reward && (
+                <div className="inline-flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 rounded-full px-3 py-1 text-sm font-bold text-amber-900 shadow-sm">
+                    <span className="mr-1">💰</span>
+                    <span>{Number(card.reward).toLocaleString('ja-JP')} pt</span>
+                </div>
+            )}
             {nextStepGuide}
             {/* Show "Accept" button only in pending tab */}
             {showAcceptButton && (
