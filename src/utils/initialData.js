@@ -573,6 +573,27 @@ export function getWorkManagementProjectsView(userId = loggedInUserDataGlobal.id
   });
 }
 
+/**
+ * Calculate payment status for a project
+ * @param {Object} project - Project from dashboardAllProjects
+ * @returns {Object} Payment summary with totalAmount, fundsDeposited, fundsReleased, fundsRemaining, completionRate
+ */
+export function getProjectPaymentStatus(project) {
+  const totalAmount = project.totalAmount || 0;
+  const fundsDeposited = project.fundsDeposited || 0;
+  const fundsReleased = project.fundsReleased || 0;
+  const fundsRemaining = fundsDeposited - fundsReleased;
+  const completionRate = totalAmount > 0 ? Math.round((fundsReleased / totalAmount) * 100) : 0;
+
+  return {
+    totalAmount,
+    fundsDeposited,
+    fundsReleased,
+    fundsRemaining,
+    completionRate,
+  };
+}
+
 // --- Dummy data ---
 // Note: workManagementProjects has been removed. Use getWorkManagementProjectsView() instead.
 // All project data is now stored in dashboardAllProjects (single source of truth)

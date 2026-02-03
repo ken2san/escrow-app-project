@@ -7,8 +7,9 @@ import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSe
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { getWorkManagementProjectsView, loggedInUserDataGlobal } from '../utils/initialData';
+import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal } from '../utils/initialData';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
+import ProjectPaymentSummary from '../components/common/ProjectPaymentSummary';
 
 // --- Card history management ---
 // Store card history in-memory by cardId (should be managed by DB/API in production)
@@ -1064,6 +1065,25 @@ export default function WorkManagementPage() {
                                                     )}
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
                                                 </div>
+
+                                                {/* Payment Summary for project view in inprogress tab */}
+                                                {viewSettings.groupBy === 'project' && projectTab === 'inprogress' && (() => {
+                                                    const project = projects.find(p => String(p.id) === String(groupKey));
+                                                    if (!project) return null;
+
+                                                    // Get full project data from dashboardAllProjects for payment info
+                                                    const { dashboardAllProjects } = require('../utils/initialData');
+                                                    const fullProject = dashboardAllProjects.find(p => String(p.id) === String(groupKey));
+                                                    if (!fullProject) return null;
+
+                                                    const paymentStatus = getProjectPaymentStatus(fullProject);
+                                                    return (
+                                                        <div className="px-4 mb-4">
+                                                            <ProjectPaymentSummary project={fullProject} paymentStatus={paymentStatus} />
+                                                        </div>
+                                                    );
+                                                })()}
+
                                                     <SortableContext
                                                         items={isEmpty ? [`empty-dropzone-${groupKey}`] : groupCards.map(card => card.id)}
                                                         strategy={verticalListSortingStrategy}
