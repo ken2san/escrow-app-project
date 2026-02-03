@@ -16,6 +16,7 @@ import MarketCommandUIPage from './pages/MarketCommandUIPage';
 import JobsSearchPage from './pages/JobsSearchPage';
 import PendingApplicationsPage from './pages/PendingApplicationsPage';
 import ProgressDashboard from './pages/ProgressDashboard';
+import MessagesPage from './pages/MessagesPage';
 
 // Modals
 import ProposalModal from './components/modals/ProposalModal';
@@ -319,7 +320,7 @@ export default function App() {
             <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/dashboard/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/project-overview" element={<ProjectOverviewPage />} />
-            <Route path="/messages" element={<PlaceholderPage t={t} title={t.messages} icon={<MessageSquare />} />} />
+            <Route path="/messages" element={<MessagesPage />} />
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />

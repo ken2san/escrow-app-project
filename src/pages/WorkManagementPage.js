@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import './workmanagement.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -289,6 +290,16 @@ export default function WorkManagementPage() {
             };
         }, [handleAcceptJob, handleCompleteMilestone]);
     const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    // Expose navigate to window for SortableCard
+    useEffect(() => {
+        window.__workManagementNavigate = navigate;
+        return () => {
+            delete window.__workManagementNavigate;
+        };
+    }, [navigate]);
+
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
     useEffect(() => {
         const main = document.querySelector('main');
@@ -1490,6 +1501,26 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                 <div className="flex items-center space-x-2">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${progressStatusInfo.bg} ${progressStatusInfo.text} whitespace-nowrap`}>{progressStatusInfo.label}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>{statusInfo.label}</span>
+                    {/* Message button */}
+                    <button
+                        title="メッセージ"
+                        className="text-slate-400 hover:text-indigo-600 flex-shrink-0 pointer-events-auto"
+                        onMouseDown={e => e.stopPropagation()}
+                        onPointerDown={e => e.stopPropagation()}
+                        onClick={e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            const navigate = window.__workManagementNavigate;
+                            if (navigate) {
+                                navigate(`/messages?project=${card.projectId}`);
+                            }
+                        }}
+                    >
+                        <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                        </svg>
+                    </button>
                     {actionIcon}
                 </div>
             </div>
