@@ -1554,8 +1554,14 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             <div className="flex flex-wrap gap-2 text-xs text-slate-500 mb-1">
                 {card.startDate && <span>開始日: {card.startDate}</span>}
                 {card.duration && <span>期間: {card.duration}日</span>}
-                {card.reward && <span>報酬: ¥{Number(card.reward).toLocaleString()}</span>}
             </div>
+            {/* Payment badge */}
+            {card.reward && (
+                <div className="inline-flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 rounded-full px-3 py-1 text-sm font-bold text-amber-900 shadow-sm">
+                    <span className="mr-1">💰</span>
+                    <span>{Number(card.reward).toLocaleString('ja-JP')} pt</span>
+                </div>
+            )}
             {nextStepGuide}
             {/* Show "Accept" button only in pending tab */}
             {showAcceptButton && (
