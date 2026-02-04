@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, ShieldCheck, Award, Briefcase, TrendingUp, ExternalLink, Lightbulb, Code, Shield, Target } from 'lucide-react';
 import StarRatingDisplay from '../common/StarRatingDisplay';
 
 const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProposal }) => {
+  const [activeTab, setActiveTab] = useState('portfolio');
+
   if (!isOpen || !proposal) return null;
 
   return (
@@ -55,8 +57,42 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
               )}
           </div>
 
+          {/* Tab Navigation */}
+          <div className="flex space-x-1 border-b border-gray-200 mb-4">
+            <button
+              onClick={() => setActiveTab('portfolio')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'portfolio'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              実績・ポートフォリオ
+            </button>
+            <button
+              onClick={() => setActiveTab('proposal')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'proposal'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              提案内容
+            </button>
+            <button
+              onClick={() => setActiveTab('milestones')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'milestones'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              マイルストーン別提案
+            </button>
+          </div>
+
           {/* Portfolio & Track Record Section */}
-          {proposal.contractorPortfolio && (
+          {activeTab === 'portfolio' && proposal.contractorPortfolio && (
             <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-md">
               <h4 className="font-semibold text-indigo-900 mb-3 flex items-center">
                 <Briefcase size={16} className="mr-2" />
@@ -132,78 +168,83 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
             </div>
           )}
 
-          <div className="p-3 bg-gray-50 rounded-md">
-            <p className="font-semibold text-gray-700 mb-1">
-              {t('proposalMessage')}:
-            </p>
-            <p className="text-gray-600 whitespace-pre-wrap text-xs">
-              {proposal.proposalText}
-            </p>
-          </div>
+          {/* Proposal Content Tab */}
+          {activeTab === 'proposal' && (
+            <>
+              <div className="p-3 bg-gray-50 rounded-md mb-4">
+                <p className="font-semibold text-gray-700 mb-1">
+                  {t('proposalMessage')}:
+                </p>
+                <p className="text-gray-600 whitespace-pre-wrap text-xs">
+                  {proposal.proposalText}
+                </p>
+              </div>
 
-          {/* Proposal Details Section */}
-          {proposal.proposalDetails && (
-            <div className="space-y-3">
-              {/* Approach */}
-              {proposal.proposalDetails.approach && (
-                <div className="p-3 border border-blue-200 rounded-md bg-blue-50">
-                  <h5 className="font-semibold text-blue-900 mb-2 flex items-center text-sm">
-                    <Lightbulb size={14} className="mr-2" />
-                    アプローチ・提案内容
-                  </h5>
-                  <p className="text-gray-700 text-xs leading-relaxed">
-                    {proposal.proposalDetails.approach}
-                  </p>
+              {/* Proposal Details Section */}
+              {proposal.proposalDetails && (
+                <div className="space-y-3">
+                  {/* Approach */}
+                  {proposal.proposalDetails.approach && (
+                    <div className="p-3 border border-blue-200 rounded-md bg-blue-50">
+                      <h5 className="font-semibold text-blue-900 mb-2 flex items-center text-sm">
+                        <Lightbulb size={14} className="mr-2" />
+                        アプローチ・提案内容
+                      </h5>
+                      <p className="text-gray-700 text-xs leading-relaxed">
+                        {proposal.proposalDetails.approach}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Tech Stack */}
+                  {proposal.proposalDetails.techStack && proposal.proposalDetails.techStack.length > 0 && (
+                    <div className="p-3 border border-purple-200 rounded-md bg-purple-50">
+                      <h5 className="font-semibold text-purple-900 mb-2 flex items-center text-sm">
+                        <Code size={14} className="mr-2" />
+                        使用技術・ツール
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        {proposal.proposalDetails.techStack.map((tech, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Risk Mitigation */}
+                  {proposal.proposalDetails.riskMitigation && (
+                    <div className="p-3 border border-orange-200 rounded-md bg-orange-50">
+                      <h5 className="font-semibold text-orange-900 mb-2 flex items-center text-sm">
+                        <Shield size={14} className="mr-2" />
+                        リスク対策
+                      </h5>
+                      <p className="text-gray-700 text-xs leading-relaxed">
+                        {proposal.proposalDetails.riskMitigation}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Quality Assurance */}
+                  {proposal.proposalDetails.qualityAssurance && (
+                    <div className="p-3 border border-green-200 rounded-md bg-green-50">
+                      <h5 className="font-semibold text-green-900 mb-2 flex items-center text-sm">
+                        <Target size={14} className="mr-2" />
+                        品質保証方針
+                      </h5>
+                      <p className="text-gray-700 text-xs leading-relaxed">
+                        {proposal.proposalDetails.qualityAssurance}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
-
-              {/* Tech Stack */}
-              {proposal.proposalDetails.techStack && proposal.proposalDetails.techStack.length > 0 && (
-                <div className="p-3 border border-purple-200 rounded-md bg-purple-50">
-                  <h5 className="font-semibold text-purple-900 mb-2 flex items-center text-sm">
-                    <Code size={14} className="mr-2" />
-                    使用技術・ツール
-                  </h5>
-                  <div className="flex flex-wrap gap-2">
-                    {proposal.proposalDetails.techStack.map((tech, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Risk Mitigation */}
-              {proposal.proposalDetails.riskMitigation && (
-                <div className="p-3 border border-orange-200 rounded-md bg-orange-50">
-                  <h5 className="font-semibold text-orange-900 mb-2 flex items-center text-sm">
-                    <Shield size={14} className="mr-2" />
-                    リスク対策
-                  </h5>
-                  <p className="text-gray-700 text-xs leading-relaxed">
-                    {proposal.proposalDetails.riskMitigation}
-                  </p>
-                </div>
-              )}
-
-              {/* Quality Assurance */}
-              {proposal.proposalDetails.qualityAssurance && (
-                <div className="p-3 border border-green-200 rounded-md bg-green-50">
-                  <h5 className="font-semibold text-green-900 mb-2 flex items-center text-sm">
-                    <Target size={14} className="mr-2" />
-                    品質保証方針
-                  </h5>
-                  <p className="text-gray-700 text-xs leading-relaxed">
-                    {proposal.proposalDetails.qualityAssurance}
-                  </p>
-                </div>
-              )}
-            </div>
+            </>
           )}
 
-          {/* Milestone Proposals Section */}
-          {proposal.milestoneProposals && proposal.milestoneProposals.length > 0 && (
+          {/* Milestone Proposals Tab */}
+          {activeTab === 'milestones' && proposal.milestoneProposals && proposal.milestoneProposals.length > 0 && (
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-md">
               <h4 className="font-semibold text-slate-900 mb-3 flex items-center">
                 <Target size={16} className="mr-2" />
