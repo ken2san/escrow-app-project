@@ -105,19 +105,19 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden border-l-4 border-indigo-500">
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-8 space-y-3 md:space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-2 md:gap-6">
           <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              <h3 className="text-xl font-bold text-slate-900">{job.title}</h3>
+            <div className="flex items-center gap-2 flex-wrap mb-1 md:mb-3">
+              <h3 className="text-lg md:text-2xl font-bold text-slate-900">{job.title}</h3>
               {job.category && (
                 <span className={getCategoryBadgeStyle(job.category)}>
                   {job.category}
                 </span>
               )}
             </div>
-            <p className="text-sm text-slate-600">{job.client || 'クライアント名'}</p>
+            <p className="text-xs md:text-sm text-slate-600">{job.client || 'クライアント名'}</p>
           </div>
           <span className={flagStyleFn(job)}>
             {job.recommendationFlag === 'green' ? '✓ おすすめ' :
@@ -128,55 +128,63 @@ function TimelineJobCard({ job, flagStyleFn, getCategoryBadgeStyle, getScoreIcon
 
         {/* Description */}
         {job.description && (
-          <p className="text-sm text-slate-700">
+          <p className="text-xs md:text-sm text-slate-700 md:leading-relaxed line-clamp-1 md:line-clamp-2">
             {job.description}
           </p>
         )}
 
         {/* Score Grid */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2 md:gap-4">
           <div className="text-center">
-            <div className={`w-16 h-16 rounded-full ${mScoreIcon.bg} flex items-center justify-center mx-auto mb-2`}>
-              <span className={`text-2xl font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${mScoreIcon.bg} flex items-center justify-center mx-auto mb-1 md:mb-2`}>
+              <span className={`text-lg md:text-2xl font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
             </div>
             <p className="text-xs font-medium text-slate-700">信頼度</p>
           </div>
           <div className="text-center">
-            <div className={`w-16 h-16 rounded-full ${sScoreIcon.bg} flex items-center justify-center mx-auto mb-2`}>
-              <span className={`text-2xl font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${sScoreIcon.bg} flex items-center justify-center mx-auto mb-1 md:mb-2`}>
+              <span className={`text-lg md:text-2xl font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
             </div>
             <p className="text-xs font-medium text-slate-700">安全性</p>
           </div>
           <div className="text-center">
-            <div className={`w-16 h-16 rounded-full ${ambiguityIcon.bg} flex items-center justify-center mx-auto mb-2`}>
-              <span className={`text-2xl font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${ambiguityIcon.bg} flex items-center justify-center mx-auto mb-1 md:mb-2`}>
+              <span className={`text-lg md:text-2xl font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
             </div>
             <p className="text-xs font-medium text-slate-700">明確性</p>
           </div>
           <div className="text-center">
-            <div className={`w-16 h-16 rounded-full ${recommendationIcon.bg} flex items-center justify-center mx-auto mb-2`}>
-              <span className={`text-2xl font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${recommendationIcon.bg} flex items-center justify-center mx-auto mb-1 md:mb-2`}>
+              <span className={`text-lg md:text-2xl font-bold ${recommendationIcon.text}`}>{job.recommendationScore}</span>
             </div>
             <p className="text-xs font-medium text-slate-700">AIスコア</p>
           </div>
         </div>
 
-        {/* Budget & Details */}
-        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
-          <div>
-            <p className="text-xs text-slate-600">報酬</p>
-            <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+        {/* Budget & Details (improved layout) */}
+        <div className="bg-slate-50 p-3 md:p-5 rounded-lg flex flex-col md:flex-row md:items-center md:gap-0 gap-3 md:divide-x divide-slate-200">
+          <div className="flex-1 flex flex-col items-start md:items-center md:px-4">
+            <span className="text-xs text-slate-500 mb-1">報酬</span>
+            <span className="text-lg md:text-2xl font-bold text-indigo-700">¥{job.budget?.toLocaleString()}</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-600">期間目安</p>
-            <p className="text-lg font-bold text-slate-900">{job.duration || '未指定'}</p>
+          <div className="flex-1 flex flex-col items-start md:items-center md:px-4">
+            <span className="text-xs text-slate-500 mb-1">期限</span>
+            <span className="text-base md:text-lg font-bold text-slate-900">{job.deadline || job.duration || '未指定'}</span>
+          </div>
+          <div className="flex-1 flex flex-col items-start md:items-center md:px-4">
+            <span className="text-xs text-slate-500 mb-1">依頼者</span>
+            <span className="text-base md:text-lg font-bold text-slate-900">{job.client || 'クライアント名'}</span>
+          </div>
+          <div className="flex-1 flex flex-col items-start md:items-center md:px-4">
+            <span className="text-xs text-slate-500 mb-1">評価</span>
+            <span className="text-base md:text-lg font-bold text-yellow-600">{job.rating ? `${job.rating} / ${job.reviews || '0'}件` : '-'}</span>
           </div>
         </div>
 
         {/* CTA */}
         <button
           onClick={handleApply}
-          className="w-full px-6 py-3 rounded-lg font-bold text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
+          className="w-full px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold text-sm md:text-base transition whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl"
           disabled={!!applicationStatus}
         >
           {applicationStatus ? (applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用済み' : '不採用') : 'このお仕事を見る'}
