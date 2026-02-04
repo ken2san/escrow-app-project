@@ -202,6 +202,45 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
             </div>
           )}
 
+          {/* Milestone Proposals Section */}
+          {proposal.milestoneProposals && proposal.milestoneProposals.length > 0 && (
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-md">
+              <h4 className="font-semibold text-slate-900 mb-3 flex items-center">
+                <Target size={16} className="mr-2" />
+                マイルストーン別提案
+              </h4>
+              <div className="space-y-3">
+                {proposal.milestoneProposals.map((milestone, idx) => (
+                  <div key={milestone.milestoneId} className="p-3 bg-white border border-slate-200 rounded-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-semibold text-slate-800 text-sm">
+                        {milestone.milestoneName}
+                      </h5>
+                      <span className="text-sm font-bold text-indigo-600">
+                        ¥{Number(milestone.amount).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      <span className="font-medium">見積期間:</span> {milestone.estimatedDays}日
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-xs font-semibold text-gray-700 mb-1">成果物</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {milestone.deliverables}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700 mb-1">実施アプローチ</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {milestone.approach}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="font-semibold text-gray-700">{t('proposedAmount')}:</p>

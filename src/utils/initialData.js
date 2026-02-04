@@ -833,6 +833,32 @@ export const dashboardAllProjects = [
           riskMitigation: 'デザインレビューを週次で実施し、方向性のズレを早期発見。プロトタイプで操作感を事前確認し、手戻りを防ぎます。',
           qualityAssurance: 'WCAGアクセシビリティ基準準拠。主要ブラウザ・デバイスでの表示確認を実施。デザインシステムで一貫性を担保します。'
         },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 7,
+            deliverables: '要件定義書、ペルソナ設定資料、ユーザージャーニーマップ、情報アーキテクチャ図',
+            approach: 'クライアントへのヒアリングと既存システムの分析から開始。ユーザーインタビュー（3～5名）を実施し、ペインポイントを可視化。デザインの方向性を定めるムードボードを3案提示し、合意形成を図ります。',
+            amount: 100000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 21,
+            deliverables: 'ワイヤーフレーム全画面、UIデザインカンプ（主要画面）、デザインシステム（カラー、タイポグラフィ、コンポーネント）、インタラクションプロトタイプ',
+            approach: '情報設計に基づきワイヤーフレームを作成後、ビジュアルデザインに着手。デザインシステムを構築し、一貫性を確保。週次レビューで方向性を確認しながら進めます。Figmaでインタラクティブプロトタイプを作成し、実装前に操作感を検証します。',
+            amount: 200000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 14,
+            deliverables: 'デザイン実装ガイドライン、コンポーネントライブラリ、実装レビューレポート、アクセシビリティチェックリスト、最終納品物一式',
+            approach: '開発チームと密に連携し、デザイン実装をサポート。週2回の実装レビューを実施し、デザインの再現度を確認。WCAG 2.1 AAレベルのアクセシビリティチェックを行い、クロスブラウザテストで品質を担保します。',
+            amount: 200000
+          }
+        ],
         proposedAmount: 500000,
         estimatedDeliveryTime: '3ヶ月',
         estimatedDeliveryTime_en: '3 months',
@@ -867,6 +893,32 @@ export const dashboardAllProjects = [
           riskMitigation: 'デザイン着手前にムードボードで方向性を確認。修正は各フェーズで2回まで無料対応します。',
           qualityAssurance: 'デザインガイドラインを作成し、実装時の品質を担保。ユーザビリティテストで検証します。'
         },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 5,
+            deliverables: '要件定義書、ペルソナ資料、カスタマージャーニーマップ、競合分析レポート',
+            approach: 'ステークホルダーインタビューで要件を洗い出し。競合サービス3社の分析を実施し、差別化ポイントを明確化。ペルソナとジャーニーマップで課題を可視化します。',
+            amount: 80000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 28,
+            deliverables: 'ワイヤーフレーム、UIデザインカンプ、デザインガイドライン、アイコンセット、レスポンシブデザイン',
+            approach: 'ムードボード3案を提示し方向性を決定。ワイヤーフレームで情報設計を確認後、ビジュアルデザインに着手。レスポンシブ対応を含め、全画面のデザインを完成させます。',
+            amount: 240000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 12,
+            deliverables: 'デザイン実装ガイド、HTMLプロトタイプ、ユーザビリティテストレポート、改善提案書',
+            approach: '実装段階では週1回のレビューミーティングを実施。HTMLプロトタイプを作成しユーザビリティテストを実施（5名）。フィードバックを反映し最終調整を行います。',
+            amount: 160000
+          }
+        ],
         proposedAmount: 480000,
         estimatedDeliveryTime: '2.5ヶ月',
         estimatedDeliveryTime_en: '2.5 months',
@@ -901,6 +953,32 @@ export const dashboardAllProjects = [
           riskMitigation: 'スプリント形式で進行し、2週間ごとにレビュー。フィードバックを即座に反映してリスクを最小化します。',
           qualityAssurance: 'デザインシステムで統一感を確保。アクセシビリティチェックとクロスブラウザテストを実施します。'
         },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 8,
+            deliverables: '要件定義書、ユーザーリサーチレポート（インタビュー記録）、ペルソナ、情報アーキテクチャ、KPI設定資料',
+            approach: '定量・定性の両面からリサーチを実施。アクセスログ分析で行動データを把握し、ユーザーインタビュー（5名）で心理的要因を探ります。KPIを設定し、改善効果を測定可能にします。',
+            amount: 120000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 24,
+            deliverables: 'ワイヤーフレーム、UIデザインカンプ、デザインシステム（包括的）、Framerプロトタイプ、マイクロインタラクション仕様',
+            approach: '2週間スプリントで反復的にデザイン。スプリントごとにレビューを実施し、早期フィードバックを取り入れます。Framerで高精度プロトタイプを作成し、操作感を検証。デザインシステムで拡張性を確保します。',
+            amount: 240000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 10,
+            deliverables: 'デザイン実装ドキュメント、コンポーネントライブラリ（Storybook形式）、A/Bテスト設計書、改善レポート',
+            approach: '開発チームとペアプログラミング形式で実装サポート。A/Bテストを設計し、リリース後の効果検証体制を整備。アクセシビリティとパフォーマンスの両面から品質を担保します。',
+            amount: 160000
+          }
+        ],
         proposedAmount: 520000,
         estimatedDeliveryTime: '3ヶ月',
         estimatedDeliveryTime_en: '3 months',
