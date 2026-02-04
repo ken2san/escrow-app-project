@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { FileSignature, CheckCircle, XCircle } from 'lucide-react';
+import { FileSignature, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { dashboardAllProjects, updateApplicationJobStatus, loggedInUserDataGlobal } from '../utils/initialData';
+import {
+  dashboardAllProjects,
+  updateApplicationJobStatus,
+  loggedInUserDataGlobal,
+  updateMilestoneApproval,
+  getMilestoneApprovalSummary,
+  areAllMilestonesApproved
+} from '../utils/initialData';
 
 const ContractReviewPage = () => {
   const navigate = useNavigate();
@@ -11,6 +18,7 @@ const ContractReviewPage = () => {
   const [isContractFinalized, setIsContractFinalized] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [actionType, setActionType] = useState(null); // 'accept' or 'reject'
+  const [milestoneApprovals, setMilestoneApprovals] = useState({}); // Track individual milestone approval states
 
   // Get project from dashboardAllProjects
   const selectedProjectForReview = dashboardAllProjects.find(p => p.id === projectId);
@@ -35,7 +43,24 @@ const ContractReviewPage = () => {
     );
   }
 
+  const handleApproveMilestone = (milestoneId) => {
+    // Update milestone approval in data layer
+    updateMilestoneApproval(projectId, milestoneId, 'approved');
+
+    // Update local state
+    setMilestoneApprovals(prev => ({
+      ...prev,
+      [milestoneId]: 'approved'
+    }));
+  };
+
   const handleAcceptContract = () => {
+    // Check if all milestones are approved
+    if (!areAllMilestonesApproved(projectId)) {
+      alert('全てのマイルストーンを承認してください。');
+      return;
+    }
+
     // Update application status to accepted
     updateApplicationJobStatus(projectId, 'accepted', loggedInUserDataGlobal.id);
 
@@ -196,30 +221,92 @@ const ContractReviewPage = () => {
         )}
 
         <div className="p-4 border rounded-lg">
-          <h4 className="text-md font-semibold text-gray-700 mb-2">
-            マイルストーン一覧
-          </h4>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-md font-semibold text-gray-700">
+              マイルストーン個別承認
+            </h4>
+            {selectedProjectForReview.milestones?.length > 0 && (() => {
+              const summary = getMilestoneApprovalSummary(projectId);
+              return (
+                <div className="text-xs">
+                  <span className={`font-semibold ${
+                    summary.allApproved ? 'text-green-600' : 'text-amber-600'
+                  }`}>
+                    {summary.approved}/{summary.total} 承認済み
+                  </span>
+                  <span className="text-gray-500 ml-2">
+                    ({summary.approvedAmount.toLocaleString('ja-JP')}/{summary.totalAmount.toLocaleString('ja-JP')} pt)
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
           {selectedProjectForReview.milestones?.length > 0 ? (
-            <ul className="space-y-2">
-              {selectedProjectForReview.milestones.map((ms) => (
-                <li
-                  key={ms.id}
-                  className="p-2 border-b last:border-b-0 text-xs"
-                >
-                  <p className="font-semibold">
-                    {ms.name}{' '}
-                    <span className="text-gray-500 font-normal">
-                      (期日: {ms.dueDate})
-                    </span>
-                  </p>
-                  {ms.description && (
-                    <p className="text-gray-600">{ms.description}</p>
-                  )}
-                  <p className="text-indigo-600 font-semibold">
-                    {Number(ms.amount).toLocaleString('ja-JP')} pt
-                  </p>
-                </li>
-              ))}
+            <ul className="space-y-3">
+              {selectedProjectForReview.milestones.map((ms) => {
+                const approvalStatus = ms.approvalStatus || milestoneApprovals[ms.id] || 'pending';
+                const isApproved = approvalStatus === 'approved';
+
+                return (
+                  <li
+                    key={ms.id}
+                    className={`p-3 border rounded-lg ${
+                      isApproved ? 'bg-green-50 border-green-300' : 'bg-white'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-semibold text-sm">
+                            {ms.name}
+                          </p>
+                          {isApproved && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <CheckCircle size={12} className="mr-1" />
+                              承認済み
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mb-1">
+                          期日: {ms.dueDate}
+                        </p>
+                        {ms.description && (
+                          <p className="text-xs text-gray-600 mb-2">{ms.description}</p>
+                        )}
+                        <p className="text-sm font-semibold text-indigo-600">
+                          {Number(ms.amount).toLocaleString('ja-JP')} pt
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 ml-4">
+                        {!isApproved ? (
+                          <>
+                            <button
+                              onClick={() => handleApproveMilestone(ms.id)}
+                              className="px-3 py-1.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700 whitespace-nowrap flex items-center"
+                            >
+                              <CheckCircle size={14} className="mr-1" />
+                              承認
+                            </button>
+                            <button
+                              className="px-3 py-1.5 border border-amber-300 text-amber-700 rounded text-xs font-medium hover:bg-amber-50 whitespace-nowrap flex items-center"
+                              disabled
+                              title="交渉機能は次のタスクで実装予定"
+                            >
+                              <MessageSquare size={14} className="mr-1" />
+                              交渉
+                            </button>
+                          </>
+                        ) : (
+                          <div className="text-xs text-green-600 font-medium flex items-center">
+                            <CheckCircle size={14} className="mr-1" />
+                            承認済み
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-gray-500 text-xs">マイルストーンが設定されていません</p>
@@ -247,10 +334,18 @@ const ContractReviewPage = () => {
             </button>
             <button
               onClick={() => openConfirmDialog('accept')}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
+              disabled={!areAllMilestonesApproved(projectId)}
+              className={`px-6 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center ${
+                areAllMilestonesApproved(projectId)
+                  ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                  : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-60'
+              }`}
             >
               <CheckCircle size={18} className="mr-2" />
               契約を承認する
+              {!areAllMilestonesApproved(projectId) && (
+                <span className="ml-2 text-xs">(全承認が必要)</span>
+              )}
             </button>
           </div>
         </div>
