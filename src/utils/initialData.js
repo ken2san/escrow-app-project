@@ -1930,6 +1930,85 @@ export function getProjectsNeedingReview(userId) {
   return dashboardAllProjects.filter(p => needsReview(p.id, userId));
 }
 
+// --- Milestone Individual Approval System ---
+
+// Update milestone approval status
+export function updateMilestoneApproval(projectId, milestoneId, status, negotiationData = null) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project || !project.milestones) return false;
+
+  const milestone = project.milestones.find(m => m.id === milestoneId);
+  if (!milestone) return false;
+
+  // Add approvalStatus field if not exists
+  if (!milestone.approvalStatus) {
+    milestone.approvalStatus = 'pending';
+  }
+
+  // Update status
+  milestone.approvalStatus = status; // 'pending', 'approved', 'negotiating', 'rejected'
+
+  // Store negotiation data if provided
+  if (negotiationData && status === 'negotiating') {
+    if (!milestone.negotiations) {
+      milestone.negotiations = [];
+    }
+    milestone.negotiations.push({
+      id: `neg-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      proposedAmount: negotiationData.amount,
+      proposedDueDate: negotiationData.dueDate,
+      reason: negotiationData.reason,
+      status: 'pending', // 'pending', 'accepted', 'rejected'
+    });
+  }
+
+  return true;
+}
+
+// Check if all milestones are approved
+export function areAllMilestonesApproved(projectId) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project || !project.milestones) return false;
+
+  return project.milestones.every(m => m.approvalStatus === 'approved');
+}
+
+// Get approved milestones total amount
+export function getApprovedMilestonesTotal(projectId) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project || !project.milestones) return 0;
+
+  return project.milestones
+    .filter(m => m.approvalStatus === 'approved')
+    .reduce((sum, m) => sum + (m.amount || 0), 0);
+}
+
+// Get milestone approval summary
+export function getMilestoneApprovalSummary(projectId) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project || !project.milestones) return null;
+
+  const total = project.milestones.length;
+  const approved = project.milestones.filter(m => m.approvalStatus === 'approved').length;
+  const pending = project.milestones.filter(m => !m.approvalStatus || m.approvalStatus === 'pending').length;
+  const negotiating = project.milestones.filter(m => m.approvalStatus === 'negotiating').length;
+  const rejected = project.milestones.filter(m => m.approvalStatus === 'rejected').length;
+  const approvedAmount = getApprovedMilestonesTotal(projectId);
+  const totalAmount = project.totalAmount || 0;
+
+  return {
+    total,
+    approved,
+    pending,
+    negotiating,
+    rejected,
+    approvedAmount,
+    totalAmount,
+    allApproved: approved === total,
+  };
+}
+
 // --- Exports for each app section (after dashboardAllProjects definition) ---
 // Dashboard: for project list and progress display
 export const dashboardProjects = dashboardAllProjects.filter(p => [
