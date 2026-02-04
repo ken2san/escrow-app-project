@@ -284,7 +284,7 @@ function getInitialProjects() {
     return base;
 }
 
-export default function WorkManagementPage() {
+export default function WorkManagementPage({ openProposalDetailsModal, onSelectProposal }) {
             // Reflect changes if application status changes globally
             useEffect(() => {
                 const handler = () => setProjects(getInitialProjects());
@@ -521,6 +521,17 @@ export default function WorkManagementPage() {
         return () => window.removeEventListener('contractStatusUpdated', handleContractUpdate);
     }, []);
 
+    // Listen for received applications updates (from proposal selection)
+    useEffect(() => {
+        const handleReceivedAppsUpdate = (event) => {
+            // Re-fetch projects after proposal selection
+            setProjects(getInitialProjects());
+        };
+
+        window.addEventListener('receivedApplicationsUpdated', handleReceivedAppsUpdate);
+        return () => window.removeEventListener('receivedApplicationsUpdated', handleReceivedAppsUpdate);
+    }, []);
+
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -642,15 +653,6 @@ export default function WorkManagementPage() {
         }
     };
 
-    const handleApplicationAction = (projectId, applicantId, action) => {
-        const normalizedProjectId = normalizeProjectId(projectId);
-        const { updateReceivedApplicationStatus } = require('../utils/initialData');
-        updateReceivedApplicationStatus(normalizedProjectId, applicantId, action);
-        // Force re-render by updating projects state
-        setProjects([...projects]);
-    };
-
-
     const renderReceivedApplications = (projectId) => {
         const normalizedProjectId = normalizeProjectId(projectId);
         const { getReceivedApplicationsForProject } = require('../utils/initialData');
@@ -664,40 +666,91 @@ export default function WorkManagementPage() {
             );
         }
 
-        return receivedApps.map(app => (
-            <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col">
-                <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-800">{app.applicantName}</span>
-                    <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
-                        app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
-                        app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                        'bg-red-100 text-red-700'
-                    }`}>
-                        {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
-                    </span>
-                </div>
-                <div className="text-xs text-slate-500 mt-2">
-                    応募日: {formatDateForDisplay(app.appliedAt)}
-                </div>
-                {app.status === 'pending' && (
-                    <div className="flex gap-2 mt-3">
-                        <button
-                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'offered')}
-                            className="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded hover:bg-emerald-700 transition"
-                        >
-                            採用を提示
-                        </button>
-                        <button
-                            onClick={() => handleApplicationAction(projectId, app.applicantId, 'rejected')}
-                            className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
-                        >
-                            不採用
-                        </button>
+        return receivedApps.map(app => {
+            // Find proposal data for this applicant
+            const { dashboardAllProjects } = require('../utils/initialData');
+            const project = dashboardAllProjects.find(p => String(p.id) === String(normalizedProjectId));
+            const proposal = project?.proposals?.find(p => p.contractorId === app.applicantId);
+
+            return (
+                <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white border border-slate-200 rounded-lg p-4 mb-3 flex flex-col hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-slate-800">{app.applicantName}</span>
+                        <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
+                            app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
+                            app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
+                            'bg-red-100 text-red-700'
+                        }`}>
+                            {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
+                        </span>
                     </div>
-                )}
-            </div>
-        ));
+
+                    {/* Portfolio Summary */}
+                    {proposal?.contractorPortfolio && (
+                        <div className="mb-3 p-3 bg-slate-50 rounded-md">
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                                <div className="text-center">
+                                    <div className="text-xs text-slate-600">完了数</div>
+                                    <div className="text-lg font-bold text-indigo-600">{proposal.contractorPortfolio.totalProjects}</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xs text-slate-600">完了率</div>
+                                    <div className="text-lg font-bold text-green-600">{proposal.contractorPortfolio.completionRate}%</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xs text-slate-600">リピート率</div>
+                                    <div className="text-lg font-bold text-blue-600">{proposal.contractorPortfolio.repeatClientRate}%</div>
+                                </div>
+                            </div>
+                            {proposal.contractorPortfolio.specialties && proposal.contractorPortfolio.specialties.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                    {proposal.contractorPortfolio.specialties.slice(0, 4).map((specialty, idx) => (
+                                        <span key={idx} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                                            {specialty}
+                                        </span>
+                                    ))}
+                                    {proposal.contractorPortfolio.specialties.length > 4 && (
+                                        <span className="text-xs text-slate-500 px-2 py-0.5">
+                                            +{proposal.contractorPortfolio.specialties.length - 4}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Proposal Preview */}
+                    {proposal?.proposalText && (
+                        <p className="text-sm text-slate-700 mb-3 line-clamp-2">
+                            {proposal.proposalText}
+                        </p>
+                    )}
+
+                    <div className="text-xs text-slate-500 mb-3">
+                        応募日: {formatDateForDisplay(app.appliedAt)}
+                    </div>
+
+                    {proposal && openProposalDetailsModal && app.status === 'pending' && (
+                        <button
+                            onClick={() => {
+                                // Add projectId and application status to proposal
+                                const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status };
+                                openProposalDetailsModal(proposalWithProject);
+                            }}
+                            className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                        >
+                            📋 詳細を見る
+                        </button>
+                    )}
+                    {app.status !== 'pending' && (
+                        <div className="text-center text-sm text-slate-500 py-2">
+                            {app.status === 'offered' ? '✓ 採用提示済み' : app.status === 'accepted' ? '✓ 採用確定' : '× 選考終了'}
+                        </div>
+                    )}
+                </div>
+            );
+        });
     };
 
     // --- Main return block ---

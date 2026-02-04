@@ -205,6 +205,13 @@ const _receivedApplicationsByProjectId = {
     { applicantId: 'user002', applicantName: '鈴木花子', appliedAt: '2026-01-29T10:15:00Z', status: 'pending' },
     { applicantId: 'user003', applicantName: '佐藤次郎', appliedAt: '2026-01-30T09:30:00Z', status: 'pending' },
   ],
+  'job101': [
+    { applicantId: 'user555', applicantName: '田中 さとし', appliedAt: '2025-06-06T11:20:00Z', status: 'pending' },
+  ],
+  'job103': [
+    { applicantId: 'user888', applicantName: '鈴木 一郎', appliedAt: '2025-06-03T09:15:00Z', status: 'pending' },
+    { applicantId: 'user999', applicantName: '高橋 文子', appliedAt: '2025-06-04T15:45:00Z', status: 'pending' },
+  ],
 };
 // Update application status
 // Status flow for contractor:
@@ -803,6 +810,189 @@ export const dashboardAllProjects = [
     needsClientRating: false,
     imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Web%E3%82%A2%E3%83%97%E3%83%AA',
     allowSubcontracting: false,
+    proposals: [
+      {
+        id: 'prop_user001_for_job2',
+        contractorId: 'user001',
+        contractorName: '山田太郎',
+        contractorName_en: 'Taro Yamada',
+        contractorReputation: {
+          totalReviews: 32,
+          skillsCertified: ['UI/UXデザイン', 'Figma'],
+        },
+        contractorPortfolio: {
+          totalProjects: 67,
+          completionRate: 96,
+          repeatClientRate: 58,
+          portfolioUrl: 'https://portfolio.example.com/yamada',
+          featuredProjects: [
+            { name: 'ECサイトUI改善', category: 'Webデザイン', year: 2025 },
+            { name: '金融アプリデザイン', category: 'UI/UX', year: 2024 },
+            { name: 'SaaSダッシュボード', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['UI/UX', 'Figma', 'デザインシステム', 'レスポンシブ']
+        },
+        proposalText: 'UI/UX改善の実績が豊富です。ユーザー体験を重視したデザインを提供します。',
+        proposalText_en: 'I have extensive UI/UX improvement experience. I provide user-experience-focused designs.',
+        proposalDetails: {
+          approach: 'ユーザーリサーチとヒートマップ分析から課題を特定し、データドリブンなデザイン改善を実施します。A/Bテストを活用して効果測定も行います。',
+          techStack: ['Figma', 'Adobe XD', 'Sketch', 'InVision'],
+          riskMitigation: 'デザインレビューを週次で実施し、方向性のズレを早期発見。プロトタイプで操作感を事前確認し、手戻りを防ぎます。',
+          qualityAssurance: 'WCAGアクセシビリティ基準準拠。主要ブラウザ・デバイスでの表示確認を実施。デザインシステムで一貫性を担保します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 7,
+            deliverables: '要件定義書、ペルソナ設定資料、ユーザージャーニーマップ、情報アーキテクチャ図',
+            approach: 'クライアントへのヒアリングと既存システムの分析から開始。ユーザーインタビュー（3～5名）を実施し、ペインポイントを可視化。デザインの方向性を定めるムードボードを3案提示し、合意形成を図ります。',
+            amount: 100000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 21,
+            deliverables: 'ワイヤーフレーム全画面、UIデザインカンプ（主要画面）、デザインシステム（カラー、タイポグラフィ、コンポーネント）、インタラクションプロトタイプ',
+            approach: '情報設計に基づきワイヤーフレームを作成後、ビジュアルデザインに着手。デザインシステムを構築し、一貫性を確保。週次レビューで方向性を確認しながら進めます。Figmaでインタラクティブプロトタイプを作成し、実装前に操作感を検証します。',
+            amount: 200000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 14,
+            deliverables: 'デザイン実装ガイドライン、コンポーネントライブラリ、実装レビューレポート、アクセシビリティチェックリスト、最終納品物一式',
+            approach: '開発チームと密に連携し、デザイン実装をサポート。週2回の実装レビューを実施し、デザインの再現度を確認。WCAG 2.1 AAレベルのアクセシビリティチェックを行い、クロスブラウザテストで品質を担保します。',
+            amount: 200000
+          }
+        ],
+        proposedAmount: 500000,
+        estimatedDeliveryTime: '3ヶ月',
+        estimatedDeliveryTime_en: '3 months',
+        submissionDate: '2026-01-28',
+        status: 'pending_review',
+      },
+      {
+        id: 'prop_user002_for_job2',
+        contractorId: 'user002',
+        contractorName: '鈴木花子',
+        contractorName_en: 'Hanako Suzuki',
+        contractorReputation: {
+          totalReviews: 28,
+          skillsCertified: ['Webデザイン'],
+        },
+        contractorPortfolio: {
+          totalProjects: 45,
+          completionRate: 100,
+          repeatClientRate: 72,
+          portfolioUrl: 'https://portfolio.example.com/suzuki',
+          featuredProjects: [
+            { name: 'コーポレートサイトリニューアル', category: 'Webデザイン', year: 2025 },
+            { name: 'モバイルアプリUI', category: 'UI/UX', year: 2024 }
+          ],
+          specialties: ['Webデザイン', 'Figma', 'ユーザビリティ']
+        },
+        proposalText: 'モダンで使いやすいUIデザインが得意です。レスポンシブ対応も万全です。',
+        proposalText_en: 'I specialize in modern and user-friendly UI design. Fully responsive.',
+        proposalDetails: {
+          approach: 'ペルソナ設定から始め、ユーザージャーニーマップを作成。各タッチポイントで最適なUIを設計します。',
+          techStack: ['Figma', 'Photoshop', 'Illustrator'],
+          riskMitigation: 'デザイン着手前にムードボードで方向性を確認。修正は各フェーズで2回まで無料対応します。',
+          qualityAssurance: 'デザインガイドラインを作成し、実装時の品質を担保。ユーザビリティテストで検証します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 5,
+            deliverables: '要件定義書、ペルソナ資料、カスタマージャーニーマップ、競合分析レポート',
+            approach: 'ステークホルダーインタビューで要件を洗い出し。競合サービス3社の分析を実施し、差別化ポイントを明確化。ペルソナとジャーニーマップで課題を可視化します。',
+            amount: 80000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 28,
+            deliverables: 'ワイヤーフレーム、UIデザインカンプ、デザインガイドライン、アイコンセット、レスポンシブデザイン',
+            approach: 'ムードボード3案を提示し方向性を決定。ワイヤーフレームで情報設計を確認後、ビジュアルデザインに着手。レスポンシブ対応を含め、全画面のデザインを完成させます。',
+            amount: 240000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 12,
+            deliverables: 'デザイン実装ガイド、HTMLプロトタイプ、ユーザビリティテストレポート、改善提案書',
+            approach: '実装段階では週1回のレビューミーティングを実施。HTMLプロトタイプを作成しユーザビリティテストを実施（5名）。フィードバックを反映し最終調整を行います。',
+            amount: 160000
+          }
+        ],
+        proposedAmount: 480000,
+        estimatedDeliveryTime: '2.5ヶ月',
+        estimatedDeliveryTime_en: '2.5 months',
+        submissionDate: '2026-01-29',
+        status: 'pending_review',
+      },
+      {
+        id: 'prop_user003_for_job2',
+        contractorId: 'user003',
+        contractorName: '佐藤次郎',
+        contractorName_en: 'Jiro Sato',
+        contractorReputation: {
+          totalReviews: 19,
+          skillsCertified: ['UI/UX'],
+        },
+        contractorPortfolio: {
+          totalProjects: 38,
+          completionRate: 97,
+          repeatClientRate: 63,
+          portfolioUrl: 'https://portfolio.example.com/sato',
+          featuredProjects: [
+            { name: 'SaaSプロダクトUI', category: 'UI/UX', year: 2025 },
+            { name: 'EC管理画面改善', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['UI/UX', 'デザインシステム', 'プロトタイピング']
+        },
+        proposalText: 'SaaS製品のUI改善経験が豊富です。使いやすさと美しさを両立させます。',
+        proposalText_en: 'Extensive experience in SaaS product UI improvements. Balance usability and aesthetics.',
+        proposalDetails: {
+          approach: '競合分析とユーザーインタビューで課題を洗い出し、段階的な改善プランを提案。成果を可視化します。',
+          techStack: ['Figma', 'Framer', 'Principle'],
+          riskMitigation: 'スプリント形式で進行し、2週間ごとにレビュー。フィードバックを即座に反映してリスクを最小化します。',
+          qualityAssurance: 'デザインシステムで統一感を確保。アクセシビリティチェックとクロスブラウザテストを実施します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job2-m1',
+            milestoneName: '要件定義',
+            estimatedDays: 8,
+            deliverables: '要件定義書、ユーザーリサーチレポート（インタビュー記録）、ペルソナ、情報アーキテクチャ、KPI設定資料',
+            approach: '定量・定性の両面からリサーチを実施。アクセスログ分析で行動データを把握し、ユーザーインタビュー（5名）で心理的要因を探ります。KPIを設定し、改善効果を測定可能にします。',
+            amount: 120000
+          },
+          {
+            milestoneId: 'job2-m2',
+            milestoneName: 'UIデザイン',
+            estimatedDays: 24,
+            deliverables: 'ワイヤーフレーム、UIデザインカンプ、デザインシステム（包括的）、Framerプロトタイプ、マイクロインタラクション仕様',
+            approach: '2週間スプリントで反復的にデザイン。スプリントごとにレビューを実施し、早期フィードバックを取り入れます。Framerで高精度プロトタイプを作成し、操作感を検証。デザインシステムで拡張性を確保します。',
+            amount: 240000
+          },
+          {
+            milestoneId: 'job2-m3',
+            milestoneName: '実装・テスト',
+            estimatedDays: 10,
+            deliverables: 'デザイン実装ドキュメント、コンポーネントライブラリ（Storybook形式）、A/Bテスト設計書、改善レポート',
+            approach: '開発チームとペアプログラミング形式で実装サポート。A/Bテストを設計し、リリース後の効果検証体制を整備。アクセシビリティとパフォーマンスの両面から品質を担保します。',
+            amount: 160000
+          }
+        ],
+        proposedAmount: 520000,
+        estimatedDeliveryTime: '3ヶ月',
+        estimatedDeliveryTime_en: '3 months',
+        submissionDate: '2026-01-30',
+        status: 'pending_review',
+      },
+    ],
   },
   {
     id: 'job101',
@@ -901,8 +1091,43 @@ export const dashboardAllProjects = [
           totalReviews: 15,
           skillsCertified: ['Webデザイン'], // 現行表記に統一
         },
+        contractorPortfolio: {
+          totalProjects: 42,
+          completionRate: 98,
+          repeatClientRate: 65,
+          portfolioUrl: 'https://portfolio.example.com/tanaka',
+          featuredProjects: [
+            { name: 'ヘルスケアサービスLP', category: 'Webデザイン', year: 2025 },
+            { name: 'ECサイトリニューアル', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['Figma', 'レスポンシブデザイン', 'UI/UX']
+        },
         proposalText: 'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
         proposalText_en: 'I have extensive experience in LP design. I can create in Figma and support responsive design. I would love to take on this project.',
+        proposalDetails: {
+          approach: 'ターゲット層の行動分析を基に、CVR向上を重視したデザインを提案します。ファーストビューでの訴求力を最大化し、スムーズな導線設計で離脱率を最小限に抑えます。',
+          techStack: ['Figma', 'Adobe XD', 'Photoshop', 'HTML/CSS'],
+          riskMitigation: 'デザイン初稿提出前にワイヤーフレームで方向性を確認。修正は2回まで無料対応。納期遅延のリスクは事前スケジュール共有で回避します。',
+          qualityAssurance: '複数デバイス・ブラウザでの表示確認を実施。アクセシビリティガイドライン（WCAG 2.1 AA）準拠を保証します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job101-m1',
+            milestoneName: 'デザインカンプ初稿提出',
+            estimatedDays: 10,
+            deliverables: 'PC・スマホ両対応のデザインカンプ（Figma）、カラースキーム、タイポグラフィガイド、画像素材選定リスト',
+            approach: 'ワイヤーフレームを基に、ターゲット層（20代後半～30代）に響くビジュアルデザインを作成。ファーストビューでのキャッチコピーとビジュアルの組み合わせを3パターン提示し、最適案を選定します。',
+            amount: 38000
+          },
+          {
+            milestoneId: 'job101-m2',
+            milestoneName: '最終デザインデータ納品',
+            estimatedDays: 19,
+            deliverables: '修正反映済みデザインデータ一式（Figma）、デザインガイドライン、アセット書き出しデータ、実装ガイド',
+            approach: 'フィードバックを反映し、細部まで調整。レスポンシブ対応の各ブレークポイントでの表示を最適化。実装時に迷わないよう、詳細なガイドラインとアセットを提供します。',
+            amount: 40000
+          }
+        ],
         proposedAmount: 78000,
         estimatedDeliveryTime: '2週間',
         estimatedDeliveryTime_en: '2 weeks',
@@ -986,9 +1211,37 @@ export const dashboardAllProjects = [
           identityVerified: true,
           skillsCertified: ['SEO Master'],
         },
+        contractorPortfolio: {
+          totalProjects: 87,
+          completionRate: 100,
+          repeatClientRate: 78,
+          portfolioUrl: 'https://portfolio.example.com/suzuki',
+          featuredProjects: [
+            { name: 'IT企業ブログ記事50本', category: 'SEOライティング', year: 2025 },
+            { name: 'EC業界PR記事シリーズ', category: 'コンテンツマーケティング', year: 2024 },
+            { name: '金融サービス記事30本', category: 'SEOライティング', year: 2024 }
+          ],
+          specialties: ['SEOライティング', 'キーワードリサーチ', 'コンテンツ戦略']
+        },
         contractorResellingRisk: 15,
         proposalText: 'SEOライティング歴5年の鈴木と申します。貴社サービスに貢献できる質の高い記事を迅速に作成いたします。過去実績はポートフォリオをご覧ください。月5本、2000字/記事でご提案の予算内で対応可能です。納期も柔軟に対応できます。',
         proposalText_en: 'My name is Ichiro Suzuki and I have 5 years of experience in SEO writing. I will quickly create high-quality articles to contribute to your service. Please see my portfolio for past work. I can deliver 5 articles per month, 2,000 characters each, within your proposed budget. I am flexible with deadlines.',
+        proposalDetails: {
+          approach: 'キーワード選定から記事構成、執筆、最終チェックまで一貫したワークフローで品質を担保。検索意図の徹底分析により上位表示を実現します。',
+          techStack: ['Googleキーワードプランナー', 'Ahrefs', 'WordPress', 'Grammarly'],
+          riskMitigation: '納品遅延防止のため、各記事の進捗を週次で報告。コピーチェックツールで独自性100%を保証します。',
+          qualityAssurance: '専任校正者による二重チェック体制。SEO観点でのタイトル・見出し最適化を実施。修正は初回無料で対応します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job103-m1',
+            milestoneName: '初回記事5本納品',
+            estimatedDays: 10,
+            deliverables: 'PR記事5本（Word形式、各2000字以上）、キーワードリスト、構成案メモ、参考URL一覧',
+            approach: 'キーワードリサーチで検索ボリュームと競合性を分析。各記事の構成案をクライアントに事前共有し、方向性を確認後に執筆開始。週次進捗報告で透明性を確保し、納期遅延リスクを最小化します。',
+            amount: 50000
+          }
+        ],
         proposedAmount: 50000,
         estimatedDeliveryTime: '各記事3営業日以内',
         estimatedDeliveryTime_en: 'Within 3 business days per article',
@@ -1007,9 +1260,36 @@ export const dashboardAllProjects = [
           identityVerified: false,
           skillsCertified: [],
         },
+        contractorPortfolio: {
+          totalProjects: 34,
+          completionRate: 94,
+          repeatClientRate: 52,
+          portfolioUrl: 'https://portfolio.example.com/takahashi',
+          featuredProjects: [
+            { name: 'テック系メディア記事', category: 'コンテンツ作成', year: 2025 },
+            { name: 'スタートアップPR記事', category: 'ライティング', year: 2024 }
+          ],
+          specialties: ['IT・テクノロジー', 'PR記事', 'コンテンツ作成']
+        },
         contractorResellingRisk: 5,
         proposalText: 'ライターの高橋です。特にIT・テクノロジー分野のPR記事を得意としております。キーワードリサーチから構成案作成、執筆まで一貫して対応可能です。ご提示の条件でぜひお受けしたく存じます。',
         proposalText_en: 'I am Ayako Takahashi, a writer specializing in PR articles for IT and technology fields. I can handle everything from keyword research and structure proposals to writing. I would be happy to accept your offer under the stated conditions.',
+        proposalDetails: {
+          approach: 'IT・テクノロジー分野専門ライターとして、ターゲット読者の関心を引くトピック選定を重視。SEO観点と読みやすさを両立させた記事を提供します。',
+          techStack: ['SEMrush', 'Googleアナリティクス', 'Canva', 'Word'],
+          riskMitigation: '各記事の構成案を事前に提出し、方向性のズレを防止。スケジュール管理を徹底し、余裕を持った納品を実現します。',
+          qualityAssurance: 'ファクトチェックを徹底し、情報の正確性を担保。Grammarlyとコピーチェックツールで文章品質と独自性を確保します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job103-m1',
+            milestoneName: '初回記事5本納品',
+            estimatedDays: 10,
+            deliverables: 'PR記事5本（Word形式、各2000字以上）、キーワードリスト、SEO最適化レポート',
+            approach: 'IT・テクノロジー分野の最新トレンドを踏まえたキーワード選定。ターゲット読者のペインポイントに訴求する構成で、記事単体での完結性と次のアクションへの誘導を意識します。月末納品に向け、週次で進捗共有します。',
+            amount: 48000
+          }
+        ],
         proposedAmount: 48000,
         estimatedDeliveryTime: '月5本を月末までに納品',
         estimatedDeliveryTime_en: 'Deliver 5 articles by the end of the month',
