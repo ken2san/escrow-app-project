@@ -8,7 +8,8 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import ReviewModal from '../components/modals/ReviewModal';
-import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal, needsReview, submitReview } from '../utils/initialData';
+import StarRatingDisplay from '../components/common/StarRatingDisplay';
+import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal, needsReview, submitReview, getUserReview } from '../utils/initialData';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 import ProjectPaymentSummary from '../components/common/ProjectPaymentSummary';
 
@@ -1222,27 +1223,66 @@ export default function WorkManagementPage() {
                                                     const needsUserReview = needsReview(fullProject.id, loggedInUserDataGlobal.id);
                                                     const isClient = fullProject.clientId === loggedInUserDataGlobal.id;
                                                     const partnerName = isClient ? fullProject.contractorName : fullProject.clientName;
+                                                    const userReview = getUserReview(fullProject.id, loggedInUserDataGlobal.id);
 
-                                                    if (needsUserReview) {
-                                                        return (
-                                                            <div className="px-4 pb-3">
+                                                    // Determine which rating to show (user gave or user received)
+                                                    const partnerRating = isClient ? fullProject.clientRating : fullProject.contractorRating;
+
+                                                    return (
+                                                        <div className="px-4 pb-3 space-y-2">
+                                                            {/* Display user's submitted review */}
+                                                            {userReview && (
+                                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <span className="text-xs font-semibold text-gray-700">
+                                                                            {partnerName} さんへの評価
+                                                                        </span>
+                                                                        <StarRatingDisplay
+                                                                            score={userReview.rating}
+                                                                            size="sm"
+                                                                            lang="ja"
+                                                                        />
+                                                                    </div>
+                                                                    {userReview.comment && (
+                                                                        <p className="text-xs text-gray-600 mt-1">
+                                                                            {userReview.comment}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Display partner's rating if exists */}
+                                                            {partnerRating && partnerRating.averageScore > 0 && (
+                                                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-xs font-semibold text-blue-900">
+                                                                            {partnerName} さんから受け取った評価
+                                                                        </span>
+                                                                        <StarRatingDisplay
+                                                                            score={partnerRating.averageScore}
+                                                                            totalReviews={partnerRating.totalReviews}
+                                                                            size="sm"
+                                                                            lang="ja"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Review action button */}
+                                                            {needsUserReview ? (
                                                                 <button
                                                                     onClick={() => handleOpenReview(fullProject)}
                                                                     className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2"
                                                                 >
                                                                     ⭐ {partnerName} さんを評価する
                                                                 </button>
-                                                            </div>
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <div className="px-4 pb-3">
+                                                            ) : (
                                                                 <div className="w-full px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center justify-center gap-2">
                                                                     ✅ 評価済み
                                                                 </div>
-                                                            </div>
-                                                        );
-                                                    }
+                                                            )}
+                                                        </div>
+                                                    );
                                                 })()}
 
                                                     <SortableContext
