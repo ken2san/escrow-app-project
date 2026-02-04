@@ -126,6 +126,21 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('workManagement')}</span>}
       </button>
     </li>
+    {/* Progress Status */}
+    <li className="mb-1">
+      <button
+        onClick={() => navigate('/progress-dashboard')}
+        className={`w-full flex items-center p-2.5 rounded-md hover:bg-indigo-700 ${
+          window.location.pathname === '/progress-dashboard'
+            ? 'bg-indigo-600 text-white shadow-lg'
+            : 'text-indigo-200 hover:text-white'
+        } ${!isSidebarOpen ? 'justify-center' : ''}`}
+        title={isSidebarOpen ? '' : '進行状況'}
+      >
+        <Layout className="h-5 w-5" />
+  {isSidebarOpen && <span className="ml-3 text-sm">進行状況</span>}
+      </button>
+    </li>
     {/* Messages */}
     <li className="mb-1">
       <button
@@ -186,32 +201,37 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   {isSidebarOpen && <span className="ml-3 text-sm">{t('projectOverview')}</span>}
       </button>
     </li>
-    {/* Dashboard */}
-    <li>
-      <button
-        onClick={() => navigate(getPath('dashboard'))}
-        className={`w-full flex items-center p-2.5 rounded-md hover:bg-gray-700 ${
-          activePage === 'dashboard'
-            ? 'bg-indigo-600 text-white shadow-lg'
-            : 'text-gray-300 hover:text-white'
-        } ${!isSidebarOpen ? 'justify-center' : ''}`}
-        title={isSidebarOpen ? '' : t('dashboardLegacy')}
-      >
-        <Home className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">{t('dashboardLegacy')}</span>}
-      </button>
-    </li>
-    {/* Progress dashboard */}
-    <li>
-      <button
-        onClick={() => navigate('/progress-dashboard')}
-        className={`w-full flex items-center p-2.5 rounded-md hover:bg-emerald-700 text-gray-300 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
-        title={isSidebarOpen ? '' : '進行状況'}
-      >
-        <Layout className="h-5 w-5" />
-        {isSidebarOpen && <span className="ml-3 text-sm">進行状況</span>}
-      </button>
-    </li>
+
+    {/* --- Divider for legacy/dev section --- */}
+    <div className="my-5 border-t border-dashed border-gray-600 mx-3" />
+
+    {/* 下部セクション（参考・開発用）: 本番リリース時は削除または非表示推奨 */}
+    {process.env.NODE_ENV !== 'production' && <>
+      {/* Dashboard (legacy, subtle) */}
+      <li className="mb-1">
+        <button
+          onClick={() => navigate(getPath('dashboard'))}
+          className={`w-full flex items-center p-2.5 rounded-md bg-transparent hover:bg-gray-700 text-gray-400 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
+          style={{ fontSize: '12px' }}
+          title={isSidebarOpen ? '' : t('dashboardLegacy')}
+        >
+          <Home className="h-5 w-5" />
+          {isSidebarOpen && <span className="ml-3 text-xs">{t('dashboardLegacy')}</span>}
+        </button>
+      </li>
+      {/* 開発・テスト用: subtle dev project-detail link */}
+      <li className="mb-2">
+        <button
+          className={`w-full flex items-center p-2.5 rounded-md bg-transparent hover:bg-gray-700 text-gray-400 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
+          style={{ fontSize: '12px' }}
+          onClick={() => window.location.assign('/project-detail?projectId=job1')}
+          title="Open dummy project-detail (dev only)"
+        >
+          <span style={{fontSize:'15px',marginRight:isSidebarOpen?4:0}}>🧪</span>
+          {isSidebarOpen && <span className="ml-2 text-xs">案件詳細（開発用）</span>}
+        </button>
+      </li>
+    </>}
   </ul>
       </div> {/* ← added closing div tag */}
       </nav>

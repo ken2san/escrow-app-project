@@ -164,7 +164,7 @@ const ContractReviewPage = () => {
           </button>
           <button
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2"
-            onClick={() => navigate(`/project-overview?projectId=${projectId}`)}
+            onClick={() => navigate(`/project-detail?projectId=${projectId}`)}
           >
             <span>📊</span>
             <span>プロジェクト詳細を見る</span>
