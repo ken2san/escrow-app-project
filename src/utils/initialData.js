@@ -1835,6 +1835,101 @@ export const dashboardAllProjects = [
 ];
 
 
+// --- Review/Rating System Functions ---
+
+// Submit review from client to contractor or vice versa
+export function submitReview(projectId, reviewData) {
+  const { reviewerId, reviewerRole, rating, categories, comment } = reviewData;
+
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project) return false;
+
+  const newReview = {
+    reviewId: `r-${projectId}-${Date.now()}`,
+    projectId,
+    reviewerId,
+    reviewerRole, // 'client' or 'contractor'
+    rating, // Overall rating 1-5
+    categories: categories || {}, // { communication: 5, quality: 5, timeliness: 5 }
+    comment: comment || '',
+    date: new Date().toISOString().split('T')[0],
+    isFlagged: false,
+  };
+
+  if (reviewerRole === 'client') {
+    // Client reviewing contractor
+    if (!project.contractorRating) {
+      project.contractorRating = {
+        averageScore: rating,
+        totalReviews: 1,
+        reviews: [newReview],
+      };
+    } else {
+      project.contractorRating.reviews.push(newReview);
+      project.contractorRating.totalReviews = project.contractorRating.reviews.length;
+      const totalScore = project.contractorRating.reviews.reduce((sum, r) => sum + r.rating, 0);
+      project.contractorRating.averageScore = totalScore / project.contractorRating.totalReviews;
+    }
+  } else if (reviewerRole === 'contractor') {
+    // Contractor reviewing client
+    if (!project.clientRating) {
+      project.clientRating = {
+        averageScore: rating,
+        totalReviews: 1,
+        reviews: [newReview],
+      };
+    } else {
+      project.clientRating.reviews = project.clientRating.reviews || [];
+      project.clientRating.reviews.push(newReview);
+      project.clientRating.totalReviews = project.clientRating.reviews.length;
+      const totalScore = project.clientRating.reviews.reduce((sum, r) => sum + r.rating, 0);
+      project.clientRating.averageScore = totalScore / project.clientRating.totalReviews;
+    }
+  }
+
+  return true;
+}
+
+// Check if user needs to submit review for a project
+export function needsReview(projectId, userId) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project || project.status !== '完了') return false;
+
+  const isClient = project.clientId === userId;
+  const isContractor = project.contractorId === userId;
+
+  if (!isClient && !isContractor) return false;
+
+  if (isClient) {
+    // Check if client has reviewed contractor
+    return !project.contractorRating || !project.contractorRating.reviews?.some(r => r.reviewerId === userId);
+  } else {
+    // Check if contractor has reviewed client
+    return !project.clientRating || !project.clientRating.reviews?.some(r => r.reviewerId === userId);
+  }
+}
+
+// Get review submitted by specific user for a project
+export function getUserReview(projectId, userId) {
+  const project = dashboardAllProjects.find(p => p.id === projectId);
+  if (!project) return null;
+
+  const isClient = project.clientId === userId;
+
+  if (isClient && project.contractorRating?.reviews) {
+    return project.contractorRating.reviews.find(r => r.reviewerId === userId);
+  } else if (!isClient && project.clientRating?.reviews) {
+    return project.clientRating.reviews.find(r => r.reviewerId === userId);
+  }
+
+  return null;
+}
+
+// Get all completed projects that need review by user
+export function getProjectsNeedingReview(userId) {
+  return dashboardAllProjects.filter(p => needsReview(p.id, userId));
+}
+
 // --- Exports for each app section (after dashboardAllProjects definition) ---
 // Dashboard: for project list and progress display
 export const dashboardProjects = dashboardAllProjects.filter(p => [

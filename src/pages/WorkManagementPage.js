@@ -7,7 +7,8 @@ import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSe
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
-import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal } from '../utils/initialData';
+import ReviewModal from '../components/modals/ReviewModal';
+import { getWorkManagementProjectsView, getProjectPaymentStatus, loggedInUserDataGlobal, needsReview, submitReview } from '../utils/initialData';
 import CardHistoryTimeline from '../components/common/CardHistoryTimeline';
 import ProjectPaymentSummary from '../components/common/ProjectPaymentSummary';
 
@@ -42,6 +43,11 @@ function getInitialProjects() {
     const pendingJobs = pendingApplications.filter(j => j.status === 'pending' || j.status === 'offered').map(j => j.jobId);
     const acceptedJobs = pendingApplications.filter(j => j.status === 'accepted').map(j => j.jobId);
 
+    // Get completed jobs (contractor projects with status '完了')
+    const completedJobs = dashboardAllProjects
+        .filter(p => p.contractorId === loggedInUserDataGlobal.id && p.status === '完了')
+        .map(p => p.id);
+
     // Map to get selectedMilestones for each job
     const selectedMilestonesMap = {};
     pendingApplications.forEach(app => {
@@ -64,6 +70,13 @@ function getInitialProjects() {
         const completed = getCompletedMilestonesForJob(app.jobId);
         if (completed.length > 0) {
             completedMilestonesMap[app.jobId] = completed;
+        }
+    });
+    // Add all milestones from completed jobs as completed
+    completedJobs.forEach(jobId => {
+        const job = dashboardAllProjects.find(j => j.id === jobId);
+        if (job && job.milestones) {
+            completedMilestonesMap[jobId] = job.milestones.map(m => m.id || `${jobId}-m${job.milestones.indexOf(m) + 1}`);
         }
     });
 
@@ -232,6 +245,41 @@ function getInitialProjects() {
         }
     });
 
+    // Add completed jobs (contractor completed projects)
+    completedJobs.forEach(jobId => {
+        if (!existingIds.has(jobId) && !receivedAppsIds.has(jobId)) {
+            const job = dashboardAllProjects.find(j => j.id === jobId);
+            if (job) {
+                let cards = (job.milestones && Array.isArray(job.milestones) && job.milestones.length > 0)
+                    ? job.milestones.map((m, idx) => ({
+                        id: m.id || `${job.id}-m${idx+1}`,
+                        projectId: job.id,
+                        title: m.name || m.title || `マイルストーン ${idx+1}`,
+                        status: 'unsent',
+                        reward: m.amount || 0,
+                        startDate: m.dueDate || '',
+                        duration: '',
+                        order: idx+1,
+                        _pendingStatus: 'accepted',
+                        _completedStatus: 'completed', // All milestones in completed projects are completed
+                    }))
+                    : [{ id: `${job.id}-m1`, projectId: job.id, title: job.name || job.title || '作業', status: 'unsent', reward: job.totalAmount || 0, startDate: job.dueDate || '', duration: '', order: 1, _pendingStatus: 'accepted', _completedStatus: 'completed' }];
+                base.push({
+                    id: job.id,
+                    name: job.name || job.title || '完了した案件',
+                    client: job.clientName || job.client || 'クライアント',
+                    totalBudget: job.totalAmount || job.budget || 0,
+                    deadline: job.dueDate || '',
+                    duration: '',
+                    description: job.description || '',
+                    cards,
+                    _pendingStatus: 'accepted',
+                    status: '完了', // Mark as completed
+                });
+            }
+        }
+    });
+
     return base;
 }
 
@@ -307,6 +355,10 @@ export default function WorkManagementPage() {
     }, [navigate]);
 
     const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [reviewingProject, setReviewingProject] = useState(null);
+    const [reviewerRole, setReviewerRole] = useState(null); // 'client' or 'contractor'
+
     useEffect(() => {
         const main = document.querySelector('main');
         if (!main) return;
@@ -330,6 +382,46 @@ export default function WorkManagementPage() {
         }
         setShowNewProjectModal(false);
     };
+
+    // Review handling functions
+    const handleOpenReview = (project) => {
+        const { dashboardAllProjects } = require('../utils/initialData');
+        const fullProject = dashboardAllProjects.find(p => p.id === project.id);
+        if (!fullProject) return;
+
+        // Determine reviewer role
+        const role = fullProject.clientId === loggedInUserDataGlobal.id ? 'client' : 'contractor';
+        setReviewingProject(fullProject);
+        setReviewerRole(role);
+        setIsReviewModalOpen(true);
+    };
+
+    const handleSubmitReview = (reviewData) => {
+        if (!reviewingProject) return;
+
+        const success = submitReview(reviewingProject.id, {
+            reviewerId: loggedInUserDataGlobal.id,
+            reviewerRole,
+            ...reviewData,
+        });
+
+        if (success) {
+            // Refresh projects to show updated review status
+            setProjects(getInitialProjects());
+            // Dispatch event for other components
+            window.dispatchEvent(new CustomEvent('reviewSubmitted', {
+                detail: { projectId: reviewingProject.id }
+            }));
+            alert('評価を投稿しました');
+        } else {
+            alert('評価の投稿に失敗しました');
+        }
+
+        setIsReviewModalOpen(false);
+        setReviewingProject(null);
+        setReviewerRole(null);
+    };
+
     // --- Based on logic/UI from two versions ago ---
     // --- Hybrid logic/UI, all inside WorkManagementPage function ---
     // --- State for tab switching ---
@@ -625,6 +717,19 @@ export default function WorkManagementPage() {
                 onConfirm={handleConfirmNewProject}
                 nextProjectId={`project-${projects.length + 1}`}
                 nextCardId={`card-${cards.length + 1}`}
+            />
+            {/* Review Modal */}
+            <ReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => {
+                    setIsReviewModalOpen(false);
+                    setReviewingProject(null);
+                    setReviewerRole(null);
+                }}
+                onSubmit={handleSubmitReview}
+                project={reviewingProject}
+                reviewerRole={reviewerRole}
+                t={t}
             />
             {/* Undo Toast Notification */}
             {undoToast.open && (
@@ -1103,6 +1208,41 @@ export default function WorkManagementPage() {
                                                     return (
                                                         <ProjectPaymentSummary project={fullProject} paymentStatus={paymentStatus} />
                                                     );
+                                                })()}
+
+                                                {/* Review Button for completed tab */}
+                                                {viewSettings.groupBy === 'project' && projectTab === 'completed' && (() => {
+                                                    const project = projects.find(p => String(p.id) === String(groupKey));
+                                                    if (!project) return null;
+
+                                                    const { dashboardAllProjects } = require('../utils/initialData');
+                                                    const fullProject = dashboardAllProjects.find(p => String(p.id) === String(groupKey));
+                                                    if (!fullProject || fullProject.status !== '完了') return null;
+
+                                                    const needsUserReview = needsReview(fullProject.id, loggedInUserDataGlobal.id);
+                                                    const isClient = fullProject.clientId === loggedInUserDataGlobal.id;
+                                                    const partnerName = isClient ? fullProject.contractorName : fullProject.clientName;
+
+                                                    if (needsUserReview) {
+                                                        return (
+                                                            <div className="px-4 pb-3">
+                                                                <button
+                                                                    onClick={() => handleOpenReview(fullProject)}
+                                                                    className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2"
+                                                                >
+                                                                    ⭐ {partnerName} さんを評価する
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <div className="px-4 pb-3">
+                                                                <div className="w-full px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center justify-center gap-2">
+                                                                    ✅ 評価済み
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
                                                 })()}
 
                                                     <SortableContext
