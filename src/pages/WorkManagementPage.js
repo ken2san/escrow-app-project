@@ -175,6 +175,7 @@ function getInitialProjects() {
                 cards,
                 _pendingStatus: 'pending',
             });
+            existingIds.add(jobId); // Add to existingIds to prevent duplicates
         }
     }
     // Same for accepted (only when promoted from pending to accepted)
@@ -207,6 +208,7 @@ function getInitialProjects() {
                 cards,
                 _pendingStatus: 'accepted',
             });
+            existingIds.add(jobId); // Add to existingIds to prevent duplicates
         }
     }
 
@@ -277,6 +279,7 @@ function getInitialProjects() {
                     _pendingStatus: 'accepted',
                     status: '完了', // Mark as completed
                 });
+                existingIds.add(jobId); // Add to existingIds to prevent duplicates
             }
         }
     });
