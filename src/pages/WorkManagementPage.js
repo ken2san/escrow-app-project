@@ -1421,9 +1421,13 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                                 })
                                                                 : projectTab === 'received'
                                                                     ? renderReceivedApplications(groupCards[0]?.projectId || groupKey)
-                                                                    : groupCards.map((card, idx) => (
-                                                                        <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
-                                                                    ))}
+                                                                    : projectTab === 'completed'
+                                                                        ? groupCards.map((card, idx) => (
+                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                        ))
+                                                                        : groupCards.map((card, idx) => (
+                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                        ))}
                                                     </div>
                                                 </SortableContext>
                                             </div>
