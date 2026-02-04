@@ -237,19 +237,31 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300"
           >
-            {t('cancel')}
+            {proposal.applicationStatus && proposal.applicationStatus !== 'pending' ? '閉じる' : t('cancel')}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSelectProposal(proposal);
-              onClose();
-            }}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center shadow-sm"
-          >
-            <CheckCircle size={16} className="mr-2" />
-            {t('selectThisProposal')}
-          </button>
+          {(!proposal.applicationStatus || proposal.applicationStatus === 'pending') && (
+            <button
+              type="button"
+              onClick={() => {
+                onSelectProposal(proposal);
+                onClose();
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md flex items-center shadow-sm"
+            >
+              <CheckCircle size={16} className="mr-2" />
+              {t('selectThisProposal')}
+            </button>
+          )}
+          {proposal.applicationStatus === 'offered' && (
+            <div className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-md border border-blue-300">
+              ✓ 採用提示済み
+            </div>
+          )}
+          {proposal.applicationStatus === 'rejected' && (
+            <div className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-md border border-red-300">
+              × 選考終了
+            </div>
+          )}
         </div>
       </div>
     </div>

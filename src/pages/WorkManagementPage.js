@@ -731,17 +731,22 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                         応募日: {formatDateForDisplay(app.appliedAt)}
                     </div>
 
-                    {proposal && openProposalDetailsModal && (
+                    {proposal && openProposalDetailsModal && app.status === 'pending' && (
                         <button
                             onClick={() => {
-                                // Add projectId to proposal if missing
-                                const proposalWithProject = { ...proposal, projectId: normalizedProjectId };
+                                // Add projectId and application status to proposal
+                                const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status };
                                 openProposalDetailsModal(proposalWithProject);
                             }}
                             className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"
                         >
                             📋 詳細を見る
                         </button>
+                    )}
+                    {app.status !== 'pending' && (
+                        <div className="text-center text-sm text-slate-500 py-2">
+                            {app.status === 'offered' ? '✓ 採用提示済み' : app.status === 'accepted' ? '✓ 採用確定' : '× 選考終了'}
+                        </div>
                     )}
                 </div>
             );
