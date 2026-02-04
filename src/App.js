@@ -32,7 +32,7 @@ import { dashboardAllProjects, loggedInUserDataGlobal } from './utils/initialDat
 import { callGeminiAPI } from './utils/api';
 
 import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
-import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
+import { AlertTriangle, Settings } from 'lucide-react';
 import ProjectOverviewPage from './pages/ProjectOverviewPage';
 
 export default function App() {
@@ -106,10 +106,6 @@ export default function App() {
   const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] = useState(false);
   const [proposalForDetails, setProposalForDetails] = useState(null);
 
-  // For ContractReview page: explicitly keep the selected project
-  const [projectForContractReview, setProjectForContractReview] = useState(null);
-  const selectedProjectForReview = projectForContractReview || projects.find((p) => p.id === selectedProjectId);
-
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'ja' ? 'en' : 'ja';
     i18n.changeLanguage(nextLang);
@@ -152,8 +148,7 @@ export default function App() {
   const navigateToContractReview = (project) => {
     if (project?.id) {
       setSelectedProjectId(project.id);
-      setProjectForContractReview(project);
-      navigate('contractReview');
+      navigate(`contractReview?projectId=${project.id}`);
     }
   };
 
@@ -202,11 +197,7 @@ export default function App() {
     setActiveProjectDetailTab('proposals');
   };
 
-  const handleFinalizeContract = (projectId) => {
-  setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t('statusWorkReady') } : p));
-  // alert(t.contractFinalizedMessage); // Unnecessary alert removed
-  navigate('dashboard');
-  };
+
 
   const handleExecuteDeposit = (projectId, amount) => {
     if (userPoints < amount) {
@@ -317,8 +308,7 @@ export default function App() {
             <Route path="/" element={<JobsSearchPage />} />
             <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setCurrentViewMode={setCurrentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={async () => {}} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
-            <Route path="/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
-            <Route path="/dashboard/contractReview" element={<ContractReviewPage selectedProjectForReview={projectForContractReview || selectedProjectForReview} t={t} handleFinalizeContract={handleFinalizeContract} currentLanguage={currentLanguage} handleCancelProposalSelection={handleCancelProposalSelection} setActiveProjectDetailTab={setActiveProjectDetailTab} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
+            <Route path="/contractReview" element={<ContractReviewPage />} />
             <Route path="/project-overview" element={<ProjectOverviewPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
