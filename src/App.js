@@ -175,6 +175,30 @@ export default function App() {
   };
 
   const handleSelectProposal = (proposal) => {
+    // Check if this is from WorkManagementPage (has projectId or jobId)
+    const projectId = proposal.projectId || proposal.jobId;
+
+    if (projectId) {
+      // WorkManagementPage flow: Update received applications status
+      const { getReceivedApplicationsForProject, updateReceivedApplicationStatus } = require('./utils/initialData');
+      const receivedApps = getReceivedApplicationsForProject(projectId);
+
+      // Set selected applicant to 'offered', others to 'rejected'
+      receivedApps.forEach(app => {
+        if (app.applicantId === proposal.contractorId) {
+          updateReceivedApplicationStatus(projectId, app.applicantId, 'offered');
+        } else if (app.status === 'pending') {
+          updateReceivedApplicationStatus(projectId, app.applicantId, 'rejected');
+        }
+      });
+
+      closeProposalDetailsModal();
+      // Dispatch event to refresh WorkManagementPage
+      window.dispatchEvent(new CustomEvent('receivedApplicationsUpdated', { detail: { projectId } }));
+      return;
+    }
+
+    // Old dashboard flow: Navigate to contract review
     let projectToNavigate;
     setProjects(prev => prev.map(p => {
       if (p.id === proposal.projectId) {
@@ -314,7 +338,7 @@ export default function App() {
             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
-            <Route path="/work-management" element={<WorkManagementPage />} />
+            <Route path="/work-management" element={<WorkManagementPage openProposalDetailsModal={openProposalDetailsModal} onSelectProposal={handleSelectProposal} />} />
             <Route path="/command-ui" element={<MarketCommandUIPage />} />
             <Route path="/jobs" element={<JobsSearchPage />} />
             <Route path="/pending-applications" element={<PendingApplicationsPage />} />

@@ -803,6 +803,111 @@ export const dashboardAllProjects = [
     needsClientRating: false,
     imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Web%E3%82%A2%E3%83%97%E3%83%AA',
     allowSubcontracting: false,
+    proposals: [
+      {
+        id: 'prop_user001_for_job2',
+        contractorId: 'user001',
+        contractorName: '山田太郎',
+        contractorName_en: 'Taro Yamada',
+        contractorReputation: {
+          totalReviews: 32,
+          skillsCertified: ['UI/UXデザイン', 'Figma'],
+        },
+        contractorPortfolio: {
+          totalProjects: 67,
+          completionRate: 96,
+          repeatClientRate: 58,
+          portfolioUrl: 'https://portfolio.example.com/yamada',
+          featuredProjects: [
+            { name: 'ECサイトUI改善', category: 'Webデザイン', year: 2025 },
+            { name: '金融アプリデザイン', category: 'UI/UX', year: 2024 },
+            { name: 'SaaSダッシュボード', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['UI/UX', 'Figma', 'デザインシステム', 'レスポンシブ']
+        },
+        proposalText: 'UI/UX改善の実績が豊富です。ユーザー体験を重視したデザインを提供します。',
+        proposalText_en: 'I have extensive UI/UX improvement experience. I provide user-experience-focused designs.',
+        proposalDetails: {
+          approach: 'ユーザーリサーチとヒートマップ分析から課題を特定し、データドリブンなデザイン改善を実施します。A/Bテストを活用して効果測定も行います。',
+          techStack: ['Figma', 'Adobe XD', 'Sketch', 'InVision'],
+          riskMitigation: 'デザインレビューを週次で実施し、方向性のズレを早期発見。プロトタイプで操作感を事前確認し、手戻りを防ぎます。',
+          qualityAssurance: 'WCAGアクセシビリティ基準準拠。主要ブラウザ・デバイスでの表示確認を実施。デザインシステムで一貫性を担保します。'
+        },
+        proposedAmount: 500000,
+        estimatedDeliveryTime: '3ヶ月',
+        estimatedDeliveryTime_en: '3 months',
+        submissionDate: '2026-01-28',
+        status: 'pending_review',
+      },
+      {
+        id: 'prop_user002_for_job2',
+        contractorId: 'user002',
+        contractorName: '鈴木花子',
+        contractorName_en: 'Hanako Suzuki',
+        contractorReputation: {
+          totalReviews: 28,
+          skillsCertified: ['Webデザイン'],
+        },
+        contractorPortfolio: {
+          totalProjects: 45,
+          completionRate: 100,
+          repeatClientRate: 72,
+          portfolioUrl: 'https://portfolio.example.com/suzuki',
+          featuredProjects: [
+            { name: 'コーポレートサイトリニューアル', category: 'Webデザイン', year: 2025 },
+            { name: 'モバイルアプリUI', category: 'UI/UX', year: 2024 }
+          ],
+          specialties: ['Webデザイン', 'Figma', 'ユーザビリティ']
+        },
+        proposalText: 'モダンで使いやすいUIデザインが得意です。レスポンシブ対応も万全です。',
+        proposalText_en: 'I specialize in modern and user-friendly UI design. Fully responsive.',
+        proposalDetails: {
+          approach: 'ペルソナ設定から始め、ユーザージャーニーマップを作成。各タッチポイントで最適なUIを設計します。',
+          techStack: ['Figma', 'Photoshop', 'Illustrator'],
+          riskMitigation: 'デザイン着手前にムードボードで方向性を確認。修正は各フェーズで2回まで無料対応します。',
+          qualityAssurance: 'デザインガイドラインを作成し、実装時の品質を担保。ユーザビリティテストで検証します。'
+        },
+        proposedAmount: 480000,
+        estimatedDeliveryTime: '2.5ヶ月',
+        estimatedDeliveryTime_en: '2.5 months',
+        submissionDate: '2026-01-29',
+        status: 'pending_review',
+      },
+      {
+        id: 'prop_user003_for_job2',
+        contractorId: 'user003',
+        contractorName: '佐藤次郎',
+        contractorName_en: 'Jiro Sato',
+        contractorReputation: {
+          totalReviews: 19,
+          skillsCertified: ['UI/UX'],
+        },
+        contractorPortfolio: {
+          totalProjects: 38,
+          completionRate: 97,
+          repeatClientRate: 63,
+          portfolioUrl: 'https://portfolio.example.com/sato',
+          featuredProjects: [
+            { name: 'SaaSプロダクトUI', category: 'UI/UX', year: 2025 },
+            { name: 'EC管理画面改善', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['UI/UX', 'デザインシステム', 'プロトタイピング']
+        },
+        proposalText: 'SaaS製品のUI改善経験が豊富です。使いやすさと美しさを両立させます。',
+        proposalText_en: 'Extensive experience in SaaS product UI improvements. Balance usability and aesthetics.',
+        proposalDetails: {
+          approach: '競合分析とユーザーインタビューで課題を洗い出し、段階的な改善プランを提案。成果を可視化します。',
+          techStack: ['Figma', 'Framer', 'Principle'],
+          riskMitigation: 'スプリント形式で進行し、2週間ごとにレビュー。フィードバックを即座に反映してリスクを最小化します。',
+          qualityAssurance: 'デザインシステムで統一感を確保。アクセシビリティチェックとクロスブラウザテストを実施します。'
+        },
+        proposedAmount: 520000,
+        estimatedDeliveryTime: '3ヶ月',
+        estimatedDeliveryTime_en: '3 months',
+        submissionDate: '2026-01-30',
+        status: 'pending_review',
+      },
+    ],
   },
   {
     id: 'job101',
