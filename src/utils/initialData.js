@@ -1103,6 +1103,24 @@ export const dashboardAllProjects = [
           riskMitigation: 'デザイン初稿提出前にワイヤーフレームで方向性を確認。修正は2回まで無料対応。納期遅延のリスクは事前スケジュール共有で回避します。',
           qualityAssurance: '複数デバイス・ブラウザでの表示確認を実施。アクセシビリティガイドライン（WCAG 2.1 AA）準拠を保証します。'
         },
+        milestoneProposals: [
+          {
+            milestoneId: 'job101-m1',
+            milestoneName: 'デザインカンプ初稿提出',
+            estimatedDays: 10,
+            deliverables: 'PC・スマホ両対応のデザインカンプ（Figma）、カラースキーム、タイポグラフィガイド、画像素材選定リスト',
+            approach: 'ワイヤーフレームを基に、ターゲット層（20代後半～30代）に響くビジュアルデザインを作成。ファーストビューでのキャッチコピーとビジュアルの組み合わせを3パターン提示し、最適案を選定します。',
+            amount: 38000
+          },
+          {
+            milestoneId: 'job101-m2',
+            milestoneName: '最終デザインデータ納品',
+            estimatedDays: 19,
+            deliverables: '修正反映済みデザインデータ一式（Figma）、デザインガイドライン、アセット書き出しデータ、実装ガイド',
+            approach: 'フィードバックを反映し、細部まで調整。レスポンシブ対応の各ブレークポイントでの表示を最適化。実装時に迷わないよう、詳細なガイドラインとアセットを提供します。',
+            amount: 40000
+          }
+        ],
         proposedAmount: 78000,
         estimatedDeliveryTime: '2週間',
         estimatedDeliveryTime_en: '2 weeks',
@@ -1207,6 +1225,16 @@ export const dashboardAllProjects = [
           riskMitigation: '納品遅延防止のため、各記事の進捗を週次で報告。コピーチェックツールで独自性100%を保証します。',
           qualityAssurance: '専任校正者による二重チェック体制。SEO観点でのタイトル・見出し最適化を実施。修正は初回無料で対応します。'
         },
+        milestoneProposals: [
+          {
+            milestoneId: 'job103-m1',
+            milestoneName: '初回記事5本納品',
+            estimatedDays: 10,
+            deliverables: 'PR記事5本（Word形式、各2000字以上）、キーワードリスト、構成案メモ、参考URL一覧',
+            approach: 'キーワードリサーチで検索ボリュームと競合性を分析。各記事の構成案をクライアントに事前共有し、方向性を確認後に執筆開始。週次進捗報告で透明性を確保し、納期遅延リスクを最小化します。',
+            amount: 50000
+          }
+        ],
         proposedAmount: 50000,
         estimatedDeliveryTime: '各記事3営業日以内',
         estimatedDeliveryTime_en: 'Within 3 business days per article',
@@ -1239,6 +1267,22 @@ export const dashboardAllProjects = [
         contractorResellingRisk: 5,
         proposalText: 'ライターの高橋です。特にIT・テクノロジー分野のPR記事を得意としております。キーワードリサーチから構成案作成、執筆まで一貫して対応可能です。ご提示の条件でぜひお受けしたく存じます。',
         proposalText_en: 'I am Ayako Takahashi, a writer specializing in PR articles for IT and technology fields. I can handle everything from keyword research and structure proposals to writing. I would be happy to accept your offer under the stated conditions.',
+        proposalDetails: {
+          approach: 'IT・テクノロジー分野専門ライターとして、ターゲット読者の関心を引くトピック選定を重視。SEO観点と読みやすさを両立させた記事を提供します。',
+          techStack: ['SEMrush', 'Googleアナリティクス', 'Canva', 'Word'],
+          riskMitigation: '各記事の構成案を事前に提出し、方向性のズレを防止。スケジュール管理を徹底し、余裕を持った納品を実現します。',
+          qualityAssurance: 'ファクトチェックを徹底し、情報の正確性を担保。Grammarlyとコピーチェックツールで文章品質と独自性を確保します。'
+        },
+        milestoneProposals: [
+          {
+            milestoneId: 'job103-m1',
+            milestoneName: '初回記事5本納品',
+            estimatedDays: 10,
+            deliverables: 'PR記事5本（Word形式、各2000字以上）、キーワードリスト、SEO最適化レポート',
+            approach: 'IT・テクノロジー分野の最新トレンドを踏まえたキーワード選定。ターゲット読者のペインポイントに訴求する構成で、記事単体での完結性と次のアクションへの誘導を意識します。月末納品に向け、週次で進捗共有します。',
+            amount: 48000
+          }
+        ],
         proposedAmount: 48000,
         estimatedDeliveryTime: '月5本を月末までに納品',
         estimatedDeliveryTime_en: 'Deliver 5 articles by the end of the month',
