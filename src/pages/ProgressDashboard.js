@@ -79,17 +79,28 @@ export default function ProgressDashboard() {
   );
 }
 
+function getSampleTitle(job) {
+  if (job.title && job.title !== job.jobId) return job.title;
+  if (job.jobId === 'job1') return 'ロゴデザイン案件';
+  if (job.jobId === 'job2') return 'Webサイト制作案件';
+  if (job.jobId === 'job3') return 'LPリニューアル案件';
+  return '案件名未設定';
+}
+
 function JobCard({ job, color }) {
-  // 進捗バーやアクションボタン例
+  const title = getSampleTitle(job);
   return (
     <div className={`bg-white rounded-lg shadow p-3 flex flex-col gap-1 border-l-4 border-${color}-400`}>
       <div className="flex items-center gap-2 mb-1">
-        <span className="font-bold text-slate-800 text-sm">{job.jobId}</span>
+        <span className="font-bold text-slate-800 text-sm">{title}</span>
         <span className={`px-2 py-0.5 rounded-full text-xs font-bold bg-${color}-100 text-${color}-700`}>
           {statusLabel(job.status)}
         </span>
       </div>
-      <div className="text-xs text-slate-600 truncate mb-1">{job.title || ''}</div>
+      <div className="text-xs text-slate-400 truncate mb-1">{job.jobId}</div>
+      {job.description && (
+        <div className="text-xs text-slate-600 mb-1">{job.description}</div>
+      )}
       {job.responseDeadline && (
         <div className="text-xs text-orange-600 mb-1">納期: {job.responseDeadline}</div>
       )}
