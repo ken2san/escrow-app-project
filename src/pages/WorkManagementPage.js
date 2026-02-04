@@ -417,6 +417,17 @@ export default function WorkManagementPage() {
         return () => window.removeEventListener('paymentStatusUpdated', handlePaymentUpdate);
     }, []);
 
+    // Listen for contract status updates
+    useEffect(() => {
+        const handleContractUpdate = (event) => {
+            // Re-fetch projects after contract acceptance/rejection
+            setProjects(getInitialProjects());
+        };
+
+        window.addEventListener('contractStatusUpdated', handleContractUpdate);
+        return () => window.removeEventListener('contractStatusUpdated', handleContractUpdate);
+    }, []);
+
     const cardRefs = useRef({});
     // DnD: Manage drag/over state
     const [dragOverInfo, setDragOverInfo] = useState({ groupKey: null, overIndex: null });
@@ -1164,14 +1175,11 @@ export default function WorkManagementPage() {
                                                                                 <div className="flex gap-2 mt-3">
                                                                                     <button
                                                                                         onClick={() => {
-                                                                                            const { acceptOfferedMilestone } = require('../utils/initialData');
-                                                                                            acceptOfferedMilestone(jobId, card.id, loggedInUserDataGlobal.id);
-                                                                                            setProjects(getInitialProjects());
-                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+                                                                                            navigate(`/contractReview?projectId=${jobId}`);
                                                                                         }}
-                                                                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition"
+                                                                                        className="flex-1 px-3 py-1.5 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center"
                                                                                     >
-                                                                                        採用を受ける
+                                                                                        📋 契約内容を確認
                                                                                     </button>
                                                                                     <button
                                                                                         onClick={() => {
