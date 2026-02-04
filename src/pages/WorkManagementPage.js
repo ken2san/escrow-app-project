@@ -1423,10 +1423,10 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                                     ? renderReceivedApplications(groupCards[0]?.projectId || groupKey)
                                                                     : projectTab === 'completed'
                                                                         ? groupCards.map((card, idx) => (
-                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} projectTab={projectTab} />
                                                                         ))
                                                                         : groupCards.map((card, idx) => (
-                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} />
+                                                                            <SortableCard key={card.id} card={card} onEdit={handleEditClick} activeId={activeId} projects={projects} layout={viewSettings.layout} projectTab={projectTab} />
                                                                         ))}
                                                     </div>
                                                 </SortableContext>
@@ -1653,6 +1653,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                                     onEdit={handleEditClick}
                                                                     projects={projects}
                                                                     layout="board"
+                                                                    projectTab={projectTab}
                                                                     setNodeRef={el => { cardRefs.current[card.id] = el; }}
                                                                 />
                                                             ))}
@@ -1675,7 +1676,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
 
 // --- Moved to end of file ---
 
-function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: externalSetNodeRef }) {
+function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: externalSetNodeRef, projectTab }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
     // Allow external ref passthrough
     const combinedRef = node => {
@@ -1748,8 +1749,8 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
     }
 
     // --- JSX return for SortableCard ---
-    // Accept button (only for pending)
-    const showAcceptButton = card._pendingStatus === 'pending';
+    // Accept button (only for pending tab and pending status)
+    const showAcceptButton = card._pendingStatus === 'pending' && projectTab !== 'completed';
     // handleAcceptJob cannot be passed from parent, call via window
     const handleAccept = () => {
         if (typeof window !== 'undefined' && typeof window.handleAcceptJob === 'function') {
@@ -1817,7 +1818,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                 </button>
             )}
             {/* Show "Complete" button only for cards that are ready for completion */}
-            {card._pendingStatus === 'accepted' && !card._completedStatus && (
+            {card._pendingStatus === 'accepted' && !card._completedStatus && projectTab !== 'completed' && (
                 <>
                     {(card.status === 'approved' || card.status === 'awaiting_approval' || card.status === 'edited') ? (
                         <button
