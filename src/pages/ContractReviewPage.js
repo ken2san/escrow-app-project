@@ -185,8 +185,61 @@ const ContractReviewPage = () => {
               <p>
                 <span className="font-semibold">総額:</span> {selectedProjectForReview.totalAmount.toLocaleString('ja-JP')} pt
               </p>
+              {selectedProjectForReview.contractStatus && (
+                <p>
+                  <span className="font-semibold">契約ステータス:</span>{' '}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    selectedProjectForReview.contractStatus === 'active' ? 'bg-green-100 text-green-800' :
+                    selectedProjectForReview.contractStatus === 'agreed' ? 'bg-blue-100 text-blue-800' :
+                    selectedProjectForReview.contractStatus === 'under_negotiation' ? 'bg-amber-100 text-amber-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedProjectForReview.contractStatus === 'active' ? '進行中' :
+                     selectedProjectForReview.contractStatus === 'agreed' ? '合意済み' :
+                     selectedProjectForReview.contractStatus === 'under_negotiation' ? '交渉中' :
+                     selectedProjectForReview.contractStatus === 'completed' ? '完了' :
+                     '下書き'}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Contract History */}
+          {selectedProjectForReview.contractHistory && selectedProjectForReview.contractHistory.length > 0 && (
+            <div className="p-4 border rounded-lg bg-indigo-50">
+              <h4 className="text-md font-semibold text-indigo-900 mb-3 flex items-center">
+                📜 契約履歴
+              </h4>
+              <div className="space-y-2">
+                {selectedProjectForReview.contractHistory.map((history, index) => (
+                  <div key={history.id} className="flex gap-3 text-xs">
+                    <div className="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-indigo-400"></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-indigo-900">
+                          {new Date(history.date).toLocaleDateString('ja-JP')}
+                        </span>
+                        <span className="text-indigo-700">
+                          {history.action === 'contract_created' && '契約書作成'}
+                          {history.action === 'contract_negotiated' && '条件交渉'}
+                          {history.action === 'contract_agreed' && '契約合意'}
+                          {history.action === 'contract_activated' && '契約開始'}
+                        </span>
+                      </div>
+                      <p className="text-gray-700">{history.description}</p>
+                      {history.changes && (
+                        <p className="text-gray-600 mt-1">
+                          変更: {history.changes.field} - {history.changes.oldValue} → {history.changes.newValue}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="p-4 border rounded-lg">
             <h4 className="text-md font-semibold text-gray-700 mb-2">
               プロジェクト概要
@@ -195,6 +248,95 @@ const ContractReviewPage = () => {
               {selectedProjectForReview.description}
             </p>
           </div>
+
+          {/* Client Trust Information */}
+          {selectedProjectForReview.clientRating && (
+            <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h4 className="text-md font-semibold text-indigo-900 mb-3 flex items-center">
+                🏆 クライアント信頼情報
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                {selectedProjectForReview.clientRating.totalProjects !== undefined && (
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs text-gray-500">過去プロジェクト</p>
+                    <p className="text-lg font-bold text-indigo-600">
+                      {selectedProjectForReview.clientRating.totalProjects}件
+                    </p>
+                  </div>
+                )}
+                {selectedProjectForReview.clientRating.completedProjects !== undefined && (
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs text-gray-500">完了</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {selectedProjectForReview.clientRating.completedProjects}件
+                    </p>
+                  </div>
+                )}
+                {selectedProjectForReview.clientRating.disputeCount !== undefined && (
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs text-gray-500">紛争</p>
+                    <p className="text-lg font-bold text-slate-600">
+                      {selectedProjectForReview.clientRating.disputeCount}件
+                    </p>
+                  </div>
+                )}
+                <div className="bg-white p-2 rounded text-center">
+                  <p className="text-xs text-gray-500">評価</p>
+                  <p className="text-lg font-bold text-amber-600">
+                    ⭐ {selectedProjectForReview.clientRating.averageScore}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Payment History */}
+              {selectedProjectForReview.clientRating.paymentHistory && (
+                <div className="bg-white p-3 rounded mb-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">💰 支払履歴</p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">
+                      定時支払: {selectedProjectForReview.clientRating.paymentHistory.onTimePayments}回
+                    </span>
+                    <span className="text-gray-600">
+                      遅延: {selectedProjectForReview.clientRating.paymentHistory.latePayments}回
+                    </span>
+                    <span className="text-gray-600">
+                      平均遅延: {selectedProjectForReview.clientRating.paymentHistory.averagePaymentDelay}日
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Verification Badges */}
+              {selectedProjectForReview.clientRating.verificationStatus && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedProjectForReview.clientRating.verificationStatus.identityVerified && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                      </svg>
+                      本人確認済み
+                    </span>
+                  )}
+                  {selectedProjectForReview.clientRating.verificationStatus.paymentMethodVerified && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                      </svg>
+                      支払方法確認済み
+                    </span>
+                  )}
+                  {selectedProjectForReview.clientRating.verificationStatus.companyVerified && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                      </svg>
+                      企業確認済み
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Deliverables */}
         {selectedProjectForReview.deliverables && (
@@ -331,6 +473,31 @@ const ContractReviewPage = () => {
                         {ms.description && (
                           <p className="text-xs text-gray-600 mb-2">{ms.description}</p>
                         )}
+                        
+                        {/* Milestone Details */}
+                        {(ms.deliverables || ms.acceptanceCriteria || ms.additionalWorkTerms) && (
+                          <div className="mt-2 space-y-1.5">
+                            {ms.deliverables && (
+                              <div className="text-xs">
+                                <span className="font-semibold text-blue-700">📦 成果物: </span>
+                                <span className="text-gray-700">{ms.deliverables}</span>
+                              </div>
+                            )}
+                            {ms.acceptanceCriteria && (
+                              <div className="text-xs">
+                                <span className="font-semibold text-green-700">✅ 受入基準: </span>
+                                <span className="text-gray-700">{ms.acceptanceCriteria}</span>
+                              </div>
+                            )}
+                            {ms.additionalWorkTerms && (
+                              <div className="text-xs">
+                                <span className="font-semibold text-amber-700">💡 追加条件: </span>
+                                <span className="text-gray-700">{ms.additionalWorkTerms}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
                         {isNegotiating && ms.negotiations && ms.negotiations.length > 0 && (
                           <div className="mb-2 p-2 bg-amber-100 rounded text-xs">
                             <p className="font-semibold text-amber-900 mb-1">交渉内容:</p>
