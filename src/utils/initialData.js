@@ -205,6 +205,13 @@ const _receivedApplicationsByProjectId = {
     { applicantId: 'user002', applicantName: '鈴木花子', appliedAt: '2026-01-29T10:15:00Z', status: 'pending' },
     { applicantId: 'user003', applicantName: '佐藤次郎', appliedAt: '2026-01-30T09:30:00Z', status: 'pending' },
   ],
+  'job101': [
+    { applicantId: 'user555', applicantName: '田中 さとし', appliedAt: '2025-06-06T11:20:00Z', status: 'pending' },
+  ],
+  'job103': [
+    { applicantId: 'user888', applicantName: '鈴木 一郎', appliedAt: '2025-06-03T09:15:00Z', status: 'pending' },
+    { applicantId: 'user999', applicantName: '高橋 文子', appliedAt: '2025-06-04T15:45:00Z', status: 'pending' },
+  ],
 };
 // Update application status
 // Status flow for contractor:
