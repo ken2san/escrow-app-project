@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CheckCircle, ShieldCheck, Award } from 'lucide-react';
+import { X, CheckCircle, ShieldCheck, Award, Briefcase, TrendingUp, ExternalLink, Lightbulb, Code, Shield, Target } from 'lucide-react';
 import StarRatingDisplay from '../common/StarRatingDisplay';
 
 const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProposal }) => {
@@ -7,7 +7,7 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out">
-      <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
+      <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">
             {t('proposalDetailsModalTitle') || 'Proposal Details'}
@@ -54,6 +54,84 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
                 </div>
               )}
           </div>
+
+          {/* Portfolio & Track Record Section */}
+          {proposal.contractorPortfolio && (
+            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-md">
+              <h4 className="font-semibold text-indigo-900 mb-3 flex items-center">
+                <Briefcase size={16} className="mr-2" />
+                実績・ポートフォリオ
+              </h4>
+
+              {/* Statistics */}
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                <div className="text-center p-2 bg-white rounded">
+                  <div className="text-xs text-gray-600 mb-1">完了プロジェクト</div>
+                  <div className="text-lg font-bold text-indigo-600">
+                    {proposal.contractorPortfolio.totalProjects}
+                  </div>
+                </div>
+                <div className="text-center p-2 bg-white rounded">
+                  <div className="text-xs text-gray-600 mb-1">完了率</div>
+                  <div className="text-lg font-bold text-green-600">
+                    {proposal.contractorPortfolio.completionRate}%
+                  </div>
+                </div>
+                <div className="text-center p-2 bg-white rounded">
+                  <div className="text-xs text-gray-600 mb-1">リピート率</div>
+                  <div className="text-lg font-bold text-blue-600">
+                    {proposal.contractorPortfolio.repeatClientRate}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Featured Projects */}
+              {proposal.contractorPortfolio.featuredProjects && proposal.contractorPortfolio.featuredProjects.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">代表実績</p>
+                  <div className="space-y-1">
+                    {proposal.contractorPortfolio.featuredProjects.map((project, idx) => (
+                      <div key={idx} className="flex items-center text-xs text-gray-700 bg-white p-2 rounded">
+                        <TrendingUp size={12} className="mr-2 text-indigo-500" />
+                        <span className="font-medium">{project.name}</span>
+                        <span className="mx-2 text-gray-400">•</span>
+                        <span className="text-gray-500">{project.category}</span>
+                        <span className="ml-auto text-gray-400">({project.year})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Specialties */}
+              {proposal.contractorPortfolio.specialties && proposal.contractorPortfolio.specialties.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">得意分野</p>
+                  <div className="flex flex-wrap gap-1">
+                    {proposal.contractorPortfolio.specialties.map((skill, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Portfolio Link */}
+              {proposal.contractorPortfolio.portfolioUrl && (
+                <a
+                  href={proposal.contractorPortfolio.portfolioUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  <ExternalLink size={12} className="mr-1" />
+                  ポートフォリオを見る
+                </a>
+              )}
+            </div>
+          )}
+
           <div className="p-3 bg-gray-50 rounded-md">
             <p className="font-semibold text-gray-700 mb-1">
               {t('proposalMessage')}:
@@ -62,6 +140,68 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
               {proposal.proposalText}
             </p>
           </div>
+
+          {/* Proposal Details Section */}
+          {proposal.proposalDetails && (
+            <div className="space-y-3">
+              {/* Approach */}
+              {proposal.proposalDetails.approach && (
+                <div className="p-3 border border-blue-200 rounded-md bg-blue-50">
+                  <h5 className="font-semibold text-blue-900 mb-2 flex items-center text-sm">
+                    <Lightbulb size={14} className="mr-2" />
+                    アプローチ・提案内容
+                  </h5>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    {proposal.proposalDetails.approach}
+                  </p>
+                </div>
+              )}
+
+              {/* Tech Stack */}
+              {proposal.proposalDetails.techStack && proposal.proposalDetails.techStack.length > 0 && (
+                <div className="p-3 border border-purple-200 rounded-md bg-purple-50">
+                  <h5 className="font-semibold text-purple-900 mb-2 flex items-center text-sm">
+                    <Code size={14} className="mr-2" />
+                    使用技術・ツール
+                  </h5>
+                  <div className="flex flex-wrap gap-2">
+                    {proposal.proposalDetails.techStack.map((tech, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Risk Mitigation */}
+              {proposal.proposalDetails.riskMitigation && (
+                <div className="p-3 border border-orange-200 rounded-md bg-orange-50">
+                  <h5 className="font-semibold text-orange-900 mb-2 flex items-center text-sm">
+                    <Shield size={14} className="mr-2" />
+                    リスク対策
+                  </h5>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    {proposal.proposalDetails.riskMitigation}
+                  </p>
+                </div>
+              )}
+
+              {/* Quality Assurance */}
+              {proposal.proposalDetails.qualityAssurance && (
+                <div className="p-3 border border-green-200 rounded-md bg-green-50">
+                  <h5 className="font-semibold text-green-900 mb-2 flex items-center text-sm">
+                    <Target size={14} className="mr-2" />
+                    品質保証方針
+                  </h5>
+                  <p className="text-gray-700 text-xs leading-relaxed">
+                    {proposal.proposalDetails.qualityAssurance}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="font-semibold text-gray-700">{t('proposedAmount')}:</p>

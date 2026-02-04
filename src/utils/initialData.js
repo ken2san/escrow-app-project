@@ -901,8 +901,25 @@ export const dashboardAllProjects = [
           totalReviews: 15,
           skillsCertified: ['Webデザイン'], // 現行表記に統一
         },
+        contractorPortfolio: {
+          totalProjects: 42,
+          completionRate: 98,
+          repeatClientRate: 65,
+          portfolioUrl: 'https://portfolio.example.com/tanaka',
+          featuredProjects: [
+            { name: 'ヘルスケアサービスLP', category: 'Webデザイン', year: 2025 },
+            { name: 'ECサイトリニューアル', category: 'Webデザイン', year: 2024 }
+          ],
+          specialties: ['Figma', 'レスポンシブデザイン', 'UI/UX']
+        },
         proposalText: 'LPデザインの経験豊富です。Figmaでの作成、レスポンシブ対応可能です。ぜひ担当させてください。',
         proposalText_en: 'I have extensive experience in LP design. I can create in Figma and support responsive design. I would love to take on this project.',
+        proposalDetails: {
+          approach: 'ターゲット層の行動分析を基に、CVR向上を重視したデザインを提案します。ファーストビューでの訴求力を最大化し、スムーズな導線設計で離脱率を最小限に抑えます。',
+          techStack: ['Figma', 'Adobe XD', 'Photoshop', 'HTML/CSS'],
+          riskMitigation: 'デザイン初稿提出前にワイヤーフレームで方向性を確認。修正は2回まで無料対応。納期遅延のリスクは事前スケジュール共有で回避します。',
+          qualityAssurance: '複数デバイス・ブラウザでの表示確認を実施。アクセシビリティガイドライン（WCAG 2.1 AA）準拠を保証します。'
+        },
         proposedAmount: 78000,
         estimatedDeliveryTime: '2週間',
         estimatedDeliveryTime_en: '2 weeks',
@@ -986,9 +1003,27 @@ export const dashboardAllProjects = [
           identityVerified: true,
           skillsCertified: ['SEO Master'],
         },
+        contractorPortfolio: {
+          totalProjects: 87,
+          completionRate: 100,
+          repeatClientRate: 78,
+          portfolioUrl: 'https://portfolio.example.com/suzuki',
+          featuredProjects: [
+            { name: 'IT企業ブログ記事50本', category: 'SEOライティング', year: 2025 },
+            { name: 'EC業界PR記事シリーズ', category: 'コンテンツマーケティング', year: 2024 },
+            { name: '金融サービス記事30本', category: 'SEOライティング', year: 2024 }
+          ],
+          specialties: ['SEOライティング', 'キーワードリサーチ', 'コンテンツ戦略']
+        },
         contractorResellingRisk: 15,
         proposalText: 'SEOライティング歴5年の鈴木と申します。貴社サービスに貢献できる質の高い記事を迅速に作成いたします。過去実績はポートフォリオをご覧ください。月5本、2000字/記事でご提案の予算内で対応可能です。納期も柔軟に対応できます。',
         proposalText_en: 'My name is Ichiro Suzuki and I have 5 years of experience in SEO writing. I will quickly create high-quality articles to contribute to your service. Please see my portfolio for past work. I can deliver 5 articles per month, 2,000 characters each, within your proposed budget. I am flexible with deadlines.',
+        proposalDetails: {
+          approach: 'キーワード選定から記事構成、執筆、最終チェックまで一貫したワークフローで品質を担保。検索意図の徹底分析により上位表示を実現します。',
+          techStack: ['Googleキーワードプランナー', 'Ahrefs', 'WordPress', 'Grammarly'],
+          riskMitigation: '納品遅延防止のため、各記事の進捗を週次で報告。コピーチェックツールで独自性100%を保証します。',
+          qualityAssurance: '専任校正者による二重チェック体制。SEO観点でのタイトル・見出し最適化を実施。修正は初回無料で対応します。'
+        },
         proposedAmount: 50000,
         estimatedDeliveryTime: '各記事3営業日以内',
         estimatedDeliveryTime_en: 'Within 3 business days per article',
@@ -1006,6 +1041,17 @@ export const dashboardAllProjects = [
           totalReviews: 18,
           identityVerified: false,
           skillsCertified: [],
+        },
+        contractorPortfolio: {
+          totalProjects: 34,
+          completionRate: 94,
+          repeatClientRate: 52,
+          portfolioUrl: 'https://portfolio.example.com/takahashi',
+          featuredProjects: [
+            { name: 'テック系メディア記事', category: 'コンテンツ作成', year: 2025 },
+            { name: 'スタートアップPR記事', category: 'ライティング', year: 2024 }
+          ],
+          specialties: ['IT・テクノロジー', 'PR記事', 'コンテンツ作成']
         },
         contractorResellingRisk: 5,
         proposalText: 'ライターの高橋です。特にIT・テクノロジー分野のPR記事を得意としております。キーワードリサーチから構成案作成、執筆まで一貫して対応可能です。ご提示の条件でぜひお受けしたく存じます。',
