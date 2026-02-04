@@ -1249,6 +1249,16 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                         <p className="text-sm text-slate-500">プロジェクト期日: {projects.find(p => String(p.id) === String(groupKey))?.deadline}</p>
                                                     )}
                                                     {warning && <p className="text-sm font-bold text-red-500 mt-1">{warning}</p>}
+                                                    {/* Project Detail Link */}
+                                                    {viewSettings.groupBy === 'project' && projectTab !== 'pending' && (
+                                                        <button
+                                                            onClick={() => navigate(`/project-overview?projectId=${groupKey}`)}
+                                                            className="mt-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1"
+                                                        >
+                                                            <span>📊</span>
+                                                            <span>詳細を見る</span>
+                                                        </button>
+                                                    )}
                                                 </div>
 
                                                 {/* Payment Summary for project view in inprogress tab */}

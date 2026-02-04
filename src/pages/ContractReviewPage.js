@@ -155,12 +155,21 @@ const ContractReviewPage = () => {
         <div className="text-gray-600 mb-6">
           契約内容が確定しました。Work Managementの進行中タブで作業を開始できます。
         </div>
-        <button
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
-          onClick={() => navigate('/work-management')}
-        >
-          Work Managementに戻る
-        </button>
+        <div className="flex gap-3">
+          <button
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition"
+            onClick={() => navigate('/work-management')}
+          >
+            Work Managementに戻る
+          </button>
+          <button
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition flex items-center gap-2"
+            onClick={() => navigate(`/project-overview?projectId=${projectId}`)}
+          >
+            <span>📊</span>
+            <span>プロジェクト詳細を見る</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -287,7 +296,7 @@ const ContractReviewPage = () => {
                   </p>
                 </div>
               </div>
-              
+
               {/* Payment History */}
               {selectedProjectForReview.clientRating.paymentHistory && (
                 <div className="bg-white p-3 rounded mb-3">
@@ -305,7 +314,7 @@ const ContractReviewPage = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* Verification Badges */}
               {selectedProjectForReview.clientRating.verificationStatus && (
                 <div className="flex flex-wrap gap-2">
@@ -473,7 +482,7 @@ const ContractReviewPage = () => {
                         {ms.description && (
                           <p className="text-xs text-gray-600 mb-2">{ms.description}</p>
                         )}
-                        
+
                         {/* Milestone Details */}
                         {(ms.deliverables || ms.acceptanceCriteria || ms.additionalWorkTerms) && (
                           <div className="mt-2 space-y-1.5">
@@ -497,7 +506,7 @@ const ContractReviewPage = () => {
                             )}
                           </div>
                         )}
-                        
+
                         {isNegotiating && ms.negotiations && ms.negotiations.length > 0 && (
                           <div className="mb-2 p-2 bg-amber-100 rounded text-xs">
                             <p className="font-semibold text-amber-900 mb-1">交渉内容:</p>
