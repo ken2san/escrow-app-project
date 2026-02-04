@@ -27,7 +27,7 @@ const ContractReviewPage = () => {
         </div>
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
-          onClick={() => navigate('/workmanagement')}
+          onClick={() => navigate('/work-management')}
         >
           Work Managementに戻る
         </button>
@@ -56,7 +56,7 @@ const ContractReviewPage = () => {
       detail: { jobId: projectId, status: 'rejected' }
     }));
 
-    navigate('/workmanagement');
+    navigate('/work-management');
   };
 
   const openConfirmDialog = (type) => {
@@ -85,7 +85,7 @@ const ContractReviewPage = () => {
         </div>
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
-          onClick={() => navigate('/workmanagement')}
+          onClick={() => navigate('/work-management')}
         >
           Work Managementに戻る
         </button>
@@ -230,21 +230,29 @@ const ContractReviewPage = () => {
             上記内容およびプラットフォーム利用規約に同意の上、契約を承認します。
           </p>
         </div>
-        <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+        <div className="mt-8 flex flex-col sm:flex-row justify-between gap-3">
           <button
-            onClick={() => openConfirmDialog('reject')}
-            className="px-6 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 hover:bg-red-50 flex items-center justify-center"
+            onClick={() => navigate('/work-management')}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            <XCircle size={18} className="mr-2" />
-            辞退する
+            ← 保留して戻る
           </button>
-          <button
-            onClick={() => openConfirmDialog('accept')}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
-          >
-            <CheckCircle size={18} className="mr-2" />
-            契約を承認する
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => openConfirmDialog('reject')}
+              className="px-6 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 hover:bg-red-50 flex items-center justify-center"
+            >
+              <XCircle size={18} className="mr-2" />
+              辞退する
+            </button>
+            <button
+              onClick={() => openConfirmDialog('accept')}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
+            >
+              <CheckCircle size={18} className="mr-2" />
+              契約を承認する
+            </button>
+          </div>
         </div>
       </div>
     </div>

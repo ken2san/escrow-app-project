@@ -32,7 +32,7 @@ import { dashboardAllProjects, loggedInUserDataGlobal } from './utils/initialDat
 import { callGeminiAPI } from './utils/api';
 
 import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
-import { MessageSquare, AlertTriangle, Settings } from 'lucide-react';
+import { AlertTriangle, Settings } from 'lucide-react';
 import ProjectOverviewPage from './pages/ProjectOverviewPage';
 
 export default function App() {
@@ -106,10 +106,6 @@ export default function App() {
   const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] = useState(false);
   const [proposalForDetails, setProposalForDetails] = useState(null);
 
-  // For ContractReview page: explicitly keep the selected project
-  const [projectForContractReview, setProjectForContractReview] = useState(null);
-  const selectedProjectForReview = projectForContractReview || projects.find((p) => p.id === selectedProjectId);
-
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'ja' ? 'en' : 'ja';
     i18n.changeLanguage(nextLang);
@@ -152,8 +148,7 @@ export default function App() {
   const navigateToContractReview = (project) => {
     if (project?.id) {
       setSelectedProjectId(project.id);
-      setProjectForContractReview(project);
-      navigate('contractReview');
+      navigate(`contractReview?projectId=${project.id}`);
     }
   };
 
@@ -202,11 +197,7 @@ export default function App() {
     setActiveProjectDetailTab('proposals');
   };
 
-  const handleFinalizeContract = (projectId) => {
-  setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: t('statusWorkReady') } : p));
-  // alert(t.contractFinalizedMessage); // Unnecessary alert removed
-  navigate('dashboard');
-  };
+
 
   const handleExecuteDeposit = (projectId, amount) => {
     if (userPoints < amount) {

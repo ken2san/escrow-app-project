@@ -1172,25 +1172,14 @@ export default function WorkManagementPage() {
                                                                                 <span>回答期限: {deadline}</span>
                                                                             </div>
                                                                             {appStatus === 'offered' && (
-                                                                                <div className="flex gap-2 mt-3">
+                                                                                <div className="mt-3">
                                                                                     <button
                                                                                         onClick={() => {
                                                                                             navigate(`/contractReview?projectId=${jobId}`);
                                                                                         }}
-                                                                                        className="flex-1 px-3 py-1.5 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center"
+                                                                                        className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center"
                                                                                     >
                                                                                         📋 契約内容を確認
-                                                                                    </button>
-                                                                                    <button
-                                                                                        onClick={() => {
-                                                                                            const { updateApplicationJobStatus } = require('../utils/initialData');
-                                                                                            updateApplicationJobStatus(jobId, 'rejected', loggedInUserDataGlobal.id);
-                                                                                            setProjects(getInitialProjects());
-                                                                                            window.dispatchEvent(new CustomEvent('updatePendingApplications'));
-                                                                                        }}
-                                                                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition"
-                                                                                    >
-                                                                                        辞退する
                                                                                     </button>
                                                                                 </div>
                                                                             )}
