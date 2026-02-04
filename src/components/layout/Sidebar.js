@@ -219,18 +219,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
           {isSidebarOpen && <span className="ml-3 text-xs">{t('dashboardLegacy')}</span>}
         </button>
       </li>
-      {/* 開発・テスト用: subtle dev project-detail link */}
-      <li className="mb-2">
-        <button
-          className={`w-full flex items-center p-2.5 rounded-md bg-transparent hover:bg-gray-700 text-gray-400 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
-          style={{ fontSize: '12px' }}
-          onClick={() => window.location.assign('/project-detail?projectId=job1')}
-          title="Open dummy project-detail (dev only)"
-        >
-          <span style={{fontSize:'15px',marginRight:isSidebarOpen?4:0}}>🧪</span>
-          {isSidebarOpen && <span className="ml-2 text-xs">案件詳細（開発用）</span>}
-        </button>
-      </li>
+      {/* ...existing code... */}
     </>}
   </ul>
       </div> {/* ← added closing div tag */}
