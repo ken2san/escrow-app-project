@@ -548,7 +548,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
       <div className="bg-white rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-6">
         {/* Card Top: Title, Badge, Info */}
         <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-3">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-1 mb-0.5">
             <h3
               className="text-base font-bold text-slate-900 line-clamp-2 min-h-[2.2em] max-w-full cursor-pointer"
               title={job.title}
@@ -579,7 +579,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
             )}
           </div>
           {job.description && (
-            <p className="text-xs text-slate-600 mt-1 line-clamp-4">
+            <p className="text-xs text-slate-600 mt-0.5 mb-1 line-clamp-4">
               {job.description.slice(0, 240)}{job.description.length > 240 ? '…' : ''}
             </p>
           )}
@@ -615,29 +615,29 @@ function JobCard({ job, pendingApplications = [], onApply }) {
 
         {/* Score Icons */}
         <div className="bg-slate-50 rounded-xl p-3 mt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2 mb-1">
             <div className="flex flex-col items-center">
-              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">契約の透明性</p>
-              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
-                <span className={`text-base md:text-lg font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
+              <p className="text-xs text-slate-600 mb-0.5 text-center min-h-[18px] flex items-center justify-center whitespace-nowrap">契約の透明性</p>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
+                <span className={`text-sm md:text-base font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">支払い安全性</p>
-              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
-                <span className={`text-base md:text-lg font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
+              <p className="text-xs text-slate-600 mb-0.5 text-center min-h-[18px] flex items-center justify-center whitespace-nowrap">支払い安全性</p>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
+                <span className={`text-sm md:text-base font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">条件の明確さ</p>
-              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
-                <span className={`text-base md:text-lg font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
+              <p className="text-xs text-slate-600 mb-0.5 text-center min-h-[18px] flex items-center justify-center whitespace-nowrap">条件の明確さ</p>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
+                <span className={`text-sm md:text-base font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">AI推奨度</p>
-              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${recommendationIcon.bg}`}> {/* 完全一致 */}
-                <span className={`text-base md:text-lg font-bold leading-none ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+              <p className="text-xs text-slate-600 mb-0.5 text-center min-h-[18px] flex items-center justify-center whitespace-nowrap">AI推奨度</p>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${recommendationIcon.bg}`}> {/* 完全一致 */}
+                <span className={`text-sm md:text-base font-bold leading-none ${recommendationIcon.text}`}>{job.recommendationScore}</span>
               </div>
             </div>
           </div>
