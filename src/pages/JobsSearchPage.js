@@ -545,9 +545,9 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   return (
     <>
 
-      <div className="bg-white rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-6">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-4 md:p-6">
         {/* Card Top: Title, Badge, Info */}
-        <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-3">
+        <div className="p-4 md:p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-2 md:gap-3">
           <div className="flex items-center gap-1 mb-0.5">
             <h3
               className="text-base font-bold text-slate-900 line-clamp-2 min-h-[2.2em] max-w-full cursor-pointer"
@@ -614,7 +614,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
         {/* ...existing code... (no AIおすすめ度 row) */}
 
         {/* Score Icons */}
-        <div className="bg-slate-50 rounded-xl p-3 mt-4">
+        <div className="bg-slate-50 rounded-lg md:rounded-xl p-2 md:p-3 mt-3 md:mt-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2 mb-1">
             <div className="flex flex-col items-center">
               <p className="text-xs text-slate-600 mb-0.5 text-center min-h-[18px] flex items-center justify-center whitespace-nowrap">契約の透明性</p>
