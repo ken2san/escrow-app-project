@@ -549,13 +549,33 @@ function JobCard({ job, pendingApplications = [], onApply }) {
         {/* Card Top: Title, Badge, Info */}
         <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-3">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-bold text-slate-900 truncate">{job.title}</h3>
+            <h3
+              className="text-base font-bold text-slate-900 line-clamp-2 min-h-[2.2em] max-w-full cursor-pointer"
+              title={job.title}
+            >
+              {job.title}
+            </h3>
             {job.recommendationFlag === 'green' ? (
-              <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">✓ おすすめ</span>
+              <span
+                className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-bold max-w-[200px] overflow-hidden whitespace-nowrap text-ellipsis block flex-shrink-0"
+                title="✓ おすすめ"
+              >
+                ✓ おすすめ
+              </span>
             ) : job.recommendationFlag === 'red' ? (
-              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">⚠️ 要注意</span>
+              <span
+                className="bg-red-100 text-red-700 px-3 py-1.5 rounded-full text-sm font-bold max-w-[200px] overflow-hidden whitespace-nowrap text-ellipsis block flex-shrink-0"
+                title="⚠️ 要注意"
+              >
+                ⚠️ 要注意
+              </span>
             ) : (
-              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">⚡ 確認推奨</span>
+              <span
+                className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full text-sm font-bold max-w-[200px] overflow-hidden whitespace-nowrap text-ellipsis block flex-shrink-0"
+                title="⚡ 確認推奨"
+              >
+                ⚡ 確認推奨
+              </span>
             )}
           </div>
           {job.description && (
