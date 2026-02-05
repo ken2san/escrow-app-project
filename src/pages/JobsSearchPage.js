@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
-import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser, addPendingApplicationJob } from '../utils/initialData';
+import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser } from '../utils/initialData';
 import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
@@ -491,10 +491,10 @@ function JobCard({ job, pendingApplications = [], onApply }) {
     return found ? found.status : null;
   }, [pendingApplications, job.id]);
 
-  // Test-only: status change button
   const [isExpanded, setIsExpanded] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
+  // Score icon color logic
   const getScoreIcon = (score) => {
     if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
     if (score >= 50) return { bg: 'bg-yellow-500', text: 'text-white' };
@@ -506,9 +506,6 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   const ambiguityIcon = getScoreIcon(job.ambiguityScore);
   const recommendationIcon = getScoreIcon(job.recommendationScore);
 
-  // AI Flag styling
-  // バッジはインラインclassで統一
-
   // First shift time badge for hourly jobs
   const getFirstShift = (jobData) => {
     if (jobData?.workType !== 'hourly' || !Array.isArray(jobData?.milestones)) {
@@ -516,29 +513,17 @@ function JobCard({ job, pendingApplications = [], onApply }) {
     }
     return jobData.milestones.find((m) => m.start && m.end) || null;
   };
-
   const firstShift = getFirstShift(job);
 
-  // Handle Apply Modal
-  const handleApply = (e) => {
-    e.stopPropagation();
-    setShowApplyModal(true);
+  // Modal handlers
+  const handleApply = () => {
+    if (!applicationStatus) setShowApplyModal(true);
   };
   const handleApplyModalClose = () => setShowApplyModal(false);
-  const handleApplyModalSubmit = (jobData, appliedAt, customDeadline, selectedMilestones = []) => {
-    if (job?.id) {
-      // Add to pending applications with custom deadline and selected milestones
-      if (typeof window.addPendingApplicationJob === 'function') {
-        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id, appliedAt, customDeadline, selectedMilestones);
-      } else if (typeof addPendingApplicationJob === 'function') {
-        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, customDeadline, selectedMilestones);
-      }
-      // Notify global state update
-      window.dispatchEvent(new Event('updatePendingApplications'));
-      setShowApplyModal(false);
-    }
+  const handleApplyModalSubmit = (formData) => {
+    setShowApplyModal(false);
+    if (onApply) onApply(job, formData);
   };
-
 
 
 
