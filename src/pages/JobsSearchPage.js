@@ -1,11 +1,20 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
-import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser } from '../utils/initialData';
+import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser, addPendingApplicationJob } from '../utils/initialData';
 import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
+    // Handler for job application
+    const handleApplyJob = (job, formData) => {
+      // formData may contain appliedAt, deadline, selectedMilestones, etc.
+      const appliedAt = formData?.appliedAt || new Date().toISOString();
+      const deadline = formData?.deadline || null;
+      const selectedMilestones = formData?.selectedMilestones || [];
+      addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, deadline, selectedMilestones);
+      window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+    };
   // Fetch pending applications
   const [pendingApplications, setPendingApplications] = useState([]);
   useEffect(() => {
@@ -461,7 +470,7 @@ export default function JobsSearchPage() {
             {/* Job Cards */}
             {filteredJobs.length > 0 ? (
               filteredJobs.map(job => (
-                <JobCard key={job.id} job={job} pendingApplications={pendingApplications} />
+                <JobCard key={job.id} job={job} pendingApplications={pendingApplications} onApply={handleApplyJob} />
               ))
             ) : (
               <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
