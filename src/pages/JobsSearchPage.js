@@ -583,7 +583,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
               {job.description.slice(0, 240)}{job.description.length > 240 ? '…' : ''}
             </p>
           )}
-          <div className="flex flex-wrap gap-4 text-sm text-slate-700">
+          <div className="flex flex-wrap gap-2 md:gap-4 text-sm text-slate-700">
             <span className="flex items-center gap-1"><span className="text-slate-400">👤</span>{job.client || job.by || 'クライアント'}</span>
             <span className="flex items-center gap-1"><span className="text-slate-400">💰</span><span className="font-bold text-slate-900">{job.workType === 'hourly' && job.hourlyRate ? `¥${job.hourlyRate?.toLocaleString()}/h` : `¥${job.budget?.toLocaleString()}`}</span></span>
             <span className="flex items-center gap-1"><span className="text-slate-400">📅</span>{job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}</span>
@@ -592,7 +592,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
             )}
           </div>
           {job.requiredSkills && job.requiredSkills.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="flex flex-wrap gap-1.5 md:gap-2 mt-1">
               {job.requiredSkills.map((skill, idx) => (
                 <span key={idx} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full">{skill}</span>
               ))}
@@ -642,7 +642,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
             </div>
           </div>
           {/* Trust Badges */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
             {job.escrowStatus?.isFullyDeposited && (
               <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">✓ 資金確保済み</span>
             )}
