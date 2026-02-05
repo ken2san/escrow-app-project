@@ -563,6 +563,11 @@ function JobCard({ job, pendingApplications = [], onApply }) {
               {job.recommendationFlag === 'green' ? '✓ おすすめ' : job.recommendationFlag === 'red' ? '⚠️ 要注意' : '⚡ 確認推奨'}
             </span>
           </div>
+          {job.description && (
+            <p className="text-xs text-slate-600 mt-1 line-clamp-4">
+              {job.description.slice(0, 240)}{job.description.length > 240 ? '…' : ''}
+            </p>
+          )}
           <div className="flex flex-wrap gap-4 text-sm text-slate-700">
             <span className="flex items-center gap-1"><span className="text-slate-400">👤</span>{job.client || job.by || 'クライアント'}</span>
             <span className="flex items-center gap-1"><span className="text-slate-400">💰</span><span className="font-bold text-slate-900">{job.workType === 'hourly' && job.hourlyRate ? `¥${job.hourlyRate?.toLocaleString()}/h` : `¥${job.budget?.toLocaleString()}`}</span></span>
