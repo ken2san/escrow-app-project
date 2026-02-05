@@ -129,7 +129,7 @@ export default function JobsSearchPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Top Filter Bar - Mobile optimized with hamburger menu */}
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20">
+        <div className="bg-slate-100 rounded-xl border border-slate-200 p-6 mb-10 sticky top-24 z-20 shadow-none">
           <div className="flex flex-col gap-4">
             {/* Search + Mobile Menu Toggle */}
             <div className="flex gap-2">
@@ -507,16 +507,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   const recommendationIcon = getScoreIcon(job.recommendationScore);
 
   // AI Flag styling
-  const getFlagStyle = () => {
-    const base = 'px-3 py-1 rounded-full font-bold text-sm';
-    if (job.recommendationFlag === 'green') {
-      return `${base} bg-emerald-100 text-emerald-700`;
-    } else if (job.recommendationFlag === 'red') {
-      return `${base} bg-red-100 text-red-700`;
-    } else {
-      return `${base} bg-yellow-100 text-yellow-700`;
-    }
-  };
+  // バッジはインラインclassで統一
 
   // First shift time badge for hourly jobs
   const getFirstShift = (jobData) => {
@@ -554,14 +545,18 @@ function JobCard({ job, pendingApplications = [], onApply }) {
   return (
     <>
 
-      <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-6">
         {/* Card Top: Title, Badge, Info */}
         <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-3">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-bold text-slate-900 truncate">{job.title}</h3>
-            <span className={getFlagStyle()}>
-              {job.recommendationFlag === 'green' ? '✓ おすすめ' : job.recommendationFlag === 'red' ? '⚠️ 要注意' : '⚡ 確認推奨'}
-            </span>
+            {job.recommendationFlag === 'green' ? (
+              <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">✓ おすすめ</span>
+            ) : job.recommendationFlag === 'red' ? (
+              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">⚠️ 要注意</span>
+            ) : (
+              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">⚡ 確認推奨</span>
+            )}
           </div>
           {job.description && (
             <p className="text-xs text-slate-600 mt-1 line-clamp-4">
@@ -585,10 +580,10 @@ function JobCard({ job, pendingApplications = [], onApply }) {
           )}
           <button
             onClick={handleApply}
-            className={`w-full mt-3 px-4 py-2 rounded-lg font-bold text-sm transition whitespace-nowrap ${
+            className={`w-full mt-3 px-4 py-2 rounded-lg font-bold text-sm transition whitespace-nowrap shadow ${
               applicationStatus
                 ? 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-60'
-                : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl'
+                : 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700'
             }`}
             disabled={!!applicationStatus}
           >
@@ -599,8 +594,8 @@ function JobCard({ job, pendingApplications = [], onApply }) {
         {/* ...existing code... (no AIおすすめ度 row) */}
 
         {/* Score Icons */}
-        <div className="p-4 md:p-6 border-b border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4">
+        <div className="bg-slate-50 rounded-xl p-3 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-2">
             <div className="flex flex-col items-center">
               <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">契約の透明性</p>
               <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
