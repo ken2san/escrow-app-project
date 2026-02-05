@@ -1,6 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
+import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser, addPendingApplicationJob } from '../utils/initialData';
+import ApplyJobModal from '../components/modals/ApplyJobModal';
+import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
+  // Fetch pending applications
+  const [pendingApplications, setPendingApplications] = useState([]);
+  useEffect(() => {
+    setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+  }, []);
+
+  // Reflect changes when application status updates globally
+  useEffect(() => {
+    const handler = () => setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+    window.addEventListener('updatePendingApplications', handler);
+    return () => window.removeEventListener('updatePendingApplications', handler);
+  }, []);
+  const { t } = useTranslation();
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filters, setFilters] = useState({
     mScoreMin: 0,
     sScoreMin: 0,
@@ -12,103 +32,820 @@ export default function JobsSearchPage() {
     locationType: 'all', // New: location filter
   });
 
+  // Detect mobile screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      // Reset to grid if in immersive mode on desktop
+      if (!mobile && viewMode === 'immersive') {
+        setViewMode('timeline');
+      }
+    };
+
+    // Ensure correct initial state on mount
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode]);
+
+  const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
+
+  // Get all available jobs
+  const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
+
+  // Category options derived from data
+  const categories = useMemo(() => {
+    const unique = new Set();
+    allJobs.forEach(job => unique.add(job.category || 'その他'));
+    return ['all', ...Array.from(unique)];
+  }, [allJobs]);
+
+  // Location options derived from data
+  const locationTypes = useMemo(() => {
+    const unique = new Set();
+    allJobs.forEach(job => unique.add(job.locationType || 'onsite'));
+    return ['all', ...Array.from(unique)];
+  }, [allJobs]);
+
+  // Filter & Sort
+  const filteredJobs = useMemo(() => {
+    let result = allJobs.filter(job => {
+      const matchesSearch = job.title.toLowerCase().includes(filters.searchText.toLowerCase());
+      const matchesMScore = job.mScore >= filters.mScoreMin;
+      const matchesSScore = job.sScore >= filters.sScoreMin;
+      const matchesBudget = job.budget >= filters.budgetMin && job.budget <= filters.budgetMax;
+      const matchesCategory = filters.category === 'all' || job.category === filters.category;
+      const matchesLocation = filters.locationType === 'all' || job.locationType === filters.locationType;
+      const notRisky = !filters.excludeRisks || job.recommendationFlag !== 'red';
+      return matchesSearch && matchesMScore && matchesSScore && matchesBudget && matchesCategory && matchesLocation && notRisky;
+    });
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'recommendation':
+          return b.recommendationScore - a.recommendationScore;
+        case 'trust':
+          return (b.mScore + b.sScore) / 2 - (a.mScore + a.sScore) / 2;
+        case 'budget':
+          return b.budget - a.budget;
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [allJobs, filters, sortBy]);
+
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      mScoreMin: 0,
+      sScoreMin: 0,
+      budgetMin: 0,
+      budgetMax: 999999,
+      searchText: '',
+      excludeRisks: false,
+      category: 'all',
+      locationType: 'all',
+    });
+    setSortBy('recommendation');
+  };
+
+  // ...existing code...
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-slate-900">仕事を探す</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t('jobs.title', '仕事を探す')}</h1>
           <p className="text-slate-600 mt-2">ぴったりの仕事を見つける</p>
+          <p className="text-xs text-slate-500 mt-1">
+            💼 募集中の仕事のみ表示 | 受けた仕事は「仕事管理」で確認できます
+          </p>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-8">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="キーワード検索"
-              value={filters.searchText}
-              onChange={e => setFilters({ ...filters, searchText: e.target.value })}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm"
-            />
-            <select
-              value={filters.category}
-              onChange={e => setFilters({ ...filters, category: e.target.value })}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
-            >
-              <option value="all">すべてのカテゴリ</option>
-              <option value="IT">IT</option>
-              <option value="事務">事務</option>
-              <option value="その他">その他</option>
-            </select>
+        {/* Top Filter Bar - Mobile optimized with hamburger menu */}
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-8 sticky top-24 z-20">
+          <div className="flex flex-col gap-4">
+            {/* Search + Mobile Menu Toggle */}
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="キーワード検索"
+                    value={filters.searchText}
+                    onChange={(e) => setFilters({ ...filters, searchText: e.target.value })}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition"
+              >
+                {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+
+            {/* Desktop: Full Controls - Always visible on md+ */}
+            <div className="hidden md:block space-y-4">
+              {/* Top Row: Filters + View toggle on one line, wrapping if needed */}
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filters.locationType}
+                    onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                  >
+                    {locationTypes.map(loc => (
+                      <option key={loc} value={loc}>
+                        {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                  >
+                    <option value="recommendation">🤖 おすすめ順</option>
+                    <option value="trust">🛡️ 信頼度</option>
+                    <option value="budget">💰 報酬順</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-600 font-medium">表示:</span>
+                  <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📊</span>
+                      <span>グリッド</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('timeline')}
+                      className={`px-4 py-2 font-medium text-sm transition-all flex items-center gap-2 border-x border-slate-300 ${
+                        viewMode === 'timeline'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>📜</span>
+                      <span>タイムライン</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Second Row: Buttons & Presets */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`px-4 py-2 rounded-lg font-medium transition text-sm ${
+                    showAdvancedFilters ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  ⚙️ 詳細
+                </button>
+                <button
+                  onClick={resetFilters}
+                  className="px-3 py-2 text-slate-600 text-sm font-medium bg-slate-100 rounded-lg"
+                >
+                  ✕ リセット
+                </button>
+
+                <span className="text-xs font-medium text-slate-600">信頼度:</span>
+                <button
+                  onClick={() => setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 })}
+                  className={`px-3 py-1.5 text-xs rounded-full font-medium ${
+                    filters.mScoreMin === 70 && filters.sScoreMin === 70
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  安全
+                </button>
+                <button
+                  onClick={() => setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 })}
+                  className={`px-3 py-1.5 text-xs rounded-full font-medium ${
+                    filters.mScoreMin === 0 && filters.sScoreMin === 0
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  全て
+                </button>
+                <label className="ml-auto flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeRisks}
+                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-xs font-medium text-slate-700">リスク除外</span>
+                </label>
+              </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">最小予算</label>
+                    <input
+                      type="number"
+                      placeholder="最小"
+                      value={filters.budgetMin}
+                      onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">最大予算</label>
+                    <input
+                      type="number"
+                      placeholder="最大"
+                      value={filters.budgetMax}
+                      onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile: Hamburger Menu */}
+            {showMobileMenu && (
+              <div className="md:hidden pt-4 border-t border-slate-200 space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">カテゴリ</label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'all' ? 'すべてのカテゴリ' : cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">形態</label>
+                  <select
+                    value={filters.locationType}
+                    onChange={(e) => setFilters({ ...filters, locationType: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    {locationTypes.map(loc => (
+                      <option key={loc} value={loc}>
+                        {loc === 'all' ? 'すべての形態' : loc === 'remote' ? 'リモート' : loc === 'hybrid' ? 'ハイブリッド' : '現地'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">並べ替え</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
+                  >
+                    <option value="recommendation">🤖 おすすめ順</option>
+                    <option value="trust">🛡️ 信頼度</option>
+                    <option value="budget">💰 報酬順</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-2">表示</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
+                      }`}
+                    >
+                      📊
+                    </button>
+                    <button
+                      onClick={() => setViewMode('immersive')}
+                      className={`flex-1 px-3 py-2 text-lg rounded font-medium ${
+                        viewMode === 'immersive'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                          : 'bg-slate-100 text-slate-700 border border-slate-300'
+                      }`}
+                    >
+                      🎯
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className={`flex-1 px-3 py-2 text-sm rounded font-medium ${
+                      showAdvancedFilters ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    ⚙️詳細
+                  </button>
+                  <button
+                    onClick={resetFilters}
+                    className="flex-1 px-3 py-2 text-sm rounded font-medium bg-slate-100 text-slate-700"
+                  >
+                    ✕リセット
+                  </button>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 block">信頼度</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilters({ ...filters, mScoreMin: 70, sScoreMin: 70 })}
+                      className={`flex-1 px-3 py-2 text-xs rounded-full font-medium ${
+                        filters.mScoreMin === 70 && filters.sScoreMin === 70
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      安全
+                    </button>
+                    <button
+                      onClick={() => setFilters({ ...filters, mScoreMin: 0, sScoreMin: 0 })}
+                      className={`flex-1 px-3 py-2 text-xs rounded-full font-medium ${
+                        filters.mScoreMin === 0 && filters.sScoreMin === 0
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      全て
+                    </button>
+                  </div>
+                </div>
+
+                {showAdvancedFilters && (
+                  <div className="pt-3 border-t border-slate-200 space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">最小予算</label>
+                      <input
+                        type="number"
+                        placeholder="最小"
+                        value={filters.budgetMin}
+                        onChange={(e) => setFilters({ ...filters, budgetMin: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">最大予算</label>
+                      <input
+                        type="number"
+                        placeholder="最大"
+                        value={filters.budgetMax}
+                        onChange={(e) => setFilters({ ...filters, budgetMax: parseInt(e.target.value) || 999999 })}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeRisks}
+                    onChange={(e) => setFilters({ ...filters, excludeRisks: e.target.checked })}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-xs font-medium text-slate-700">リスク除外</span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
-        {/* ダミーJobCardリスト（複数件） */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col">
-            {/* タイトル＋チェックボタン */}
-            <div className="flex items-center mb-4">
-              <h3 className="text-2xl font-extrabold text-slate-900 flex-grow truncate">React コーディング</h3>
-              <button className="ml-6 px-6 py-2 rounded-lg font-bold bg-indigo-600 text-white text-base whitespace-nowrap">チェック</button>
+
+        {/* Main Content - View Mode Toggle */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Results Summary */}
+            <div className="col-span-full mb-4">
+              <p className="text-slate-600 text-sm">
+                {filteredJobs.length} 件の仕事が見つかりました
+              </p>
             </div>
-            {/* 詳細説明（中央・背景色・余白広め） */}
-            <div className="bg-slate-50 rounded-lg mb-6 p-5">
-              <p className="text-slate-800 text-base leading-relaxed line-clamp-3">弊社のプロダクトで使用しているReact/TypeScriptの開発案件です。設計・実装・テスト・ドキュメント作成まで幅広く担当いただきます。チーム開発経験者歓迎。コミュニケーション重視。</p>
-            </div>
-            {/* 主要情報（グリッド均等配置） */}
-            <div className="grid grid-cols-2 gap-6 text-sm mb-4">
-              <div>
-                <span className="text-xs text-slate-500">報酬</span>
-                <p className="text-xl font-extrabold text-slate-900">¥250,000</p>
+
+            {/* Job Cards */}
+            {filteredJobs.length > 0 ? (
+              filteredJobs.map(job => (
+                <JobCard key={job.id} job={job} pendingApplications={pendingApplications} />
+              ))
+            ) : (
+              <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
+                <p className="text-slate-500 text-lg">
+                  条件に合う仕事がありません
+                </p>
               </div>
-              <div>
-                <span className="text-xs text-slate-500">期限</span>
-                <p className="text-xl font-extrabold text-slate-900">6/30/2025</p>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500">依頼者</span>
-                <p className="text-lg font-bold text-slate-900">株式会社デモ</p>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500">評価</span>
-                <p className="text-lg font-bold text-slate-900">4.9 / 63件</p>
-              </div>
-            </div>
-            {/* バッジ群（横並び・色分け） */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm rounded-full font-bold">✓ 資金確保済み</span>
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm rounded-full font-bold">✓ 条件明確</span>
-              <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm rounded-full font-bold">⚠ 注意あり</span>
-            </div>
-            {/* スコア群（AI推奨度のみ残す） */}
-            <div className="flex items-end gap-6 mb-6">
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-slate-500">契約の透明性</span>
-                <span className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-extrabold text-lg">85</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-slate-500">支払い安全性</span>
-                <span className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-extrabold text-lg">90</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-slate-500">条件の明確さ</span>
-                <span className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-extrabold text-lg">100</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-indigo-700 font-bold">AI推奨度</span>
-                <span className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-extrabold text-lg">100</span>
-              </div>
-            </div>
-            {/* スキルタグ（下部横並び） */}
-            <div className="flex flex-wrap gap-3 mt-2">
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-bold">React</span>
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-bold">TypeScript</span>
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-bold">Jest</span>
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-bold">Storybook</span>
-              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-bold">Git</span>
-            </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <TimelineJobsView
+            filteredJobs={filteredJobs}
+            immersive={viewMode === 'immersive'}
+            onExitImmersive={() => setViewMode('timeline')}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+/* Job Card Component */
+function JobCard({ job, pendingApplications = [], onApply }) {
+  // Resolve application status
+  const applicationStatus = React.useMemo(() => {
+    const found = pendingApplications.find(j => j.jobId === job.id);
+    return found ? found.status : null;
+  }, [pendingApplications, job.id]);
+
+  // Test-only: status change button
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+
+  const getScoreIcon = (score) => {
+    if (score >= 75) return { bg: 'bg-emerald-500', text: 'text-white' };
+    if (score >= 50) return { bg: 'bg-yellow-500', text: 'text-white' };
+    return { bg: 'bg-red-500', text: 'text-white' };
+  };
+
+  const mScoreIcon = getScoreIcon(job.mScore);
+  const sScoreIcon = getScoreIcon(job.sScore);
+  const ambiguityIcon = getScoreIcon(job.ambiguityScore);
+  const recommendationIcon = getScoreIcon(job.recommendationScore);
+
+  // AI Flag styling
+  const getFlagStyle = () => {
+    const base = 'px-3 py-1 rounded-full font-bold text-sm';
+    if (job.recommendationFlag === 'green') {
+      return `${base} bg-emerald-100 text-emerald-700`;
+    } else if (job.recommendationFlag === 'red') {
+      return `${base} bg-red-100 text-red-700`;
+    } else {
+      return `${base} bg-yellow-100 text-yellow-700`;
+    }
+  };
+
+  // First shift time badge for hourly jobs
+  const getFirstShift = (jobData) => {
+    if (jobData?.workType !== 'hourly' || !Array.isArray(jobData?.milestones)) {
+      return null;
+    }
+    return jobData.milestones.find((m) => m.start && m.end) || null;
+  };
+
+  const firstShift = getFirstShift(job);
+
+  // Handle Apply Modal
+  const handleApply = (e) => {
+    e.stopPropagation();
+    setShowApplyModal(true);
+  };
+  const handleApplyModalClose = () => setShowApplyModal(false);
+  const handleApplyModalSubmit = (jobData, appliedAt, customDeadline, selectedMilestones = []) => {
+    if (job?.id) {
+      // Add to pending applications with custom deadline and selected milestones
+      if (typeof window.addPendingApplicationJob === 'function') {
+        window.addPendingApplicationJob(job.id, window.loggedInUserDataGlobal.id, appliedAt, customDeadline, selectedMilestones);
+      } else if (typeof addPendingApplicationJob === 'function') {
+        addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, customDeadline, selectedMilestones);
+      }
+      // Notify global state update
+      window.dispatchEvent(new Event('updatePendingApplications'));
+      setShowApplyModal(false);
+    }
+  };
+
+
+
+
+  return (
+    <>
+
+      <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col">
+        {/* Card Top: Title, Badge, Info */}
+        <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-3">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-bold text-slate-900 truncate">{job.title}</h3>
+            <span className={getFlagStyle()}>
+              {job.recommendationFlag === 'green' ? '✓ おすすめ' : job.recommendationFlag === 'red' ? '⚠️ 要注意' : '⚡ 確認推奨'}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-slate-700">
+            <span className="flex items-center gap-1"><span className="text-slate-400">👤</span>{job.client || job.by || 'クライアント'}</span>
+            <span className="flex items-center gap-1"><span className="text-slate-400">💰</span><span className="font-bold text-slate-900">{job.workType === 'hourly' && job.hourlyRate ? `¥${job.hourlyRate?.toLocaleString()}/h` : `¥${job.budget?.toLocaleString()}`}</span></span>
+            <span className="flex items-center gap-1"><span className="text-slate-400">📅</span>{job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}</span>
+            {firstShift && (
+              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">{firstShift.start}–{firstShift.end}</span>
+            )}
+          </div>
+          {job.requiredSkills && job.requiredSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {job.requiredSkills.map((skill, idx) => (
+                <span key={idx} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full">{skill}</span>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={handleApply}
+            className={`w-full mt-3 px-4 py-2 rounded-lg font-bold text-sm transition whitespace-nowrap ${
+              applicationStatus
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-60'
+                : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-lg hover:shadow-xl'
+            }`}
+            disabled={!!applicationStatus}
+          >
+            {applicationStatus ? (applicationStatus === 'pending' ? '応募中' : applicationStatus === 'accepted' ? '採用済み' : '不採用') : 'このお仕事を見る'}
+          </button>
+        </div>
+
+        {/* ...existing code... (no AIおすすめ度 row) */}
+
+        {/* Score Icons */}
+        <div className="p-4 md:p-6 border-b border-slate-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4">
+            <div className="flex flex-col items-center">
+              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">契約の透明性</p>
+              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${mScoreIcon.bg} flex items-center justify-center`}>
+                <span className={`text-base md:text-lg font-bold ${mScoreIcon.text}`}>{job.mScore}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">支払い安全性</p>
+              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${sScoreIcon.bg} flex items-center justify-center`}>
+                <span className={`text-base md:text-lg font-bold ${sScoreIcon.text}`}>{job.sScore}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">条件の明確さ</p>
+              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${ambiguityIcon.bg} flex items-center justify-center`}>
+                <span className={`text-base md:text-lg font-bold ${ambiguityIcon.text}`}>{job.ambiguityScore}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="text-xs text-slate-600 mb-1 md:mb-2 text-center min-h-[20px] flex items-center justify-center whitespace-nowrap">AI推奨度</p>
+              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${recommendationIcon.bg}`}> {/* 完全一致 */}
+                <span className={`text-base md:text-lg font-bold leading-none ${recommendationIcon.text}`}>{job.recommendationScore}</span>
+              </div>
+            </div>
+          </div>
+          {/* Trust Badges */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {job.escrowStatus?.isFullyDeposited && (
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">✓ 資金確保済み</span>
+            )}
+            {job.ambiguityScore >= 75 && (
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">✓ 条件明確</span>
+            )}
+            {job.safetyWarnings && job.safetyWarnings.length === 0 && (
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">✓ 安全</span>
+            )}
+            {job.safetyWarnings && job.safetyWarnings.length > 0 && (
+              <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">⚠ 注意あり</span>
+            )}
+          </div>
+        </div>
+
+        {/* Expand Indicator */}
+        <div className="p-2 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)} role="button">
+          <ChevronDown size={20} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+        </div>
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="bg-slate-50 p-6 border-t border-slate-200 space-y-6">
+          {/* Safety Warnings */}
+          {job.safetyWarnings && job.safetyWarnings.length > 0 && (
+            <div className="space-y-2 bg-amber-50 border border-amber-200 p-4 rounded">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={18} className="text-amber-600" />
+                <h4 className="font-semibold text-amber-900">⚠ AI安全警告</h4>
+              </div>
+              <ul className="space-y-1">
+                {job.safetyWarnings.map((warning, idx) => (
+                  <li key={idx} className="text-sm text-amber-900 flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Clarity Checklist */}
+          {job.claritychecklist && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-slate-900">契約の明確さ</h4>
+                <span className={`px-3 py-1 rounded-full font-bold text-sm ${
+                  job.claritychecklist.totalScore >= 75 ? 'bg-emerald-100 text-emerald-700' :
+                  job.claritychecklist.totalScore >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {job.claritychecklist.totalScore}/100
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {job.claritychecklist.items.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-sm">
+                    <span className={`mt-0.5 text-lg ${item.complete ? '✓ text-emerald-600' : '✗ text-slate-400'}`}>
+                      {item.complete ? '✓' : '✗'}
+                    </span>
+                    <div>
+                      <p className={`font-medium ${item.complete ? 'text-slate-900' : 'text-slate-600'}`}>
+                        {item.label}
+                      </p>
+                      <p className="text-xs text-slate-500">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Client Info */}
+          <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+            <h4 className="font-semibold text-slate-900">案件詳細</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-slate-600 font-medium">依頼者</p>
+                <p className="text-slate-900">{job.by || 'クライアント'}</p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">評価・レビュー</p>
+                <p className="text-slate-900">
+                  ⭐ {job.popularity?.toFixed(1) || 'N/A'} 点 ({job.clientRating?.totalReviews || 0}件)
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">予算</p>
+                <p className="text-lg font-bold text-slate-900">¥{job.budget?.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-slate-600 font-medium">納期</p>
+                <p className="text-slate-900">
+                  {job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Required Skills - Full */}
+          {job.requiredSkills && job.requiredSkills.length > 0 && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">向く人</h4>
+              <div className="flex flex-wrap gap-2">
+                {job.requiredSkills.map((skill, idx) => (
+                  <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
+                    👤 {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Job Description */}
+          {job.description && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">仕事内容</h4>
+              <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                {job.description}
+              </p>
+            </div>
+          )}
+
+          {/* Deliverables */}
+          {job.deliverables && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">納品物</h4>
+              <p className="text-sm text-slate-700">{job.deliverables}</p>
+              {job.deliverableDetails && (
+                <p className="text-sm text-slate-600 mt-2">詳細: {job.deliverableDetails}</p>
+              )}
+            </div>
+          )}
+
+          {/* Scope of Work */}
+          {(job.scopeOfWork_included || job.scopeOfWork_excluded) && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">業務範囲</h4>
+              {job.scopeOfWork_included && (
+                <div>
+                  <p className="text-sm font-medium text-emerald-700 mb-1">✓ 含まれる作業</p>
+                  <p className="text-sm text-slate-600">{job.scopeOfWork_included}</p>
+                </div>
+              )}
+              {job.scopeOfWork_excluded && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-amber-700 mb-1">✗ 含まれない作業</p>
+                  <p className="text-sm text-slate-600">{job.scopeOfWork_excluded}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Acceptance Criteria */}
+          {job.acceptanceCriteria && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">受け入れ基準</h4>
+              <p className="text-sm text-slate-700">{job.acceptanceCriteria}</p>
+              {job.acceptanceCriteriaDetails && (
+                <p className="text-sm text-slate-600 mt-2">詳細: {job.acceptanceCriteriaDetails}</p>
+              )}
+            </div>
+          )}
+
+          {/* Milestones (project-type) */}
+          {job.workType !== 'hourly' && job.milestones && job.milestones.length > 0 && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">マイルストーン</h4>
+              <div className="space-y-3">
+                {job.milestones.map((milestone, idx) => (
+                  <div key={idx} className="border-l-4 border-indigo-400 pl-3">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-slate-900">{milestone.name || milestone.title}</p>
+                      <p className="text-sm font-bold text-slate-900">¥{milestone.amount?.toLocaleString()}</p>
+                    </div>
+                    {milestone.dueDate && (
+                      <p className="text-xs text-slate-500">期限: {new Date(milestone.dueDate).toLocaleDateString()}</p>
+                    )}
+                    {milestone.description && (
+                      <p className="text-sm text-slate-600 mt-1">{milestone.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Shift schedule (hourly-type) */}
+          {job.workType === 'hourly' && job.milestones && job.milestones.length > 0 && (
+            <div className="space-y-3 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">シフト予定</h4>
+              <ul className="space-y-2">
+                {job.milestones
+                  .filter(m => m.date && m.start && m.end)
+                  .map((m) => (
+                    <li key={m.id} className="flex items-center justify-between">
+                      <span className="text-sm text-slate-900">{m.date} ・ {m.start}–{m.end}</span>
+                      <span className="text-xs text-slate-600">{m.title}</span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
+
+
+
+          {/* Additional Terms */}
+          {job.additionalWorkTerms && (
+            <div className="space-y-2 bg-white p-4 rounded border border-slate-200">
+              <h4 className="font-semibold text-slate-900">追加作業について</h4>
+              <p className="text-sm text-slate-700">{job.additionalWorkTerms}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+    {/* Apply Modal */}
+    <ApplyJobModal
+      isOpen={showApplyModal}
+      onClose={handleApplyModalClose}
+      onSubmit={handleApplyModalSubmit}
+      job={job}
+    />
+  </>
   );
 }
