@@ -121,7 +121,6 @@ function JobCard({ job, color }) {
   else if (job.status === 'offered') progress = 20;
   else if (job.status === 'pending') progress = 0;
   else if (job.status === 'rejected') progress = 100;
-
   return (
     <div className={`bg-white rounded-lg shadow p-3 flex flex-col gap-1 border-l-4 border-${color}-400`}>
       <div className="flex items-center gap-2 mb-1">

@@ -33,7 +33,7 @@ import { callGeminiAPI } from './utils/api';
 
 import { mockUserPoints, mockTransactions } from './utils/mockPointsData';
 import { AlertTriangle, Settings } from 'lucide-react';
-import ProjectOverviewPage from './pages/ProjectOverviewPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
 import PlatformOverviewPage from './pages/PlatformOverviewPage';
 
 export default function App() {
@@ -329,23 +329,23 @@ export default function App() {
           }
         }} />
         <main className="flex-1 p-6 pt-20 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<JobsSearchPage />} />
-            <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setCurrentViewMode={setCurrentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
-            <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={async () => {}} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
-            <Route path="/contractReview" element={<ContractReviewPage />} />
-            <Route path="/project-overview" element={<PlatformOverviewPage />} />
-            <Route path="/project-detail" element={<ProjectOverviewPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
-            <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
-            <Route path="/new-contract-project" element={<NewContractProjectPage />} />
-            <Route path="/work-management" element={<WorkManagementPage openProposalDetailsModal={openProposalDetailsModal} onSelectProposal={handleSelectProposal} />} />
-            <Route path="/command-ui" element={<MarketCommandUIPage />} />
-            <Route path="/jobs" element={<JobsSearchPage />} />
-            <Route path="/pending-applications" element={<PendingApplicationsPage />} />
-              <Route path="/progress-dashboard" element={<ProgressDashboard />} />
-          </Routes>
+           <Routes>
+             <Route path="/" element={<JobsSearchPage />} />
+             <Route path="/dashboard" element={<DashboardPage projects={projects} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleProjectClick={handleProjectClick} selectedProjectId={selectedProjectId} loggedInUser={loggedInUser} openProposalModalFunc={openProposalModal} openDepositModalFunc={openDepositModal} t={t} currentLanguage={currentLanguage} currentViewMode={currentViewMode} setCurrentViewMode={setCurrentViewMode} setActiveProjectDetailTab={setActiveProjectDetailTab} activeProjectDetailTab={activeProjectDetailTab} isLoadingGemini={isLoadingGemini} handleUpdateMilestoneStatus={handleUpdateMilestoneStatus} handleSelectProposal={handleSelectProposal} handleCancelProposalSelection={handleCancelProposalSelection} onNavigateToContractReview={navigateToContractReview} openProposalDetailsModal={openProposalDetailsModal} setActivePage={(page) => navigate(page.startsWith('/') ? page : `/${page}`)} />} />
+             <Route path="/newProject" element={<NewProjectPage newProjectData={newProjectData} setNewProjectData={setNewProjectData} t={t} currentLanguage={currentLanguage} isLoadingGemini={isLoadingGemini} milestoneSuggestions={milestoneSuggestions} contractCheckSuggestions={contractCheckSuggestions} onGenerateMilestones={async () => {}} onContractCheck={handleContractCheck} onSubmitProject={handleSubmitNewProject} onCancelProject={resetNewProjectForm} />} />
+             <Route path="/contractReview" element={<ContractReviewPage />} />
+             <Route path="/project-overview" element={<PlatformOverviewPage />} />
+             <Route path="/project-detail" element={<ProjectDetailPage />} />
+             <Route path="/messages" element={<MessagesPage />} />
+             <Route path="/disputes" element={<PlaceholderPage t={t} title={t.disputes} icon={<AlertTriangle />} />} />
+             <Route path="/settings" element={<PlaceholderPage t={t} title={t.settings} icon={<Settings />} />} />
+             <Route path="/new-contract-project" element={<NewContractProjectPage />} />
+             <Route path="/work-management" element={<WorkManagementPage openProposalDetailsModal={openProposalDetailsModal} onSelectProposal={handleSelectProposal} />} />
+             <Route path="/command-ui" element={<MarketCommandUIPage />} />
+             <Route path="/jobs" element={<JobsSearchPage />} />
+             <Route path="/pending-applications" element={<PendingApplicationsPage />} />
+             <Route path="/progress-dashboard" element={<ProgressDashboard />} />
+           </Routes>
         </main>
         <ProposalModal isOpen={isProposalModalOpen} onClose={closeProposalModal} onSubmit={handleProposalSubmit} project={projectForProposal} lang={currentLanguage} t={t} currentUser={loggedInUser} />
         <ProposalDetailsModal isOpen={isProposalDetailsModalOpen} onClose={closeProposalDetailsModal} proposal={proposalForDetails} lang={currentLanguage} t={t} onSelectProposal={handleSelectProposal} />

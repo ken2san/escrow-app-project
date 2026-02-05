@@ -1252,7 +1252,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                     {/* Project Detail Link */}
                                                     {viewSettings.groupBy === 'project' && projectTab !== 'pending' && (
                                                         <button
-                                                            onClick={() => navigate(`/project-overview?projectId=${groupKey}`)}
+                                                            onClick={() => navigate(`/project-detail?projectId=${groupKey}`)}
                                                             className="mt-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1"
                                                         >
                                                             <span>📊</span>
