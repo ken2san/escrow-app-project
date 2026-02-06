@@ -92,7 +92,7 @@ export default function ProjectOverviewPage() {
               <span className="text-lg font-bold text-emerald-700">{progressPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-emerald-500 to-green-400 h-2 rounded-full transition-all"
                 style={{ width: `${progressPercentage}%` }}
               ></div>
@@ -139,7 +139,7 @@ export default function ProjectOverviewPage() {
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
               style={{ width: `${totalAmount > 0 ? (fundsDeposited / totalAmount) * 100 : 0}%` }}
             ></div>
@@ -163,10 +163,10 @@ export default function ProjectOverviewPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-sm font-bold text-gray-900">
-                      {new Date(history.date).toLocaleDateString('ja-JP', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {new Date(history.date).toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </span>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -187,9 +187,9 @@ export default function ProjectOverviewPage() {
                     <div className="mt-2 p-2 bg-amber-50 rounded text-xs">
                       <span className="font-semibold">変更内容: </span>
                       <span className="text-gray-700">
-                        {history.changes.field} - 
+                        {history.changes.field} -
                         <span className="line-through text-red-600 mx-1">{history.changes.oldValue}</span>
-                        → 
+                        →
                         <span className="text-green-600 mx-1">{history.changes.newValue}</span>
                       </span>
                     </div>
@@ -207,7 +207,7 @@ export default function ProjectOverviewPage() {
           <span className="text-2xl mr-2">📋</span>
           契約条件
         </h2>
-        
+
         <div className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-bold text-gray-700 mb-2">プロジェクト概要</h3>
@@ -278,9 +278,9 @@ export default function ProjectOverviewPage() {
             {project.milestones.map((milestone, index) => {
               const isCompleted = milestone.status === 'completed' || milestone.status === 'released';
               const isInProgress = milestone.status === 'in_progress';
-              
+
               return (
-                <div 
+                <div
                   key={milestone.id}
                   className={`p-4 rounded-lg border-2 ${
                     isCompleted ? 'bg-green-50 border-green-300' :
