@@ -6,30 +6,8 @@ import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
 
 export default function JobsSearchPage() {
-    // Handler for job application
-    const handleApplyJob = (job, formData) => {
-      // formData may contain appliedAt, deadline, selectedMilestones, etc.
-      const appliedAt = formData?.appliedAt || new Date().toISOString();
-      const deadline = formData?.deadline || null;
-      const selectedMilestones = formData?.selectedMilestones || [];
-      addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, deadline, selectedMilestones);
-      window.dispatchEvent(new CustomEvent('updatePendingApplications'));
-    };
-  // Fetch pending applications
-  const [pendingApplications, setPendingApplications] = useState([]);
-  useEffect(() => {
-    setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
-  }, []);
-
-  // Reflect changes when application status updates globally
-  useEffect(() => {
-    const handler = () => setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
-    window.addEventListener('updatePendingApplications', handler);
-    return () => window.removeEventListener('updatePendingApplications', handler);
-  }, []);
-  const { t } = useTranslation();
-  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  // --- State declarations (must be at the top) ---
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     mScoreMin: 0,
     sScoreMin: 0,
@@ -40,6 +18,31 @@ export default function JobsSearchPage() {
     category: 'all', // New: category filter
     locationType: 'all', // New: location filter
   });
+  const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'timeline', or 'immersive'
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
+  const [pendingApplications, setPendingApplications] = useState([]);
+
+  // --- Effects and handlers ---
+  // Simulate loading delay for polish (replace with real fetch if needed)
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, [filters, sortBy]);
+
+  // Fetch pending applications
+  useEffect(() => {
+    setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+  }, []);
+
+  // Reflect changes when application status updates globally
+  useEffect(() => {
+    const handler = () => setPendingApplications(getPendingApplicationJobsForUser(loggedInUserDataGlobal.id));
+    window.addEventListener('updatePendingApplications', handler);
+    return () => window.removeEventListener('updatePendingApplications', handler);
+  }, []);
 
   // Detect mobile screen size changes
   useEffect(() => {
@@ -50,32 +53,35 @@ export default function JobsSearchPage() {
         setViewMode('timeline');
       }
     };
-
-    // Ensure correct initial state on mount
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [viewMode]);
 
-  const [sortBy, setSortBy] = useState('recommendation'); // recommendation, trust, budget
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // Advanced filter panel state
+  const { t } = useTranslation();
 
-  // Get all available jobs
+  // --- Memoized data ---
   const allJobs = useMemo(() => getAvailableJobsForDiscovery(), []);
-
-  // Category options derived from data
   const categories = useMemo(() => {
     const unique = new Set();
     allJobs.forEach(job => unique.add(job.category || 'その他'));
     return ['all', ...Array.from(unique)];
   }, [allJobs]);
-
-  // Location options derived from data
   const locationTypes = useMemo(() => {
     const unique = new Set();
     allJobs.forEach(job => unique.add(job.locationType || 'onsite'));
     return ['all', ...Array.from(unique)];
   }, [allJobs]);
+
+  // --- Handlers ---
+  const handleApplyJob = (job, formData) => {
+    // formData may contain appliedAt, deadline, selectedMilestones, etc.
+    const appliedAt = formData?.appliedAt || new Date().toISOString();
+    const deadline = formData?.deadline || null;
+    const selectedMilestones = formData?.selectedMilestones || [];
+    addPendingApplicationJob(job.id, loggedInUserDataGlobal.id, appliedAt, deadline, selectedMilestones);
+    window.dispatchEvent(new CustomEvent('updatePendingApplications'));
+  };
 
   // Filter & Sort
   const filteredJobs = useMemo(() => {
@@ -463,20 +469,45 @@ export default function JobsSearchPage() {
             {/* Results Summary */}
             <div className="col-span-full mb-4">
               <p className="text-slate-600 text-sm">
-                {filteredJobs.length} 件の仕事が見つかりました
+                {loading
+                  ? t('jobs.loading', '検索中...')
+                  : t('jobs.foundCount', { count: filteredJobs.length, defaultValue: '{{count}} 件の仕事が見つかりました' })}
               </p>
             </div>
 
-            {/* Job Cards */}
-            {filteredJobs.length > 0 ? (
+            {/* Loading State */}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-2xl shadow p-8 flex flex-col gap-4 animate-pulse min-h-[220px]">
+                  <div className="h-6 bg-slate-200 rounded w-2/3 mb-2" />
+                  <div className="h-4 bg-slate-100 rounded w-5/6 mb-1" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2 mb-1" />
+                  <div className="flex gap-2 mt-2">
+                    <div className="h-8 w-16 bg-slate-100 rounded" />
+                    <div className="h-8 w-16 bg-slate-100 rounded" />
+                  </div>
+                  <div className="h-10 bg-slate-200 rounded mt-4" />
+                </div>
+              ))
+            ) : filteredJobs.length > 0 ? (
               filteredJobs.map(job => (
                 <JobCard key={job.id} job={job} pendingApplications={pendingApplications} onApply={handleApplyJob} />
               ))
             ) : (
-              <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
-                <p className="text-slate-500 text-lg">
-                  条件に合う仕事がありません
+              <div className="col-span-full bg-white rounded-2xl shadow p-12 text-center flex flex-col items-center justify-center gap-4">
+                <AlertCircle size={40} className="text-slate-300 mx-auto" />
+                <p className="text-slate-500 text-lg font-bold">
+                  {t('jobs.emptyState', '条件に合う仕事がありません')}
                 </p>
+                <p className="text-slate-400 text-sm max-w-xs mx-auto">
+                  {t('jobs.emptyHint', '検索条件を変更するか、リセットして再度お試しください。')}
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="mt-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition"
+                >
+                  {t('jobs.resetButton', '検索条件をリセット')}
+                </button>
               </div>
             )}
           </div>
@@ -538,20 +569,19 @@ function JobCard({ job, pendingApplications = [], onApply }) {
 
   return (
     <>
-
-      <div className="bg-white rounded-xl md:rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-4 md:p-6">
+      <div className="bg-white rounded-2xl shadow-lg transition overflow-hidden flex flex-col p-0 md:p-0 border border-slate-100 hover:shadow-xl group">
         {/* Card Top: Title, Badge, Info */}
-        <div className="p-4 md:p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-2 md:gap-3">
-          <div className="flex items-center gap-1 mb-0.5">
+        <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex flex-col gap-2 md:gap-3">
+          <div className="flex items-center gap-2 mb-1">
             <h3
-              className="text-base font-bold text-slate-900 line-clamp-2 min-h-[2.2em] max-w-full cursor-pointer"
+              className="text-lg font-extrabold text-slate-900 line-clamp-2 min-h-[2.4em] max-w-full cursor-pointer group-hover:text-indigo-700 transition-colors"
               title={job.title}
             >
               {job.title}
             </h3>
             {job.recommendationFlag === 'green' ? (
               <span
-                className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-bold max-w-[200px] overflow-hidden whitespace-nowrap text-ellipsis block flex-shrink-0"
+                className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold max-w-[120px] overflow-hidden whitespace-nowrap text-ellipsis block flex-shrink-0 border border-emerald-200"
                 title="✓ おすすめ"
               >
                 ✓ おすすめ
