@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, ChevronDown, AlertCircle, Menu, X } from 'lucide-react';
+import { Search, ChevronDown, AlertCircle, Menu, X, BarChart2, ScrollText, Target, Settings, XCircle, User, Calendar, Star } from 'lucide-react';
 import { getAvailableJobsForDiscovery, loggedInUserDataGlobal, getPendingApplicationJobsForUser, addPendingApplicationJob } from '../utils/initialData';
 import ApplyJobModal from '../components/modals/ApplyJobModal';
 import TimelineJobsView from '../components/jobs/TimelineJobsView';
@@ -200,9 +200,9 @@ export default function JobsSearchPage() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
                   >
-                    <option value="recommendation">🤖 おすすめ順</option>
-                    <option value="trust">🛡️ 信頼度</option>
-                    <option value="budget">💰 報酬順</option>
+                    <option value="recommendation">おすすめ順</option>
+                    <option value="trust">信頼度</option>
+                    <option value="budget">報酬順</option>
                   </select>
                 </div>
 
@@ -217,7 +217,7 @@ export default function JobsSearchPage() {
                           : 'bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <span>📊</span>
+                      <BarChart2 className="w-4 h-4 text-slate-500" />
                       <span>グリッド</span>
                     </button>
                     <button
@@ -228,7 +228,7 @@ export default function JobsSearchPage() {
                           : 'bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <span>📜</span>
+                      <ScrollText className="w-4 h-4 text-slate-500" />
                       <span>タイムライン</span>
                     </button>
                   </div>
@@ -349,9 +349,9 @@ export default function JobsSearchPage() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="w-full mt-1 px-3 py-2 border border-slate-300 rounded text-sm"
                   >
-                    <option value="recommendation">🤖 おすすめ順</option>
-                    <option value="trust">🛡️ 信頼度</option>
-                    <option value="budget">💰 報酬順</option>
+                    <option value="recommendation">おすすめ順</option>
+                    <option value="trust">信頼度</option>
+                    <option value="budget">報酬順</option>
                   </select>
                 </div>
 
@@ -366,7 +366,7 @@ export default function JobsSearchPage() {
                           : 'bg-slate-100 text-slate-700 border border-slate-300'
                       }`}
                     >
-                      📊
+                      <BarChart2 className="w-5 h-5 text-slate-500" />
                     </button>
                     <button
                       onClick={() => setViewMode('immersive')}
@@ -376,7 +376,7 @@ export default function JobsSearchPage() {
                           : 'bg-slate-100 text-slate-700 border border-slate-300'
                       }`}
                     >
-                      🎯
+                      <Target className="w-5 h-5 text-slate-500" />
                     </button>
                   </div>
                 </div>
@@ -388,13 +388,13 @@ export default function JobsSearchPage() {
                       showAdvancedFilters ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'
                     }`}
                   >
-                    ⚙️詳細
+                    <Settings className="inline w-4 h-4 mr-1 text-slate-500 align-text-bottom" />詳細
                   </button>
                   <button
                     onClick={resetFilters}
                     className="flex-1 px-3 py-2 text-sm rounded font-medium bg-slate-100 text-slate-700"
                   >
-                    ✕リセット
+                    <XCircle className="inline w-4 h-4 mr-1 text-slate-500 align-text-bottom" />リセット
                   </button>
                 </div>
 
@@ -608,9 +608,9 @@ function JobCard({ job, pendingApplications = [], onApply }) {
             </p>
           )}
           <div className="flex flex-wrap gap-2 md:gap-4 text-sm text-slate-700">
-            <span className="flex items-center gap-1"><span className="text-slate-400">👤</span>{job.client || job.by || 'クライアント'}</span>
-            <span className="flex items-center gap-1"><span className="text-slate-400">💰</span><span className="font-bold text-slate-900">{job.workType === 'hourly' && job.hourlyRate ? `¥${job.hourlyRate?.toLocaleString()}/h` : `¥${job.budget?.toLocaleString()}`}</span></span>
-            <span className="flex items-center gap-1"><span className="text-slate-400">📅</span>{job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}</span>
+            <span className="flex items-center gap-1"><User className="w-4 h-4 text-slate-400" />{job.client || job.by || 'クライアント'}</span>
+            <span className="flex items-center gap-1"><BarChart2 className="w-4 h-4 text-slate-400" /><span className="font-bold text-slate-900">{job.workType === 'hourly' && job.hourlyRate ? `¥${job.hourlyRate?.toLocaleString()}/h` : `¥${job.budget?.toLocaleString()}`}</span></span>
+            <span className="flex items-center gap-1"><Calendar className="w-4 h-4 text-slate-400" />{job.dueDate ? new Date(job.dueDate).toLocaleDateString() : 'TBD'}</span>
             {firstShift && (
               <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">{firstShift.start}–{firstShift.end}</span>
             )}
@@ -750,7 +750,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
               <div>
                 <p className="text-slate-600 font-medium">評価・レビュー</p>
                 <p className="text-slate-900">
-                  ⭐ {job.popularity?.toFixed(1) || 'N/A'} 点 ({job.clientRating?.totalReviews || 0}件)
+                  <Star className="inline w-4 h-4 text-slate-400 align-text-bottom mr-1" />{job.popularity?.toFixed(1) || 'N/A'} 点 ({job.clientRating?.totalReviews || 0}件)
                 </p>
               </div>
               <div>
@@ -773,7 +773,7 @@ function JobCard({ job, pendingApplications = [], onApply }) {
               <div className="flex flex-wrap gap-2">
                 {job.requiredSkills.map((skill, idx) => (
                   <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
-                    👤 {skill}
+                    <User className="inline w-4 h-4 text-slate-400 align-text-bottom mr-1" />{skill}
                   </span>
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import React from "react";
+import { User } from 'lucide-react';
 
 /**
  * CardHistoryTimeline - タスク/カードのアクション履歴をタイムライン形式で表示
@@ -12,7 +13,7 @@ export default function CardHistoryTimeline({ history = [], compact = false }) {
       {history.map((item, idx) => (
         <div key={idx} className="flex items-start gap-3">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-lg">
-            {item.userIcon || "👤"}
+            {item.userIcon || <User size={16} className="text-slate-400" />}
           </div>
           <div>
             <div className="flex items-center gap-2">

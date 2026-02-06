@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ClipboardList, Package, CheckCircle, Lightbulb, X, Check } from 'lucide-react';
 import { dashboardAllProjects } from '../utils/initialData';
 
 export default function ProjectOverviewPage() {
@@ -13,15 +14,15 @@ export default function ProjectOverviewPage() {
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-2xl text-gray-400 mb-4">🚫</div>
-        <div className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="text-2xl text-slate-300 mb-4">🚫</div>
+        <div className="text-lg font-semibold text-slate-800 mb-2">
           プロジェクトが見つかりません
         </div>
-        <div className="text-gray-500 mb-6">
+        <div className="text-slate-500 mb-6">
           指定されたプロジェクトは存在しないか、アクセス権限がありません。
         </div>
         <button
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+          className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
           onClick={() => navigate('/work-management')}
         >
           Work Managementに戻る
@@ -47,12 +48,12 @@ export default function ProjectOverviewPage() {
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
-            <p className="text-gray-600">{project.clientName}</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">{project.name}</h1>
+            <p className="text-slate-600">{project.clientName}</p>
           </div>
           <button
             onClick={() => navigate('/work-management')}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition"
           >
             ← 戻る
           </button>
@@ -88,12 +89,12 @@ export default function ProjectOverviewPage() {
 
           <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-green-900">進捗状況</span>
-              <span className="text-lg font-bold text-green-700">{progressPercentage}%</span>
+              <span className="text-sm font-semibold text-emerald-900">進捗状況</span>
+              <span className="text-lg font-bold text-emerald-700">{progressPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div 
-                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all"
+              <div
+                className="bg-gradient-to-r from-emerald-500 to-green-400 h-2 rounded-full transition-all"
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
@@ -105,41 +106,41 @@ export default function ProjectOverviewPage() {
       </div>
       {/* Escrow Status */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
           <span className="text-2xl mr-2">💰</span>
           エスクロー状態
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">総予算</p>
+            <p className="text-xs text-slate-600 mb-1">総予算</p>
             <p className="text-xl font-bold text-blue-600">{totalAmount.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">預託済み</p>
-            <p className="text-xl font-bold text-green-600">{fundsDeposited.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-600 mb-1">預託済み</p>
+            <p className="text-xl font-bold text-emerald-600">{fundsDeposited.toLocaleString()}</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">支払済み</p>
+            <p className="text-xs text-slate-600 mb-1">支払済み</p>
             <p className="text-xl font-bold text-purple-600">{fundsReleased.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-amber-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">残高</p>
+            <p className="text-xs text-slate-600 mb-1">残高</p>
             <p className="text-xl font-bold text-amber-600">{fundsRemaining.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
         </div>
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">預託率</span>
-            <span className="text-sm font-bold text-gray-900">
+            <span className="text-sm font-medium text-slate-700">預託率</span>
+            <span className="text-sm font-bold text-slate-900">
               {totalAmount > 0 ? Math.round((fundsDeposited / totalAmount) * 100) : 0}%
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
               style={{ width: `${totalAmount > 0 ? (fundsDeposited / totalAmount) * 100 : 0}%` }}
             ></div>
@@ -163,10 +164,10 @@ export default function ProjectOverviewPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-sm font-bold text-gray-900">
-                      {new Date(history.date).toLocaleDateString('ja-JP', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {new Date(history.date).toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </span>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -187,9 +188,9 @@ export default function ProjectOverviewPage() {
                     <div className="mt-2 p-2 bg-amber-50 rounded text-xs">
                       <span className="font-semibold">変更内容: </span>
                       <span className="text-gray-700">
-                        {history.changes.field} - 
+                        {history.changes.field} -
                         <span className="line-through text-red-600 mx-1">{history.changes.oldValue}</span>
-                        → 
+                        →
                         <span className="text-green-600 mx-1">{history.changes.newValue}</span>
                       </span>
                     </div>
@@ -204,10 +205,10 @@ export default function ProjectOverviewPage() {
       {/* Contract Details */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-2xl mr-2">📋</span>
+          <ClipboardList className="w-6 h-6 text-slate-500 mr-2" />
           契約条件
         </h2>
-        
+
         <div className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-bold text-gray-700 mb-2">プロジェクト概要</h3>
@@ -217,7 +218,7 @@ export default function ProjectOverviewPage() {
           {project.deliverables && (
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h3 className="text-sm font-bold text-blue-900 mb-2 flex items-center">
-                📦 成果物
+                <Package className="w-4 h-4 text-blue-500 mr-1" />成果物
               </h3>
               <p className="text-sm text-gray-700 mb-1">{project.deliverables}</p>
               {project.deliverableDetails && (
@@ -229,7 +230,7 @@ export default function ProjectOverviewPage() {
           {project.acceptanceCriteria && (
             <div className="p-4 bg-green-50 rounded-lg border border-green-200">
               <h3 className="text-sm font-bold text-green-900 mb-2 flex items-center">
-                ✅ 検収基準
+                <CheckCircle className="w-4 h-4 text-green-600 mr-1" />検収基準
               </h3>
               <p className="text-sm text-gray-700 mb-1">{project.acceptanceCriteria}</p>
               {project.acceptanceCriteriaDetails && (
@@ -240,16 +241,16 @@ export default function ProjectOverviewPage() {
 
           {(project.scopeOfWork_included || project.scopeOfWork_excluded) && (
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-bold text-gray-700 mb-3">📋 作業範囲</h3>
+              <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center"><ClipboardList className="w-4 h-4 text-slate-500 mr-1" />作業範囲</h3>
               {project.scopeOfWork_included && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-green-700 mb-1">✓ 含まれる作業:</p>
+                  <p className="text-xs font-semibold text-green-700 mb-1 flex items-center"><Check className="w-3 h-3 mr-1 text-green-600" />含まれる作業:</p>
                   <p className="text-sm text-gray-700">{project.scopeOfWork_included}</p>
                 </div>
               )}
               {project.scopeOfWork_excluded && (
                 <div>
-                  <p className="text-xs font-semibold text-red-700 mb-1">✗ 含まれない作業:</p>
+                  <p className="text-xs font-semibold text-red-700 mb-1 flex items-center"><X className="w-3 h-3 mr-1 text-red-500" />含まれない作業:</p>
                   <p className="text-sm text-gray-700">{project.scopeOfWork_excluded}</p>
                 </div>
               )}
@@ -259,7 +260,7 @@ export default function ProjectOverviewPage() {
           {project.additionalWorkTerms && (
             <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
               <h3 className="text-sm font-bold text-amber-900 mb-2 flex items-center">
-                💡 追加作業条件
+                <Lightbulb className="w-4 h-4 text-amber-500 mr-1" />追加作業条件
               </h3>
               <p className="text-sm text-gray-700">{project.additionalWorkTerms}</p>
             </div>
@@ -278,9 +279,9 @@ export default function ProjectOverviewPage() {
             {project.milestones.map((milestone, index) => {
               const isCompleted = milestone.status === 'completed' || milestone.status === 'released';
               const isInProgress = milestone.status === 'in_progress';
-              
+
               return (
-                <div 
+                <div
                   key={milestone.id}
                   className={`p-4 rounded-lg border-2 ${
                     isCompleted ? 'bg-green-50 border-green-300' :

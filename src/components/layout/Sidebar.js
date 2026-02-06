@@ -19,39 +19,39 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
   };
   return (
     <div
-      className={`bg-gray-800 text-white ${
+      className={`bg-slate-100 text-slate-800 ${
         isSidebarOpen ? 'w-64' : 'w-20'
-      } p-4 space-y-4 transition-all duration-300 flex flex-col h-screen fixed left-0 top-0 z-30`}
+      } p-4 space-y-4 transition-all duration-300 flex flex-col h-screen fixed left-0 top-0 z-30 border-r border-slate-200`}
     >
       <div className="flex items-center justify-between mb-2">
         {isSidebarOpen && (
           <div className="flex items-center">
-            <Briefcase className="h-7 w-7 mr-2 text-indigo-400" />
-            <h1 className="text-2xl font-bold text-white hidden lg:block">{t('appName')}</h1>
+            <Briefcase className="h-7 w-7 mr-2 text-indigo-500" />
+            <h1 className="text-2xl font-bold text-slate-800 hidden lg:block">{t('appName')}</h1>
           </div>
         )}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-1 rounded-md hover:bg-gray-700"
+          className="p-1 rounded-md hover:bg-slate-200"
         >
           {isSidebarOpen ? <ChevronDown /> : <ChevronUp />}
         </button>
       </div>
       <div className="pt-4 mb-4">
         {isSidebarOpen && (
-          <div className="sidebar-user-info bg-gray-800/90 rounded-2xl p-5 mb-6 flex flex-col items-center gap-3 shadow-xl border border-gray-700">
+          <div className="sidebar-user-info bg-white/80 rounded-2xl p-5 mb-6 flex flex-col items-center gap-3 shadow-md border border-slate-200">
             <UserCircle
               size={48}
-              className="mx-auto mb-1 text-gray-400"
+              className="mx-auto mb-1 text-slate-400"
             />
             <p className="text-base font-semibold mt-1">{(i18n.language === 'en' && loggedInUser.name_en) ? loggedInUser.name_en : loggedInUser.name}</p>
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-slate-500 mb-1">
               {t('currentRoleIs')}{' '}
               {currentViewMode === 'client'
                 ? t('userRoleClient')
                 : t('userRoleContractor')}
             </p>
-            <p className="text-xs text-yellow-300 font-semibold">
+            <p className="text-xs text-indigo-600 font-semibold">
               {t('pointsBalance') || 'ポイント残高'}: {userPoints} pt
             </p>
             <WalletInfo
@@ -64,11 +64,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
             />
             <div className="flex flex-col gap-2 w-full mt-2">
               <button
-                className="w-full flex items-center justify-center p-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-yellow-100 hover:text-white text-sm font-medium transition shadow-sm border border-indigo-700"
+                className="w-full flex items-center justify-center p-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition shadow-sm border border-indigo-700"
                 onClick={onPurchasePointsClick}
                 style={{ minHeight: '40px' }}
               >
-                <Coins className="h-5 w-5 mr-2 text-yellow-300" />
+                <Coins className="h-5 w-5 mr-2 text-indigo-400" />
                 <span>{t('purchasePoints') || 'ポイント購入'}</span>
               </button>
               <DropdownPointsActions

@@ -134,8 +134,8 @@ const DashboardPage = ({
     return (
       <>
         {title && (
-          <h3 className="text-xl font-semibold text-gray-700 mb-4 mt-6 first:mt-0 col-span-full flex items-center">
-            {isRecommended && <Zap size={20} className="mr-2 text-yellow-500" />}
+          <h3 className="text-xl font-semibold text-slate-800 mb-4 mt-6 first:mt-0 col-span-full flex items-center">
+            {isRecommended && <Zap size={20} className="mr-2 text-indigo-400" />}
             {title}
           </h3>
         )}
@@ -161,8 +161,8 @@ const DashboardPage = ({
   // Fix: component for displaying the "no projects" message
   const NoProjectsMessage = () => (
     <div className="text-center py-10 col-span-full">
-      <Briefcase size={40} className="mx-auto text-gray-400 mb-4" />
-  <p className="text-gray-500">{t('noProjectsFound')}</p>
+      <Briefcase size={40} className="mx-auto text-slate-300 mb-4" />
+      <p className="text-slate-500">{t('noProjectsFound')}</p>
     </div>
   );
 
@@ -185,17 +185,17 @@ const DashboardPage = ({
           <input
             type="text"
             placeholder={t('searchPlaceholder')}
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80 shadow-sm"
+            className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full sm:w-80 shadow-sm bg-white text-slate-800"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
         </div>
         <div className="flex items-center space-x-2">
           {currentViewMode === 'client' && (
             <button
               onClick={() => navigate('/newProject')}
-              className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md"
+              className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm shadow-md transition"
             >
               <PlusCircle size={16} className="mr-2" />
               {t('registerNewProject')}
@@ -203,13 +203,13 @@ const DashboardPage = ({
           )}
           <button
             onClick={handleModeSwitch}
-            className="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100 flex items-center text-xs sm:text-sm whitespace-nowrap"
+            className="text-slate-600 hover:text-indigo-600 p-2 rounded-md hover:bg-indigo-50 flex items-center text-xs sm:text-sm whitespace-nowrap transition"
             title={t('roleSwitchButton')}
           >
             <Repeat size={16} className="mr-1 sm:mr-1.5 flex-shrink-0" />
             {roleSwitchButtonText}
           </button>
-          <button className="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm shadow-sm">
+          <button className="flex items-center bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm shadow-sm transition">
             <Filter size={16} className="mr-2" />
             {t('filter')}
           </button>
@@ -217,7 +217,7 @@ const DashboardPage = ({
       </div>
       {currentViewMode === 'contractor' ? (
         <>
-          <div className="flex border-b border-gray-300 mb-6">
+          <div className="flex border-b border-slate-200 mb-6">
             <TabButton title={t('tabRecommended')} icon={<Zap />} isActive={activeDashboardTab === 'recommended'} onClick={() => setActiveDashboardTab('recommended')} />
             <TabButton title={t('tabMyTasks')} icon={<ListChecks />} isActive={activeDashboardTab === 'my_tasks'} onClick={() => setActiveDashboardTab('my_tasks')} />
             <TabButton title={t('tabCompletedHistory')} icon={<History />} isActive={activeDashboardTab === 'completed_history'} onClick={() => setActiveDashboardTab('completed_history')} />

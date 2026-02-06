@@ -75,8 +75,8 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
   const canPurchase = isAmountValid && isMethodValid && !isProcessing;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-7 w-full max-w-xs border border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-bold mb-5 text-gray-800 dark:text-gray-100 text-center">
+      <div className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-xs border border-slate-200">
+        <h2 className="text-xl font-bold mb-5 text-slate-800 text-center">
           {t('purchasePoints') || 'ポイント購入'}
         </h2>
         {/* Payment method selection */}
@@ -149,14 +149,14 @@ const PurchasePointsModal = ({ isOpen, onClose, onPurchase, t }) => {
         )}
         <div className="flex justify-end gap-2">
           <button
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 transition"
+            className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition"
             onClick={() => { setAmount(''); onClose(); }}
             disabled={isProcessing}
           >
             {t('cancel') || 'キャンセル'}
           </button>
           <button
-            className={`px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-sm transition border border-indigo-500 ${(!amount || amount <= 0 || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition border border-indigo-600 ${(!amount || amount <= 0 || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handlePurchase}
             disabled={!canPurchase}
           >

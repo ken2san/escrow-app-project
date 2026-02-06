@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart, CheckCircle } from 'lucide-react';
 
 /**
  * Display project payment summary with progress bar
@@ -17,7 +18,7 @@ const ProjectPaymentSummary = ({ project, paymentStatus }) => {
       {/* Project name and total amount */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-base font-bold text-gray-800 flex items-center">
-          <span className="text-xl mr-2">📊</span>
+          <BarChart size={20} className="text-slate-400 mr-2" />
           {project.name}
         </h3>
         <div className="text-right">
@@ -43,7 +44,7 @@ const ProjectPaymentSummary = ({ project, paymentStatus }) => {
       {/* Payment details */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="flex items-center">
-          <span className="text-green-600 font-bold mr-1">✅</span>
+          <CheckCircle size={16} className="text-slate-400 mr-1" />
           <span className="text-gray-600">支払済:</span>
           <span className="ml-1 font-semibold text-gray-800">{formatAmount(fundsReleased)} pt</span>
         </div>

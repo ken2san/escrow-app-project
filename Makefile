@@ -12,6 +12,7 @@ push:
 	docker push $(IMAGE_NAME)
 
 deploy:
+	gcloud config set project $(PROJECT_ID)
 	gcloud run deploy $(SERVICE_NAME) \
 		--image $(IMAGE_NAME) \
 		--platform managed \
@@ -19,8 +20,10 @@ deploy:
 		--allow-unauthenticated
 
 down:
+	gcloud config set project $(PROJECT_ID)
 	gcloud run services delete $(SERVICE_NAME) \
 		--region $(REGION) \
 		--platform managed
 
 all: build push deploy
+	gcloud config set project $(PROJECT_ID)
