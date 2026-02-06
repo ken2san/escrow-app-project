@@ -6,7 +6,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
-import { Mail, PlayCircle, CheckCircle, Inbox } from 'lucide-react';
+import { Mail, PlayCircle, CheckCircle, Inbox, Pencil, BarChart, Clipboard, Star, Coins } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import ReviewModal from '../components/modals/ReviewModal';
 import StarRatingDisplay from '../components/common/StarRatingDisplay';
@@ -32,7 +32,7 @@ function initCardHistoryIfNeeded(card) {
             text: 'Card created',
             date: card.startDate || new Date().toISOString(),
             userName: loggedInUserDataGlobal.name,
-            userIcon: '📝',
+            userIcon: <Pencil size={16} className="text-slate-400" />,
         }];
     }
 }
@@ -338,7 +338,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                 text: 'マイルストーン完了・支払い処理済み',
                 date: new Date().toISOString(),
                 userName: loggedInUserDataGlobal.name,
-                userIcon: '✅',
+                userIcon: <CheckCircle size={16} className="text-slate-400" />,
             });
 
             // Show toast notification
@@ -621,7 +621,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
           text: 'カード内容を編集',
           date: new Date().toISOString(),
           userName: loggedInUserDataGlobal.name,
-          userIcon: '📝',
+          userIcon: <Pencil size={16} className="text-slate-400" />,
         });
         setEditModalOpen(false);
     };
@@ -682,66 +682,64 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
             const project = dashboardAllProjects.find(p => String(p.id) === String(normalizedProjectId));
             const proposal = project?.proposals?.find(p => p.contractorId === app.applicantId);
 
-            return (
-                <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white rounded-lg shadow-lg p-4 mb-3 flex flex-col hover:shadow-xl transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-slate-800">{app.applicantName}</span>
-                        <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
-                            app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
-                            app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                            'bg-red-100 text-red-700'
-                        }`}>
-                            {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
-                        </span>
-                    </div>
+        return (
+            <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white rounded-lg shadow-lg p-4 mb-3 flex flex-col hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-slate-800">{app.applicantName}</span>
+                    <span className={
+                        `text-xs font-semibold rounded-full px-2 py-0.5 bg-slate-200 text-slate-600`
+                    }>
+                        {app.status === 'pending' ? '検討中' : app.status === 'offered' ? '採用提示済' : app.status === 'accepted' ? '採用' : '不採用'}
+                    </span>
+                </div>
 
-                    {/* Portfolio Summary */}
-                    {proposal?.contractorPortfolio && (
-                        <div className="mb-3 p-3 bg-slate-50 rounded-lg">
-                            <div className="grid grid-cols-3 gap-2 mb-2">
-                                <div className="text-center">
-                                    <div className="text-xs text-slate-600">完了数</div>
-                                    <div className="text-lg font-bold text-indigo-600">{proposal.contractorPortfolio.totalProjects}</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-xs text-slate-600">完了率</div>
-                                    <div className="text-lg font-bold text-green-600">{proposal.contractorPortfolio.completionRate}%</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-xs text-slate-600">リピート率</div>
-                                    <div className="text-lg font-bold text-blue-600">{proposal.contractorPortfolio.repeatClientRate}%</div>
-                                </div>
+                {/* Portfolio Summary */}
+                {proposal?.contractorPortfolio && (
+                    <div className="mb-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                            <div className="text-center">
+                                <div className="text-xs text-slate-600">完了数</div>
+                                <div className="text-lg font-bold text-indigo-600">{proposal.contractorPortfolio.totalProjects}</div>
                             </div>
-                            {proposal.contractorPortfolio.specialties && proposal.contractorPortfolio.specialties.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                    {proposal.contractorPortfolio.specialties.slice(0, 4).map((specialty, idx) => (
-                                        <span key={idx} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                                            {specialty}
-                                        </span>
-                                    ))}
-                                    {proposal.contractorPortfolio.specialties.length > 4 && (
-                                        <span className="text-xs text-slate-500 px-2 py-0.5">
-                                            +{proposal.contractorPortfolio.specialties.length - 4}
-                                        </span>
-                                    )}
-                                </div>
-                            )}
+                            <div className="text-center">
+                                <div className="text-xs text-slate-600">完了率</div>
+                                <div className="text-lg font-bold text-green-600">{proposal.contractorPortfolio.completionRate}%</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-xs text-slate-600">リピート率</div>
+                                <div className="text-lg font-bold text-blue-600">{proposal.contractorPortfolio.repeatClientRate}%</div>
+                            </div>
                         </div>
-                    )}
-
-                    {/* Proposal Preview */}
-                    {proposal?.proposalText && (
-                        <p className="text-sm text-slate-700 mb-3 line-clamp-2">
-                            {proposal.proposalText}
-                        </p>
-                    )}
-
-                    <div className="text-xs text-slate-500 mb-3">
-                        応募日: {formatDateForDisplay(app.appliedAt)}
+                        {proposal.contractorPortfolio.specialties && proposal.contractorPortfolio.specialties.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                                {proposal.contractorPortfolio.specialties.slice(0, 4).map((specialty, idx) => (
+                                    <span key={idx} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                                        {specialty}
+                                    </span>
+                                ))}
+                                {proposal.contractorPortfolio.specialties.length > 4 && (
+                                    <span className="text-xs text-slate-500 px-2 py-0.5">
+                                        +{proposal.contractorPortfolio.specialties.length - 4}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
+                )}
 
-                    {proposal && openProposalDetailsModal && app.status === 'pending' && (
+                {/* Proposal Preview */}
+                {proposal?.proposalText && (
+                    <p className="text-sm text-slate-700 mb-3 line-clamp-2">
+                        {proposal.proposalText}
+                    </p>
+                )}
+
+                <div className="text-xs text-slate-500 mb-3">
+                    応募日: {formatDateForDisplay(app.appliedAt)}
+                </div>
+
+                {proposal && openProposalDetailsModal && app.status === 'pending' && (
+                    <>
                         <button
                             onClick={() => {
                                 // Add projectId and application status to proposal
@@ -750,17 +748,20 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                             }}
                             className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"
                         >
-                            📋 詳細を見る
+                            <Inbox size={18} className="text-slate-200 mr-1" /> 詳細を見る
                         </button>
-                    )}
-                    {app.status !== 'pending' && (
-                        <div className="text-center text-sm text-slate-500 py-2">
-                            {app.status === 'offered' ? '✓ 採用提示済み' : app.status === 'accepted' ? '✓ 採用確定' : '× 選考終了'}
-                        </div>
-                    )}
-                </div>
-            );
-        });
+                        <button
+                            onClick={() => navigate(`/project-detail?projectId=${normalizedProjectId}`)}
+                            className="mt-2 px-3 py-1.5 bg-slate-700 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition flex items-center gap-1"
+                        >
+                            <Inbox size={16} className="text-slate-200 mr-1" />
+                            <span>詳細を見る</span>
+                        </button>
+                    </>
+                )}
+            </div>
+        );
+    });
     };
 
     // --- Main return block ---
@@ -886,10 +887,10 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                             >
                                 {/* Mobile: icon only, PC: icon + label */}
                                 <span className="block md:hidden">
-                                    <Icon size={22} strokeWidth={2.2} />
+                                    <Icon size={22} strokeWidth={2.2} className="text-slate-500" />
                                 </span>
                                 <span className="hidden md:flex md:items-center">
-                                    <Icon size={20} strokeWidth={2.1} className="mr-1" />
+                                    <Icon size={20} strokeWidth={2.1} className="mr-1 text-slate-500" />
                                     <span>{tab.label}</span>
                                 </span>
                                 <span className="text-xs text-slate-500 ml-0 md:ml-1 mt-1 md:mt-0">({tabCount})</span>
@@ -1272,7 +1273,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                             onClick={() => navigate(`/project-detail?projectId=${groupKey}`)}
                                                             className="mt-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1"
                                                         >
-                                                            <span>📊</span>
+                                                            <BarChart size={16} className="text-slate-400" />
                                                             <span>詳細を見る</span>
                                                         </button>
                                                     )}
@@ -1357,11 +1358,11 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                                     onClick={() => handleOpenReview(fullProject)}
                                                                     className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full px-0 py-0 text-yellow-700 hover:bg-yellow-50 transition text-sm font-semibold items-center justify-center gap-2"
                                                                 >
-                                                                    <span className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2">⭐ {partnerName} さんを評価する</span>
+                                                                    <span className="w-full px-4 py-2 bg-slate-200 text-slate-600 text-sm font-semibold rounded-lg flex items-center justify-center gap-2"><Star size={16} className="text-slate-400" /> {partnerName} さんを評価する</span>
                                                                 </button>
                                                             ) : (
                                                                 <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full">
-                                                                    <span className="w-full px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center justify-center gap-2">✅ 評価済み</span>
+                                                                    <span className="w-full px-4 py-2 bg-slate-100 text-slate-400 text-sm rounded-lg flex items-center justify-center gap-2"><CheckCircle size={16} className="text-slate-400" /> 評価済み</span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1442,7 +1443,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                                                         }}
                                                                                         className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center"
                                                                                     >
-                                                                                        📋 契約内容を確認
+                                                                                        <Clipboard size={16} className="inline text-slate-400 mr-1" />契約内容を確認
                                                                                     </button>
                                                                                 </div>
                                                                             )}
@@ -1832,8 +1833,8 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             </div>
             {/* Payment badge */}
             {card.reward && (
-                <div className="inline-flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 rounded-full px-3 py-1 text-sm font-bold text-amber-900 shadow-sm">
-                    <span className="mr-1">💰</span>
+                <div className="inline-flex items-center bg-slate-100 border border-slate-300 rounded-full px-3 py-1 text-sm font-bold text-slate-600 shadow-sm">
+                    <Coins size={16} className="mr-1 text-slate-400" />
                     <span>{Number(card.reward).toLocaleString('ja-JP')} pt</span>
                 </div>
             )}
@@ -1864,9 +1865,9 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
                         </button>
                     ) : (
                         <div className="mt-2 px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-300">
-                            {card.status === 'unsent' && '📝 編集・提出後に完了可能'}
+                            {card.status === 'unsent' && <><Pencil size={14} className="inline text-slate-400 mr-1" />編集・提出後に完了可能</>}
                             {card.status === 'revision_needed' && '🔄 修正対応後に完了可能'}
-                            {!card.status && '📝 作業完了後に完了ボタンが表示されます'}
+                            {!card.status && <><Pencil size={14} className="inline text-slate-400 mr-1" />作業完了後に完了ボタンが表示されます</>}
                         </div>
                     )}
                 </>

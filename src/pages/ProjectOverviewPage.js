@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ClipboardList, Package, CheckCircle, Lightbulb, X, Check } from 'lucide-react';
 import { dashboardAllProjects } from '../utils/initialData';
 
 export default function ProjectOverviewPage() {
@@ -204,7 +205,7 @@ export default function ProjectOverviewPage() {
       {/* Contract Details */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-2xl mr-2">📋</span>
+          <ClipboardList className="w-6 h-6 text-slate-500 mr-2" />
           契約条件
         </h2>
 
@@ -217,7 +218,7 @@ export default function ProjectOverviewPage() {
           {project.deliverables && (
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h3 className="text-sm font-bold text-blue-900 mb-2 flex items-center">
-                📦 成果物
+                <Package className="w-4 h-4 text-blue-500 mr-1" />成果物
               </h3>
               <p className="text-sm text-gray-700 mb-1">{project.deliverables}</p>
               {project.deliverableDetails && (
@@ -229,7 +230,7 @@ export default function ProjectOverviewPage() {
           {project.acceptanceCriteria && (
             <div className="p-4 bg-green-50 rounded-lg border border-green-200">
               <h3 className="text-sm font-bold text-green-900 mb-2 flex items-center">
-                ✅ 検収基準
+                <CheckCircle className="w-4 h-4 text-green-600 mr-1" />検収基準
               </h3>
               <p className="text-sm text-gray-700 mb-1">{project.acceptanceCriteria}</p>
               {project.acceptanceCriteriaDetails && (
@@ -240,16 +241,16 @@ export default function ProjectOverviewPage() {
 
           {(project.scopeOfWork_included || project.scopeOfWork_excluded) && (
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-bold text-gray-700 mb-3">📋 作業範囲</h3>
+              <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center"><ClipboardList className="w-4 h-4 text-slate-500 mr-1" />作業範囲</h3>
               {project.scopeOfWork_included && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-green-700 mb-1">✓ 含まれる作業:</p>
+                  <p className="text-xs font-semibold text-green-700 mb-1 flex items-center"><Check className="w-3 h-3 mr-1 text-green-600" />含まれる作業:</p>
                   <p className="text-sm text-gray-700">{project.scopeOfWork_included}</p>
                 </div>
               )}
               {project.scopeOfWork_excluded && (
                 <div>
-                  <p className="text-xs font-semibold text-red-700 mb-1">✗ 含まれない作業:</p>
+                  <p className="text-xs font-semibold text-red-700 mb-1 flex items-center"><X className="w-3 h-3 mr-1 text-red-500" />含まれない作業:</p>
                   <p className="text-sm text-gray-700">{project.scopeOfWork_excluded}</p>
                 </div>
               )}
@@ -259,7 +260,7 @@ export default function ProjectOverviewPage() {
           {project.additionalWorkTerms && (
             <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
               <h3 className="text-sm font-bold text-amber-900 mb-2 flex items-center">
-                💡 追加作業条件
+                <Lightbulb className="w-4 h-4 text-amber-500 mr-1" />追加作業条件
               </h3>
               <p className="text-sm text-gray-700">{project.additionalWorkTerms}</p>
             </div>
