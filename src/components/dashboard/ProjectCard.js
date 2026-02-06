@@ -106,15 +106,15 @@ const ProjectCard = ({
   ) {
     return (
       <div
-        className={`bg-white rounded-lg overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`bg-white border border-slate-200 rounded-lg overflow-hidden transition-all duration-300 ease-in-out ${
           isSelected
-            ? 'shadow-2xl ring-2 ring-blue-500'
-            : 'shadow-lg hover:shadow-xl'
+            ? 'shadow-2xl ring-2 ring-indigo-400'
+            : 'shadow-md hover:shadow-lg'
         }`}
       >
   <div className="p-5 cursor-pointer" onClick={() => { if (typeof onSelect === 'function') onSelect(project); }}>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-semibold text-blue-700">
+            <h3 className="text-lg font-semibold text-indigo-700">
               {getField(project, 'name') || t('noTitle') || 'No Title'}
             </h3>
             <span
@@ -142,7 +142,7 @@ const ProjectCard = ({
             {getField(project, 'description') ? getField(project, 'description').substring(0, 100) : ''}
             {getField(project, 'description') && getField(project, 'description').length > 100 ? '...' : ''}
           </p>
-          <div className="text-xs text-gray-500 mb-3">
+          <div className="text-xs text-slate-500 mb-3">
             {project.totalAmount && (
               <span>{t('budget')}: ¥{project.totalAmount.toLocaleString()}</span>
             )}
@@ -157,7 +157,7 @@ const ProjectCard = ({
             project.proposals &&
             project.proposals.length > 0 &&
             !isAnyProposalSelectedOnThisProject && (
-              <p className="text-sm font-semibold text-green-600 mb-2">
+              <p className="text-sm font-semibold text-emerald-600 mb-2">
                 {t('proposalsList')} ({t('proposalsReceived', { count: project.proposals.filter((p) => p.status === 'pending_review').length })})
               </p>
             )}
@@ -165,7 +165,7 @@ const ProjectCard = ({
             (!project.proposals ||
               project.proposals.filter((p) => p.status === 'pending_review')
                 .length === 0) && (
-              <p className="text-sm text-gray-500 mb-2">{t.noProposalsYet}</p>
+              <p className="text-sm text-slate-500 mb-2">{t.noProposalsYet}</p>
             )}
           {project.status === '募集中' &&
             !isAnyProposalSelectedOnThisProject && (
@@ -175,7 +175,7 @@ const ProjectCard = ({
                   onSelect(project);
                   setActiveProjectDetailTab('proposals');
                 }}
-                className="w-full mt-2 text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md inline-flex items-center justify-center"
+                className="w-full mt-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md inline-flex items-center justify-center transition"
                 disabled={
                   !project.proposals ||
                   project.proposals.filter((p) => p.status === 'pending_review')
@@ -187,8 +187,8 @@ const ProjectCard = ({
               </button>
             )}
           {project.status === t.agreementPending && project.contractorName && (
-            <div className="mt-2 p-3 bg-purple-50 rounded-md border border-purple-200">
-              <p className="text-sm font-semibold text-purple-700">
+            <div className="mt-2 p-3 bg-indigo-50 rounded-md border border-indigo-200">
+              <p className="text-sm font-semibold text-indigo-700">
                 {t('proposalStatusSelected')}: {project.contractorName}
               </p>
               <div className="mt-2 space-y-2 sm:space-y-0 sm:flex sm:space-x-2">
@@ -197,14 +197,14 @@ const ProjectCard = ({
                     e.stopPropagation();
                     handleCancelProposalSelection(project);
                   }}
-                  className="w-full sm:w-auto text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center"
+                  className="w-full sm:w-auto text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center transition"
                 >
                   <Undo2 size={14} className="mr-1.5" />
                   {t('cancelSelection')}
                 </button>
                 <button
                   onClick={navigateToContractReviewPage}
-                  className="w-full sm:w-auto text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center"
+                  className="w-full sm:w-auto text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-md inline-flex items-center justify-center transition"
                 >
                   <FileSignature size={14} className="mr-1.5" />
                   {t('confirmFinalAgreementAndProceed')}
@@ -218,7 +218,7 @@ const ProjectCard = ({
                 e.stopPropagation();
                 openDepositModalFunc(project);
               }}
-              className="w-full mt-2 text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md inline-flex items-center justify-center"
+              className="w-full mt-2 text-sm bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md inline-flex items-center justify-center transition"
             >
               <Banknote size={16} className="mr-2" />
               {t('depositFunds')}
@@ -226,8 +226,8 @@ const ProjectCard = ({
           )}
         </div>
         {isSelected && (
-          <div className="bg-gray-50 p-4 border-t border-gray-200">
-            <div className="flex border-b border-gray-300 -mx-4 px-2">
+          <div className="bg-slate-50 p-4 border-t border-slate-200">
+            <div className="flex border-b border-slate-200 -mx-4 px-2">
               {(project.status === '募集中' ||
                 project.status === t.agreementPending) && (
                 <TabButton
@@ -369,7 +369,7 @@ const ProjectCard = ({
         )}
         <div className="p-5 cursor-pointer" onClick={() => onSelect(project)}>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-semibold text-teal-700 hover:text-teal-800">
+            <h3 className="text-lg font-semibold text-indigo-700 hover:text-indigo-800">
               {getField(project, 'name')}
             </h3>
             <span
@@ -381,7 +381,7 @@ const ProjectCard = ({
               {getProjectStatusText(project.status)}
             </span>
           </div>
-          <div className="text-xs text-gray-500 mb-1">
+          <div className="text-xs text-slate-500 mb-1">
             <span>
               {t.client}: {getField(project, 'clientName')}
             </span>
