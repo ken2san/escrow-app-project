@@ -162,7 +162,7 @@ const MarketCommandUIPage = () => {
     };
     return (
       <div className="relative py-12 px-2 md:px-0 bg-gradient-to-b from-indigo-50 via-white to-indigo-100 min-h-[100vh]">
-        <h3 className="text-2xl font-bold text-indigo-700 mb-12 text-center tracking-wide drop-shadow-sm">Timeline</h3>
+        <h3 className="text-2xl font-bold text-slate-800 mb-12 text-center tracking-wide drop-shadow-sm">Timeline</h3>
         <div className="relative max-w-3xl mx-auto">
           {/* Center line */}
           <div className="hidden md:block absolute left-1/2 top-0 h-full w-1 bg-gradient-to-b from-indigo-200 via-indigo-300 to-indigo-200 -translate-x-1/2 z-0 rounded-full" />
@@ -185,9 +185,9 @@ const MarketCommandUIPage = () => {
                       {/* User name/icon/date (aligned with bubble) */}
                       <div className="flex items-center gap-2 mb-1 ml-1">
                         {item.byIcon && <span className="text-lg">{item.byIcon}</span>}
-                        <span className="text-xs text-gray-600 font-semibold">{item.by}</span>
+                        <span className="text-xs text-slate-600 font-semibold">{item.by}</span>
                         {item.date && (
-                          <span className="text-[11px] text-gray-400 ml-2">{formatDate(item.date)}</span>
+                          <span className="text-[11px] text-slate-400 ml-2">{formatDate(item.date)}</span>
                         )}
                       </div>
                       <MarketCommandCardWrapper
@@ -259,7 +259,7 @@ const MarketCommandUIPage = () => {
                           </div>
                         );
                       })() : (
-                        <span className="text-gray-400">最初のフィードバックをどうぞ！</span>
+                        <span className="text-slate-400">最初のフィードバックをどうぞ！</span>
                       )}
                     </div>
                   </div>
@@ -275,7 +275,7 @@ const MarketCommandUIPage = () => {
   // Map view (dummy)
   const renderMapView = () => (
     <div>
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">マーケットの地図（ダミー）</h3>
+      <h3 className="text-xl font-semibold text-slate-800 mb-4">マーケットの地図（ダミー）</h3>
       <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 text-slate-400">Map Chart（Chart.js等で実装予定）</div>
     </div>
   );
