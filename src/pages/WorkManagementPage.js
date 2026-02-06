@@ -669,7 +669,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
 
         if (!receivedApps.length) {
             return (
-                <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 text-sm text-slate-500">
+                <div className="bg-white rounded-lg shadow-lg p-4 mb-2 text-sm text-slate-500">
                     受け取った応募はありません
                 </div>
             );
@@ -682,10 +682,10 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
             const proposal = project?.proposals?.find(p => p.contractorId === app.applicantId);
 
             return (
-                <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white border border-slate-200 rounded-lg p-4 mb-3 flex flex-col hover:shadow-md transition-shadow">
+                <div key={`${normalizedProjectId}-${app.applicantId}`} className="bg-white rounded-lg shadow-lg p-4 mb-3 flex flex-col hover:shadow-xl transition-shadow">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-slate-800">{app.applicantName}</span>
-                        <span className={`text-xs font-semibold rounded px-2 py-0.5 ${
+                        <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
                             app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                             app.status === 'offered' ? 'bg-blue-100 text-blue-700' :
                             app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
@@ -697,7 +697,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
 
                     {/* Portfolio Summary */}
                     {proposal?.contractorPortfolio && (
-                        <div className="mb-3 p-3 bg-slate-50 rounded-md">
+                        <div className="mb-3 p-3 bg-slate-50 rounded-lg">
                             <div className="grid grid-cols-3 gap-2 mb-2">
                                 <div className="text-center">
                                     <div className="text-xs text-slate-600">完了数</div>

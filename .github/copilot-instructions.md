@@ -1,3 +1,8 @@
+# Git Command Usage Policy
+
+Whenever using git commands, always prioritize the latest officially recommended commands (such as `git switch` and `git restore`).
+Avoid deprecated or legacy commands (such as using `git checkout` for branch switching or file restoration) unless explicitly required.
+Follow official documentation and best practices for command selection.
 # Development Guidelines for Project Escrow App
 
 ## 🛑 CRITICAL PROHIBITIONS (STRICT ENFORCEMENT)
