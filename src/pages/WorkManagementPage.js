@@ -6,6 +6,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Menu, X } from 'lucide-react';
+import { Mail, PlayCircle, CheckCircle, Inbox } from 'lucide-react';
 import NewProjectModal from '../components/modals/NewProjectModal';
 import ReviewModal from '../components/modals/ReviewModal';
 import StarRatingDisplay from '../components/common/StarRatingDisplay';
@@ -639,10 +640,10 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
     };
     // --- Tab switch UI ---
     const tabDefs = [
-        { key: 'inprogress', label: '進行中' },
-        { key: 'pending', label: '応募中' },
-        { key: 'completed', label: '完了' },
-        { key: 'received', label: '受け取った応募' },
+        { key: 'inprogress', label: '進行中', icon: PlayCircle },
+        { key: 'pending', label: '応募中', icon: Mail },
+        { key: 'completed', label: '完了', icon: CheckCircle },
+        { key: 'received', label: '受信応募', icon: Inbox },
     ];
     const normalizeProjectId = (value) => {
         if (!value) return value;
@@ -875,13 +876,23 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                             const { getReceivedApplicationsForProject } = require('../utils/initialData');
                             tabCount = projects.filter(p => getReceivedApplicationsForProject(p.id).length > 0).length;
                         }
+                        const Icon = tab.icon;
                         return (
                             <button
                                 key={tab.key}
-                                className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all ${projectTab === tab.key ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 bg-slate-100 hover:bg-slate-200'}`}
+                                className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all flex flex-col md:flex-row md:items-center md:justify-center items-center justify-center ${projectTab === tab.key ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 bg-slate-100 hover:bg-slate-200'}`}
                                 onClick={() => setProjectTab(tab.key)}
+                                style={{minWidth: '56px'}}
                             >
-                                {tab.label} <span className="text-xs text-slate-500 ml-1">({tabCount})</span>
+                                {/* Mobile: icon only, PC: icon + label */}
+                                <span className="block md:hidden">
+                                    <Icon size={22} strokeWidth={2.2} />
+                                </span>
+                                <span className="hidden md:flex md:items-center">
+                                    <Icon size={20} strokeWidth={2.1} className="mr-1" />
+                                    <span>{tab.label}</span>
+                                </span>
+                                <span className="text-xs text-slate-500 ml-0 md:ml-1 mt-1 md:mt-0">({tabCount})</span>
                             </button>
                         );
                     })}
