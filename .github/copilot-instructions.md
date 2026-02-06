@@ -5,6 +5,29 @@ Avoid deprecated or legacy commands (such as using `git checkout` for branch swi
 Follow official documentation and best practices for command selection.
 # Development Guidelines for Project Escrow App
 
+## Quickstart for AI Agents
+
+- **Start here:** Read this file fully before any coding.
+- **Install & run:**
+  - Install dependencies: `npm install`
+  - Start dev server: `npm start` (see package.json)
+  - Build & run with Docker: `docker-compose up --build`
+  - Access: http://localhost:3000 (dev), http://localhost (Docker)
+- **Blockchain integration:**
+  - See BLOCKCHAIN_AGENT_README.md for contract packaging and .env setup
+  - Example .env.local:
+    - `REACT_APP_RPC_URL=http://127.0.0.1:8545`
+    - `REACT_APP_POINTS_ADDR=<DEPLOYED_POINTS_MANAGER_ADDRESS>`
+- **Data persistence:** Uses LocalStorage (no backend API yet)
+- **Key files:**
+  - Routing: src/App.js
+  - Pages: src/pages/
+  - Reusable UI: src/components/common/
+  - Dashboard logic: src/components/dashboard/
+  - State events: see CustomEvent usage in src/pages/ and src/components/
+  - i18n: src/locales/{en,ja}/translation.json, src/i18n.js
+  - Blockchain: BLOCKCHAIN_AGENT_README.md, .env.local
+
 ## 🛑 CRITICAL PROHIBITIONS (STRICT ENFORCEMENT)
 
 **These rules are ABSOLUTE and NON-NEGOTIABLE. Violation of any item below is considered a CRITICAL ERROR.**
@@ -52,6 +75,12 @@ A job/project escrow management platform built with React, supporting real-time 
 - **React Router v6** - Client-side routing
 - **Tailwind CSS** - Styling and responsive design
 
+**Build/Run/Test Workflow:**
+- Install: `npm install`
+- Dev server: `npm start`
+- Docker: `docker-compose up --build`
+- No automated tests yet; manual UI/UX validation required (see Testing Checklist below)
+
 ### Libraries
 
 - **dnd-kit v6+** - Drag-and-drop functionality
@@ -68,7 +97,6 @@ A job/project escrow management platform built with React, supporting real-time 
 ---
 
 ## Project Structure
-
 ```
 src/
 ├── components/
@@ -77,7 +105,11 @@ src/
 │   ├── layout/        # Header, Sidebar
 │   ├── market/        # Job market/search specific components
 │   └── modals/        # Modal dialogs
-├── pages/             # Full-page components (route targets)
+├── data/              # Dummy/mock data
+├── hooks/             # Custom React hooks
+├── utils/             # Helper functions
+└── locales/           # i18n translation files (en, ja)
+```
 ├── data/              # Dummy/mock data
 ├── hooks/             # Custom React hooks
 ├── utils/             # Helper functions
@@ -162,6 +194,10 @@ window.addEventListener("updatePendingApplications", (e) => {
 - Avoid for single-page state (use local state instead)
 - Event names should be descriptive verb phrases
 
+**Key files:**
+- Example dispatch: src/pages/JobsSearchPage.js
+- Example listen: src/pages/WorkManagementPage.js
+
 **⚠️ CRITICAL ARCHITECTURE WARNING**:
 
 This CustomEvent-based pattern is a **deliberate architectural decision** for this project. It is NOT a legacy pattern that needs modernization. Any attempt to replace this with Context API, Redux, Zustand, or any other state management solution constitutes a **CRITICAL RULE VIOLATION** and will be rejected. Do not suggest or implement such changes under any circumstances, regardless of your opinion on best practices.
@@ -241,6 +277,8 @@ Pending/disabled cards should show:
 3. Add navigation link in `src/components/layout/Sidebar.js` or `Header.js`
 4. Add i18n translation keys in both `en/translation.json` and `ja/translation.json`
 
+**Reference:** See src/pages/ for examples. Use src/components/layout/Sidebar.js for navigation.
+
 ### Modifying Card Components
 
 1. Keep both `common/` generic and `dashboard/`-specific versions separate
@@ -265,6 +303,8 @@ Pending/disabled cards should show:
 - [ ] No console errors in browser DevTools
 - [ ] Event-driven updates propagate correctly across pages
 
+**Manual testing only:** No automated test suite. Use browser DevTools and UI walkthroughs.
+
 ---
 
 ## Known Issues & Workarounds
@@ -272,6 +312,8 @@ Pending/disabled cards should show:
 - Git history may reset; always make small, atomic commits
 - Drag-and-drop state doesn't persist across page refreshes (expected behavior for demo)
 - i18n requires browser reload to switch languages (expected)
+
+- No backend API: All data is local/dummy for now.
 
 ---
 
@@ -307,6 +349,10 @@ Your role is NOT to:
 - Act as a code reviewer or suggest "better ways" to do things
 
 **When in doubt, implement exactly what is requested and nothing more.** If you believe something is suboptimal, acknowledge the instruction and implement it as specified. Your opinions on code quality, architecture, or best practices are irrelevant unless explicitly solicited.
+
+---
+
+# Reference: See also README.md and BLOCKCHAIN_AGENT_README.md for further integration and environment details.
 
 ---
 

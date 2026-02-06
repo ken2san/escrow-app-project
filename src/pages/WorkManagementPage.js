@@ -1786,7 +1786,7 @@ function SortableCard({ card, onEdit, activeId, projects, layout, setNodeRef: ex
             onClick={() => onEdit && onEdit(card)}
         >
             <div className="flex justify-between items-start">
-                <span className="font-semibold text-slate-800 flex-1 pr-2 text-base truncate">{card.title}</span>
+                <span className="font-semibold text-slate-800 flex-1 min-w-0 w-0 pr-2 text-base truncate">{card.title}</span>
                 <div className="flex items-center space-x-2">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${progressStatusInfo.bg} ${progressStatusInfo.text} whitespace-nowrap`}>{progressStatusInfo.label}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>{statusInfo.label}</span>
