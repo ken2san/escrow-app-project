@@ -13,15 +13,15 @@ export default function ProjectOverviewPage() {
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-2xl text-gray-400 mb-4">🚫</div>
-        <div className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="text-2xl text-slate-300 mb-4">🚫</div>
+        <div className="text-lg font-semibold text-slate-800 mb-2">
           プロジェクトが見つかりません
         </div>
-        <div className="text-gray-500 mb-6">
+        <div className="text-slate-500 mb-6">
           指定されたプロジェクトは存在しないか、アクセス権限がありません。
         </div>
         <button
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+          className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
           onClick={() => navigate('/work-management')}
         >
           Work Managementに戻る
@@ -47,12 +47,12 @@ export default function ProjectOverviewPage() {
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
-            <p className="text-gray-600">{project.clientName}</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">{project.name}</h1>
+            <p className="text-slate-600">{project.clientName}</p>
           </div>
           <button
             onClick={() => navigate('/work-management')}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition"
           >
             ← 戻る
           </button>
@@ -88,12 +88,12 @@ export default function ProjectOverviewPage() {
 
           <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-green-900">進捗状況</span>
-              <span className="text-lg font-bold text-green-700">{progressPercentage}%</span>
+              <span className="text-sm font-semibold text-emerald-900">進捗状況</span>
+              <span className="text-lg font-bold text-emerald-700">{progressPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
               <div 
-                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all"
+                className="bg-gradient-to-r from-emerald-500 to-green-400 h-2 rounded-full transition-all"
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
@@ -105,36 +105,36 @@ export default function ProjectOverviewPage() {
       </div>
       {/* Escrow Status */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
           <span className="text-2xl mr-2">💰</span>
           エスクロー状態
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">総予算</p>
+            <p className="text-xs text-slate-600 mb-1">総予算</p>
             <p className="text-xl font-bold text-blue-600">{totalAmount.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">預託済み</p>
-            <p className="text-xl font-bold text-green-600">{fundsDeposited.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-600 mb-1">預託済み</p>
+            <p className="text-xl font-bold text-emerald-600">{fundsDeposited.toLocaleString()}</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">支払済み</p>
+            <p className="text-xs text-slate-600 mb-1">支払済み</p>
             <p className="text-xl font-bold text-purple-600">{fundsReleased.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
           <div className="text-center p-4 bg-amber-50 rounded-lg">
-            <p className="text-xs text-gray-600 mb-1">残高</p>
+            <p className="text-xs text-slate-600 mb-1">残高</p>
             <p className="text-xl font-bold text-amber-600">{fundsRemaining.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">pt</p>
+            <p className="text-xs text-slate-500">pt</p>
           </div>
         </div>
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">預託率</span>
-            <span className="text-sm font-bold text-gray-900">
+            <span className="text-sm font-medium text-slate-700">預託率</span>
+            <span className="text-sm font-bold text-slate-900">
               {totalAmount > 0 ? Math.round((fundsDeposited / totalAmount) * 100) : 0}%
             </span>
           </div>
