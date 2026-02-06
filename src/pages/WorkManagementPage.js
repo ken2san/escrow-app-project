@@ -126,9 +126,12 @@ function getInitialProjects() {
                     _pendingStatus: acceptedMilestonesMap[project.id]?.includes(m.id || `${project.id}-m${idx+1}`) ? 'accepted' : (_pendingStatus || 'accepted'),
                     _completedStatus: completedMilestonesMap[project.id]?.includes(m.id || `${project.id}-m${idx+1}`) ? 'completed' : undefined,
                 }));
-                // Filter cards based on selectedMilestones if in pending status
+                // Filter cards based on selectedMilestones if in pending status (use milestone id)
                 if (_pendingStatus === 'pending' && selectedMilestonesMap[project.id]) {
-                    allCards = allCards.filter((_, idx) => selectedMilestonesMap[project.id].includes(idx));
+                    allCards = allCards.filter((m, idx) => {
+                        const milestoneId = m.id || `${project.id}-m${idx+1}`;
+                        return selectedMilestonesMap[project.id].includes(milestoneId);
+                    });
                 }
                 return {
                     ...proj,
@@ -161,7 +164,10 @@ function getInitialProjects() {
 
             // Filter cards based on selectedMilestones
             if (selectedMilestonesMap[jobId]) {
-                cards = cards.filter((_, idx) => selectedMilestonesMap[jobId].includes(idx));
+                cards = cards.filter((m, idx) => {
+                    const milestoneId = m.id || `${jobId}-m${idx+1}`;
+                    return selectedMilestonesMap[jobId].includes(milestoneId);
+                });
             }
 
             base.push({

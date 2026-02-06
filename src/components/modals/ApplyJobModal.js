@@ -27,9 +27,9 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
   useEffect(() => {
     if (isOpen) {
       setCustomDeadline(getDefaultDeadline());
-      // Select all milestones by default
+      // Select all milestones by default (ID logic must match WorkManagementPage)
       if (job?.milestones && Array.isArray(job.milestones)) {
-        setSelectedMilestones(job.milestones.map((_, idx) => idx));
+        setSelectedMilestones(job.milestones.map((m, idx) => (m && m.id ? m.id : `${job.id}-m${idx+1}`)));
       } else {
         setSelectedMilestones([]);
       }
@@ -37,9 +37,9 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
   }, [isOpen, job]);
 
   // Toggle milestone selection
-  const toggleMilestone = (idx) => {
+  const toggleMilestone = (milestoneId) => {
     setSelectedMilestones(prev =>
-      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+      prev.includes(milestoneId) ? prev.filter(i => i !== milestoneId) : [...prev, milestoneId]
     );
   };
 
@@ -54,7 +54,11 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
     // Pass appliedAt, deadline, and selected milestones to the handler
     const deadline = customDeadline || getDefaultDeadline();
     const deadlineISO = new Date(deadline).toISOString();
-    onSubmit(job, appliedAt, deadlineISO, selectedMilestones);
+    onSubmit({
+      appliedAt,
+      deadline: deadlineISO,
+      selectedMilestones
+    });
   };
 
   return (
@@ -83,20 +87,23 @@ export default function ApplyJobModal({ isOpen, onClose, onSubmit, job, t }) {
               対応するマイルストーン（複数選択可）
             </label>
             <div className="space-y-2">
-              {job.milestones.map((milestone, idx) => (
-                <label key={idx} className="flex items-start gap-2 cursor-pointer hover:bg-blue-100 p-2 rounded transition">
-                  <input
-                    type="checkbox"
-                    checked={selectedMilestones.includes(idx)}
-                    onChange={() => toggleMilestone(idx)}
-                    className="mt-1 w-4 h-4 rounded"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-900">{milestone.name || milestone.title}</div>
-                    <div className="text-xs text-slate-600">¥{milestone.amount?.toLocaleString()}</div>
-                  </div>
-                </label>
-              ))}
+              {job.milestones.map((milestone, idx) => {
+                const milestoneId = (milestone && milestone.id ? milestone.id : `${job.id}-m${idx+1}`);
+                return (
+                  <label key={milestoneId} className="flex items-start gap-2 cursor-pointer hover:bg-blue-100 p-2 rounded transition">
+                    <input
+                      type="checkbox"
+                      checked={selectedMilestones.includes(milestoneId)}
+                      onChange={() => toggleMilestone(milestoneId)}
+                      className="mt-1 w-4 h-4 rounded"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-900">{milestone.name || milestone.title}</div>
+                      <div className="text-xs text-slate-600">¥{milestone.amount?.toLocaleString()}</div>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
             {!isMilestoneSelectionValid && (
               <p className="text-xs text-red-500 mt-2">少なくとも1つのマイルストーンを選択してください</p>

@@ -75,7 +75,7 @@ export default function JobsSearchPage() {
 
   // --- Handlers ---
   const handleApplyJob = (job, formData) => {
-    // formData may contain appliedAt, deadline, selectedMilestones, etc.
+    // formData: { appliedAt, deadline, selectedMilestones }
     const appliedAt = formData?.appliedAt || new Date().toISOString();
     const deadline = formData?.deadline || null;
     const selectedMilestones = formData?.selectedMilestones || [];
