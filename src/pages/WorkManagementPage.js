@@ -739,25 +739,16 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                 </div>
 
                 {proposal && openProposalDetailsModal && app.status === 'pending' && (
-                    <>
-                        <button
-                            onClick={() => {
-                                // Add projectId and application status to proposal
-                                const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status };
-                                openProposalDetailsModal(proposalWithProject);
-                            }}
-                            className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"
-                        >
-                            <Inbox size={18} className="text-slate-200 mr-1" /> 詳細を見る
-                        </button>
-                        <button
-                            onClick={() => navigate(`/project-detail?projectId=${normalizedProjectId}`)}
-                            className="mt-2 px-3 py-1.5 bg-slate-700 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition flex items-center gap-1"
-                        >
-                            <Inbox size={16} className="text-slate-200 mr-1" />
-                            <span>詳細を見る</span>
-                        </button>
-                    </>
+                    <button
+                        onClick={() => {
+                            // Add projectId and application status to proposal
+                            const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status };
+                            openProposalDetailsModal(proposalWithProject);
+                        }}
+                        className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                    >
+                        <Inbox size={18} className="text-slate-200 mr-1" /> 詳細を見る
+                    </button>
                 )}
             </div>
         );
