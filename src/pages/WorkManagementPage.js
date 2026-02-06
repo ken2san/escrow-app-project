@@ -1238,7 +1238,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                         const isEmpty = groupCards.length === 0;
                                         return (
                                             <div key={groupKey} className={`mb-8 ${dragOverInfo.groupKey === groupKey ? 'drag-over' : ''}`}>
-                                                <div className="p-4 pb-2">
+                                                <div className="w-full p-6 pb-3 bg-slate-50 border-b border-slate-200">
                                                     <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
                                                         {groupTitle}
                                                         {subTitle && <span className="text-xs text-slate-400 ml-2">{subTitle}</span>}
@@ -1301,10 +1301,10 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                     const partnerRating = isClient ? fullProject.clientRating : fullProject.contractorRating;
 
                                                     return (
-                                                        <div className="px-4 pb-3 space-y-2">
+                                                        <div className="w-full pb-3 space-y-2">
                                                             {/* Display user's submitted review */}
                                                             {userReview && (
-                                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                                <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full">
                                                                     <div className="flex items-center justify-between mb-1">
                                                                         <span className="text-xs font-semibold text-gray-700">
                                                                             {partnerName} さんへの評価
@@ -1325,7 +1325,7 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
 
                                                             {/* Display partner's rating if exists */}
                                                             {partnerRating && partnerRating.averageScore > 0 && (
-                                                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                                <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full">
                                                                     <div className="flex items-center justify-between">
                                                                         <span className="text-xs font-semibold text-blue-900">
                                                                             {partnerName} さんから受け取った評価
@@ -1344,13 +1344,13 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                                                             {needsUserReview ? (
                                                                 <button
                                                                     onClick={() => handleOpenReview(fullProject)}
-                                                                    className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2"
+                                                                    className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full px-0 py-0 text-yellow-700 hover:bg-yellow-50 transition text-sm font-semibold items-center justify-center gap-2"
                                                                 >
-                                                                    ⭐ {partnerName} さんを評価する
+                                                                    <span className="w-full px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2">⭐ {partnerName} さんを評価する</span>
                                                                 </button>
                                                             ) : (
-                                                                <div className="w-full px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center justify-center gap-2">
-                                                                    ✅ 評価済み
+                                                                <div className="bg-white border border-slate-200 rounded-lg p-4 mb-2 flex flex-col w-full">
+                                                                    <span className="w-full px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg flex items-center justify-center gap-2">✅ 評価済み</span>
                                                                 </div>
                                                             )}
                                                         </div>
