@@ -45,12 +45,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
               className="mx-auto mb-1 text-slate-400"
             />
             <p className="text-base font-semibold mt-1">{(i18n.language === 'en' && loggedInUser.name_en) ? loggedInUser.name_en : loggedInUser.name}</p>
-            <p className="text-xs text-slate-500 mb-1">
-              {t('currentRoleIs')}{' '}
-              {currentViewMode === 'client'
-                ? t('userRoleClient')
-                : t('userRoleContractor')}
-            </p>
             <p className="text-xs text-indigo-600 font-semibold">
               {t('pointsBalance') || 'ポイント残高'}: {userPoints} pt
             </p>
@@ -207,18 +201,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, loggedInUser, currentViewMod
 
     {/* 下部セクション（参考・開発用）: 本番リリース時は削除または非表示推奨 */}
     {process.env.NODE_ENV !== 'production' && <>
-      {/* Dashboard (legacy, subtle) */}
-      <li className="mb-1">
-        <button
-          onClick={() => navigate(getPath('dashboard'))}
-          className={`w-full flex items-center p-2.5 rounded-md bg-transparent hover:bg-gray-700 text-gray-400 hover:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
-          style={{ fontSize: '12px' }}
-          title={isSidebarOpen ? '' : t('dashboardLegacy')}
-        >
-          <Home className="h-5 w-5" />
-          {isSidebarOpen && <span className="ml-3 text-xs">{t('dashboardLegacy')}</span>}
-        </button>
-      </li>
+      {/* ...existing code... */}
       {/* ...existing code... */}
     </>}
   </ul>
