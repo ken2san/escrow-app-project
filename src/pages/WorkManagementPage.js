@@ -741,8 +741,9 @@ export default function WorkManagementPage({ openProposalDetailsModal, onSelectP
                 {proposal && openProposalDetailsModal && app.status === 'pending' && (
                     <button
                         onClick={() => {
-                            // Add projectId and application status to proposal
-                            const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status };
+                            // Determine navigation context
+                            const from = window.location.pathname.includes('progress-dashboard') ? 'progress-dashboard' : 'work-management';
+                            const proposalWithProject = { ...proposal, projectId: normalizedProjectId, applicationStatus: app.status, from };
                             openProposalDetailsModal(proposalWithProject);
                         }}
                         className="w-full px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded hover:bg-indigo-700 transition flex items-center justify-center gap-2"

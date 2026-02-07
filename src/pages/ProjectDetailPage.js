@@ -1,5 +1,7 @@
 
+import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import ProposalDetailsModal from '../components/modals/ProposalDetailsModal';
 import { ClipboardList, Package, CheckCircle, Lightbulb, X, Check } from 'lucide-react';
 import { BarChart2 } from 'lucide-react';
 import { dashboardAllProjects } from '../utils/initialData';
@@ -8,6 +10,9 @@ export default function ProjectDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
+  const from = searchParams.get('from');
+  const [isProposalModalOpen, setIsProposalModalOpen] = React.useState(false);
+  const [proposalForDetails, setProposalForDetails] = React.useState(null);
 
   // Get project from dashboardAllProjects
   const project = dashboardAllProjects.find(p => p.id === projectId);
@@ -24,9 +29,9 @@ export default function ProjectDetailPage() {
         </div>
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
-          onClick={() => navigate('/work-management')}
+          onClick={() => navigate(from === 'dashboard' ? '/progress-dashboard' : '/work-management')}
         >
-          Work Managementに戻る
+          {from === 'dashboard' ? '進行状況ダッシュボードに戻る' : 'Work Managementに戻る'}
         </button>
       </div>
     );
@@ -45,18 +50,50 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-8">
+      {/* Proposal Details Modal */}
+      {isProposalModalOpen && proposalForDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="relative">
+            <ProposalDetailsModal
+              isOpen={true}
+              onClose={() => { setIsProposalModalOpen(false); setProposalForDetails(null); }}
+              proposal={proposalForDetails}
+              lang={project.lang || 'ja'}
+              t={project.t || ((key) => key)}
+              onSelectProposal={() => { setIsProposalModalOpen(false); setProposalForDetails(null); }}
+            />
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                {/* Open Proposal Details Modal Button */}
+                <button
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 mb-4"
+                  onClick={() => {
+                    // Dummy proposal data for demonstration; replace with actual proposal if available
+                    const dummyProposal = {
+                      contractorName: project.contractorName || 'デモ応募者',
+                      proposalText: project.proposalText || 'デモ提案内容',
+                      projectId: project.id,
+                      from: from === 'dashboard' ? 'dashboard' : 'work-management',
+                    };
+                    setProposalForDetails(dummyProposal);
+                    setIsProposalModalOpen(true);
+                  }}
+                >
+                  提案詳細モーダルを開く
+                </button>
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
             <p className="text-gray-600">{project.clientName}</p>
           </div>
           <button
-            onClick={() => navigate('/work-management')}
+            onClick={() => navigate(from === 'dashboard' ? '/progress-dashboard' : '/work-management')}
             className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            ← 戻る
+            ← {from === 'dashboard' ? 'ダッシュボードに戻る' : '戻る'}
           </button>
         </div>
 

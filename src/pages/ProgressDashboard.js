@@ -160,7 +160,7 @@ function JobCard({ job, color }) {
               ? "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60"
               : "bg-slate-100 hover:bg-slate-200 text-slate-600"
           }`}
-          onClick={() => navigate(`/project-detail?projectId=${job.jobId}`)}
+          onClick={() => navigate(`/project-detail?projectId=${job.jobId}&from=dashboard`)}
         >
           詳細
         </button>

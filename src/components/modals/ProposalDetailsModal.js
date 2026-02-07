@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, CheckCircle, ShieldCheck, Award, Briefcase, TrendingUp, ExternalLink, Lightbulb, Code, Shield, Target } from 'lucide-react';
 import StarRatingDisplay from '../common/StarRatingDisplay';
 
 const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProposal }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('portfolio');
 
   if (!isOpen || !proposal) return null;
@@ -15,7 +17,14 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
             {t('proposalDetailsModalTitle') || 'Proposal Details'}
           </h3>
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (proposal.from === 'dashboard') {
+                navigate('/progress-dashboard');
+              } else {
+                navigate('/work-management');
+              }
+              if (onClose) onClose();
+            }}
             className="text-gray-400 hover:text-gray-600"
           >
             <X size={24} />
@@ -314,7 +323,15 @@ const ProposalDetailsModal = ({ isOpen, onClose, proposal, lang, t, onSelectProp
         <div className="mt-6 flex justify-end space-x-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              if (proposal.from === 'dashboard') {
+                const detailId = proposal.projectId || proposal.jobId;
+                navigate(`/project-detail?projectId=${detailId}`);
+              } else {
+                navigate('/work-management');
+              }
+              if (onClose) onClose();
+            }}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300"
           >
             {proposal.applicationStatus && proposal.applicationStatus !== 'pending' ? '閉じる' : t('cancel')}
