@@ -1,5 +1,7 @@
+import { Clipboard } from 'lucide-react';
 import React, { useState } from 'react';
-import { FileSignature, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import { FileSignature, CheckCircle, XCircle, MessageSquare, FileText, DollarSign, Award, Star } from 'lucide-react';
+import { Package, Lightbulb } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import NegotiationModal from '../components/modals/NegotiationModal';
 import {
@@ -166,7 +168,7 @@ const ContractReviewPage = () => {
             className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-300 transition flex items-center gap-2"
             onClick={() => navigate(`/project-detail?projectId=${projectId}`)}
           >
-            <span>📊</span>
+            <Clipboard size={16} className="inline align-middle mr-1 text-slate-500" />
             <span>プロジェクト詳細を見る</span>
           </button>
         </div>
@@ -218,7 +220,7 @@ const ContractReviewPage = () => {
           {selectedProjectForReview.contractHistory && selectedProjectForReview.contractHistory.length > 0 && (
             <div className="p-4 border rounded-lg bg-indigo-50">
               <h4 className="text-md font-semibold text-indigo-900 mb-3 flex items-center">
-                📜 契約履歴
+                <FileText size={18} className="inline align-middle mr-2 text-indigo-500" />契約履歴
               </h4>
               <div className="space-y-2">
                 {selectedProjectForReview.contractHistory.map((history, index) => (
@@ -231,7 +233,7 @@ const ContractReviewPage = () => {
                         </span>
                         <span className="text-indigo-700">
                           {history.action === 'contract_created' && '契約書作成'}
-                          {history.action === 'contract_negotiated' && '条件交渉'}
+                          gcloud auth application-default set-quota-project escrow-app-project                          {history.action === 'contract_negotiated' && '条件交渉'}
                           {history.action === 'contract_agreed' && '契約合意'}
                           {history.action === 'contract_activated' && '契約開始'}
                         </span>
@@ -262,7 +264,7 @@ const ContractReviewPage = () => {
           {selectedProjectForReview.clientRating && (
             <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
               <h4 className="text-md font-semibold text-indigo-900 mb-3 flex items-center">
-                🏆 クライアント信頼情報
+                <Award size={18} className="inline align-middle mr-2 text-amber-500" />クライアント信頼情報
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                 {selectedProjectForReview.clientRating.totalProjects !== undefined && (
@@ -291,8 +293,8 @@ const ContractReviewPage = () => {
                 )}
                 <div className="bg-white p-2 rounded text-center">
                   <p className="text-xs text-gray-500">評価</p>
-                  <p className="text-lg font-bold text-amber-600">
-                    ⭐ {selectedProjectForReview.clientRating.averageScore}
+                  <p className="text-lg font-bold text-amber-600 flex items-center gap-1">
+                    <Star size={16} className="inline align-middle" /> {selectedProjectForReview.clientRating.averageScore}
                   </p>
                 </div>
               </div>
@@ -300,7 +302,7 @@ const ContractReviewPage = () => {
               {/* Payment History */}
               {selectedProjectForReview.clientRating.paymentHistory && (
                 <div className="bg-white p-3 rounded mb-3">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">💰 支払履歴</p>
+                  <p className="text-xs font-semibold text-gray-700 mb-2"><DollarSign size={16} className="inline align-middle mr-1 text-amber-500" />支払履歴</p>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">
                       定時支払: {selectedProjectForReview.clientRating.paymentHistory.onTimePayments}回
@@ -368,7 +370,7 @@ const ContractReviewPage = () => {
         {selectedProjectForReview.acceptanceCriteria && (
           <div className="p-4 border rounded-lg bg-green-50">
             <h4 className="text-md font-semibold text-green-900 mb-2 flex items-center">
-              ✅ 検収基準
+              <CheckCircle size={18} className="inline align-middle mr-2 text-green-500" />検収基準
             </h4>
             <p className="text-gray-700 text-xs font-medium mb-1">
               {selectedProjectForReview.acceptanceCriteria}
@@ -385,7 +387,7 @@ const ContractReviewPage = () => {
         {(selectedProjectForReview.scopeOfWork_included || selectedProjectForReview.scopeOfWork_excluded) && (
           <div className="p-4 border rounded-lg">
             <h4 className="text-md font-semibold text-gray-700 mb-3">
-              📋 作業範囲
+              <Clipboard size={18} className="inline align-middle mr-2 text-slate-500" />作業範囲
             </h4>
             {selectedProjectForReview.scopeOfWork_included && (
               <div className="mb-3">
@@ -410,7 +412,7 @@ const ContractReviewPage = () => {
         {selectedProjectForReview.additionalWorkTerms && (
           <div className="p-4 border rounded-lg bg-amber-50">
             <h4 className="text-md font-semibold text-amber-900 mb-2 flex items-center">
-              💡 追加作業条件
+              <Lightbulb size={18} className="inline align-middle mr-2 text-amber-500" />追加作業条件
             </h4>
             <p className="text-gray-700 text-xs">
               {selectedProjectForReview.additionalWorkTerms}
@@ -487,20 +489,23 @@ const ContractReviewPage = () => {
                         {(ms.deliverables || ms.acceptanceCriteria || ms.additionalWorkTerms) && (
                           <div className="mt-2 space-y-1.5">
                             {ms.deliverables && (
-                              <div className="text-xs">
-                                <span className="font-semibold text-blue-700">📦 成果物: </span>
+                              <div className="text-xs flex items-center">
+                                <Package size={12} className="inline align-middle mr-1 text-blue-500" />
+                                <span className="font-semibold text-blue-700 align-middle">成果物: </span>
                                 <span className="text-gray-700">{ms.deliverables}</span>
                               </div>
                             )}
                             {ms.acceptanceCriteria && (
-                              <div className="text-xs">
-                                <span className="font-semibold text-green-700">✅ 受入基準: </span>
+                              <div className="text-xs flex items-center">
+                                <CheckCircle size={12} className="inline align-middle mr-1 text-green-500" />
+                                <span className="font-semibold text-green-700 align-middle">受入基準: </span>
                                 <span className="text-gray-700">{ms.acceptanceCriteria}</span>
                               </div>
                             )}
                             {ms.additionalWorkTerms && (
-                              <div className="text-xs">
-                                <span className="font-semibold text-amber-700">💡 追加条件: </span>
+                              <div className="text-xs flex items-center">
+                                <Lightbulb size={12} className="inline align-middle mr-1 text-amber-500" />
+                                <span className="font-semibold text-amber-700 align-middle">追加条件: </span>
                                 <span className="text-gray-700">{ms.additionalWorkTerms}</span>
                               </div>
                             )}
